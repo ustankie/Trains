@@ -3,5 +3,5 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Urszula Stankiewicz (ustankiewicz@student.agh.edu.pl)  
 <strong>Temat</strong>: *Platforma obsługująca połączenia kolejowe*  
 <strong>Technologie</strong>: PostgreSQL, SpringBoot oraz React.  
-
+<strong>Github</strong>: https://github.com/ustankie/Trains
 
