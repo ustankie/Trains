@@ -386,7 +386,57 @@ Wynik:
 
 ![add_route](images/add_route.png)
 
+### Add_user
+Dodaje użytkownika o podanych parametrach
+```sql
+create procedure add_user(IN _firstname character varying, IN _lastname character varying, IN _email character varying, IN _phone character varying, IN _login character varying, IN _password character varying)
+    language plpgsql
+as
+$$
+begin
 
+    insert into users(firstname, lastname, email, phone, login, password)
+    values (_firstname,_lastname,_email,_phone,_login,_password);
+
+end $$;
+
+```
+
+### Add_discount
+
+Dodaje zniżkę o podanej nazwie oraz procencie zniżki
+```sql
+create procedure add_discount(IN _discount_name character varying, IN _percent integer)
+    language plpgsql
+as
+$$
+begin
+
+    insert into discounts(discount_name, percent)
+    values (_discount_name,_percent);
+
+end $$;
+```
+
+### Add_seat
+
+Dodaje miejsce do tabeli seats
+```sql
+create procedure add_seat(IN _class integer, IN _seat_number integer)
+    language plpgsql
+as
+$$
+begin
+
+    insert into seats(class, seat_number)
+    values (_class,_seat_number);
+
+end $$;
+
+alter procedure add_seat(integer, integer) owner to ula;
+
+
+```
 
 
 
@@ -426,3 +476,27 @@ Wynik:
 ![get_station_id](images/get_station_id.png)
 
 # Triggery
+
+## status_insert_trigger
+
+Wprowadza wpis do tabeli reservation_logs, kiedy zostanie dodany rekord do tabeli reservations:
+```sql
+CREATE OR REPLACE FUNCTION log_status_insert()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO log_reservation (reservation_id, new_status, date)
+        VALUES (NEW.reservation_id, NEW.status, CURRENT_TIMESTAMP);
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+CREATE TRIGGER status_insert_trigger
+    AFTER INSERT ON reservations
+    FOR EACH ROW
+EXECUTE FUNCTION log_status_insert();
+```
