@@ -437,10 +437,132 @@ alter procedure add_seat(integer, integer) owner to ula;
 
 
 ```
+### station_exists
+
+Jeśli stacja o danym id nie istnieje, procedura zwraca wyjątek
+```sql
+
+CREATE procedure station_exists(_station_id int)
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    if not exists(select * from stations where station_id=_station_id) then
+        raise exception 'Station does not exist';
+    end if;
+END;
+$$;
+```
+
+## Add_section_details
+
+Dodaje szczegóły dla danego odcinka: stację początkową, końcową oraz dystans
+
+```sql
+create procedure add_section_details(IN _start_station_id integer, IN _next_station_id integer, IN _distance double precision)
+    language plpgsql
+as
+$$
+begin
+    call station_exists(_start_station_id);
+    call station_exists(_next_station_id);
+
+    if(section_exists(_next_station_id,_start_station_id)
+        and section_distance(_next_station_id,_start_station_id)!=_distance) then
+        raise exception 'This route section already exists the other way and distances do not match!';
+
+    end if;
+
+    insert into section_details(start_station_id, next_station_id, distance)
+    values (_start_station_id, _next_station_id, _distance);
+
+end $$;
+```
+
+## Add_section_details_both_ways
+Dodaje szczegóły dla danego odcinka w obie strony
+```sql
+create procedure add_section_details_both_ways(IN _start_station_id integer, IN _next_station_id integer, IN _distance double precision)
+    language plpgsql
+as
+$$
+begin
+    call station_exists(_start_station_id);
+    call station_exists(_next_station_id);
+    insert into section_details(start_station_id, next_station_id, distance)
+    values (_start_station_id, _next_station_id, _distance);
+
+
+
+    insert into section_details(start_station_id, next_station_id, distance)
+    values (_next_station_id, _start_station_id, _distance);
+
+end $$;
+```
+
+## Add_route_section
+
+Dodaje odcinek konkretnej trasy do tabeli route_sections
+
+```sql
+create procedure add_route_section(IN _section_id integer, IN _route_id integer, IN _departure time without time zone, IN _arrival time without time zone, IN _price double precision)
+    language plpgsql
+as
+$$
+begin
+
+    insert into route_sections(section_id, route_id, departure, arrival, price)
+    values (_section_id, _route_id , _departure , _arrival,
+            _price );
+
+end $$;
+
+
+```
 
 
 
 # Funkcje
+
+## Section_exists
+Jeśli dany odcinek istnieje w section_details, zwraca true, w przeciwnym wypadku false
+
+```sql
+create function section_exists(_start_station_id integer, _next_station_id integer) returns boolean
+    language plpgsql
+as
+$$
+BEGIN
+    if  exists(select * from section_details where start_station_id=_start_station_id and next_station_id=_next_station_id) then
+        return true;
+    end if;
+    return false;
+END;
+$$;
+
+```
+
+## section_distance
+
+Zwraca dystans na danym odcinku
+```sql
+
+create function section_distance(_start_station_id integer, _next_station_id integer) returns double precision
+    language plpgsql
+as
+$$
+DECLARE
+    distance_value DOUBLE PRECISION;
+BEGIN
+    SELECT distance INTO distance_value
+    FROM section_details
+    WHERE start_station_id = _start_station_id AND next_station_id = _next_station_id;
+
+    RETURN distance_value;
+END;
+$$;
+
+
+```
 
 ## get_station_id
 
