@@ -567,7 +567,7 @@ declare
 BEGIN
 
     if _departure_date=CURRENT_DATE then
-        if get_departure_from(_start_station_id,_route_id)<CURRENT_TIME
+        if get_departure_time(_start_station_id,_route_id)<CURRENT_TIME
             then
             raise exception 'Cannot book a past route!';
         end if;
@@ -587,7 +587,7 @@ BEGIN
     RETURNING reservation_id INTO _reservation_id;
 
 
-    FOR t_section IN  (select * from get_sections(_route_id, _start_station_id,
+    FOR t_section IN  (select * from get_route_sections(_route_id, _start_station_id,
                                                   _end_station_id))
     LOOP
             INSERT INTO seat_reservations(reservation_id, seat_id, section_id)
@@ -776,10 +776,10 @@ $$;
 
 ```
 
-## get_departure_from
+## get_departure_time
 Zwraca czas odjazdu pociągu o danej trasie z danej stacji
 ```sql
-create function get_departure_from(_start_station_id bigint, _route_id bigint) returns time without time zone
+create function get_departure_time(_start_station_id bigint, _route_id bigint) returns time without time zone
     language plpgsql
 as
 $$
@@ -794,15 +794,15 @@ begin
     return _departure;
 end;$$;
 
-alter function get_departure_from(bigint, bigint) owner to ula;
+alter function get_departure_time(bigint, bigint) owner to ula;
 
 
 ```
 
-## get_sections
+## get_route_sections
 Zwraca tabelę zawierającą id wszystkich odcinków na trasie od stacji A do B
 ```sql
-create function get_sections(_route_id bigint, _start_station_id bigint, _end_station_id bigint)
+create function get_route_sections(_route_id bigint, _start_station_id bigint, _end_station_id bigint)
     returns TABLE(section_id bigint)
     language plpgsql
 as
@@ -866,7 +866,7 @@ end$$;
 ```
 
 ## get_occupied_seats
-Zwraca tabelę zawierającą wszystkie seat_id siedzeń, które są zarezerwowane na którymkolwiek odcinku pomiędzy start_station i end_station na danej trasie danego dnia
+Zwraca tabelę zawierającą wszystkie seat_id siedzeń, które są zarezerwowane (ale rezerwacja nie jest anulowana) na którymkolwiek odcinku pomiędzy start_station i end_station na danej trasie danego dnia
 ```sql
 create function get_occupied_seats(_route_id bigint, _start_station_id bigint, _end_station_id bigint, _date date)
     returns TABLE(seat_id bigint)
@@ -879,9 +879,9 @@ begin
         on r.reservation_id=sr.reservation_id
         where
             departure_date=_date and
-            section_id in (select * from get_sections(_route_id,_start_station_id ,_end_station_id)));
+            payment_status!='C' and
+            section_id in (select * from get_route_sections(_route_id,_start_station_id ,_end_station_id)));
 end$$;
-    
 ```
 
 # Triggery
