@@ -386,7 +386,7 @@ Wynik:
 
 ![add_route](images/add_route.png)
 
-### Add_user
+## add_user
 Dodaje użytkownika o podanych parametrach
 ```sql
 create procedure add_user(IN _firstname character varying, IN _lastname character varying, IN _email character varying, IN _phone character varying, IN _login character varying, IN _password character varying)
@@ -402,7 +402,7 @@ end $$;
 
 ```
 
-### Add_discount
+## add_discount
 
 Dodaje zniżkę o podanej nazwie oraz procencie zniżki
 ```sql
@@ -418,7 +418,7 @@ begin
 end $$;
 ```
 
-### Add_seat
+## add_seat
 
 Dodaje miejsce do tabeli seats
 ```sql
@@ -437,7 +437,7 @@ alter procedure add_seat(integer, integer) owner to ula;
 
 
 ```
-### station_exists
+## station_exists
 
 Jeśli stacja o danym id nie istnieje, procedura zwraca wyjątek
 ```sql
@@ -453,7 +453,7 @@ END;
 $$;
 ```
 
-## Add_section_details
+## add_section_details
 
 Dodaje szczegóły dla danego odcinka: stację początkową, końcową oraz dystans
 
@@ -478,7 +478,7 @@ begin
 end $$;
 ```
 
-## Add_section_details_both_ways
+## add_section_details_both_ways
 Dodaje szczegóły dla danego odcinka w obie strony
 ```sql
 create procedure add_section_details_both_ways(IN _start_station_id integer, IN _next_station_id integer, IN _distance double precision)
@@ -499,7 +499,7 @@ begin
 end $$;
 ```
 
-## Add_route_section
+## add_route_section
 
 Dodaje odcinek konkretnej trasy do tabeli route_sections
 
@@ -523,7 +523,7 @@ end $$;
 
 # Funkcje
 
-## Section_exists
+## section_exists
 Jeśli dany odcinek istnieje w section_details, zwraca true, w przeciwnym wypadku false
 
 ```sql
