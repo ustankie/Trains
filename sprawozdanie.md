@@ -554,7 +554,7 @@ Przykładowe użycie:
 CALL change_route_status(9);
 ```
 
-## add_reservation
+## add_reservation - TO BE IMPROVED, pracuję nad integracją tego z rezerwacją siedzeń
 Procedura dodaje rezerwację dla podanego użytkownika, trasy, zniżki oraz stacji początkowych i końcowych
 ```sql
 create procedure add_reservation(IN _user_id bigint, IN _discount_id bigint, IN _route_id bigint, IN _start_station_id bigint, IN _end_station_id bigint, IN _departure_date date)
