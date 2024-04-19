@@ -631,6 +631,55 @@ CALL update_user_password('alicesmith', 'alamakota124');
 
 # Funkcje
 
+## user_reservations 
+
+Funkcja zwraca wszystkie rezerwacje użytkownika 
+
+Implementacja: 
+```sql
+create or replace function user_reservations(_user_id int)
+returns table(reservation_id bigint, route_id bigint, payment_status varchar(10), departure_date date)
+language plpgsql
+as
+$$
+BEGIN
+    return query(SELECT r.reservation_id, r.route_id, r.payment_status, r.departure_date
+                 FROM reservations r
+                 WHERE r.user_id = _user_id);
+end;
+$$;
+```
+
+Przykładowe użycie: 
+```sql
+SELECT * FROM user_reservations(15);
+```
+
+## route_passengers
+
+Dla konkretnej trasy danego dnia, funkcja zwraca dane wszystkich pasażerów. 
+
+Implementacja: 
+```sql
+create or replace function route_passengers(_route_id int, _departure_date date)
+returns table(reservation_id bigint, seat_id int, class int, firstname varchar(30), lastname varchar(30))
+language plpgsql
+as
+$$
+BEGIN
+    RETURN QUERY(SELECT DISTINCT reservations.reservation_id, seats.seat_number, seats.class, users.firstname, users.lastname
+    FROM reservations
+    INNER JOIN users ON reservations.user_id = users.user_id
+    INNER JOIN seat_reservations ON reservations.reservation_id = seat_reservations.reservation_id
+    INNER JOIN seats ON seat_reservations.seat_id = seats.seat_id
+    WHERE reservations.route_id = _route_id and departure_date = _departure_date);
+end;
+$$;
+```
+Przykładowe wywołanie: 
+```sql
+SELECT * FROM route_passengers(9, '2024-05-05');
+```
 ## section_exists
 Jeśli dany odcinek istnieje w section_details, zwraca true, w przeciwnym wypadku false
 
@@ -773,7 +822,6 @@ begin
     end;
 
 $$;
-
 ```
 
 ## get_departure_time
