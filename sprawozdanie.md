@@ -554,6 +554,36 @@ Przykładowe użycie:
 CALL change_route_status(9);
 ```
 
+## add_reservation
+Procedura dodaje rezerwację dla podanego użytkownika, trasy, zniżki oraz stacji początkowych i końcowych
+```sql
+create procedure add_reservation(IN _user_id bigint, IN _discount_id bigint, IN _route_id bigint, IN _start_station_id bigint, IN _end_station_id bigint, IN _departure_date date)
+    language plpgsql
+as
+$$
+declare
+    _price int;
+BEGIN
+
+    if _departure_date=CURRENT_DATE then
+        if get_departure_from(_start_station_id,_route_id)<CURRENT_TIME
+            then
+            raise exception 'Cannot book a past route!';
+        end if;
+    end if;
+
+    INSERT INTO reservations(  user_id, payment_status, price, res_date, discount_id, route_id, start_station_id, end_station_id, departure_date)
+    VALUES (_user_id,DEFAULT,
+            count_sum_price(_discount_id,_route_id,
+                            _start_station_id,_end_station_id),
+            current_timestamp, _discount_id, _route_id, _start_station_id, _end_station_id, _departure_date);
+
+
+END;
+$$;
+
+```
+
 ## update_user_password
 
 Procedura przyjmuje login i nowe hasło użytkownika i jeżeli użytkownik istnieje to zmienia jego hasło.
@@ -660,6 +690,100 @@ Wynik:
 
 ![get_station_id](images/get_station_id.png)
 
+## count_sum_price
+
+Wylicza sumaryczną cenę za podróż daną trasą od stacji A do B, uwzględniając zniżkę
+
+```sql
+create function count_sum_price(_discount_id bigint, _route_id bigint, _start_station_id bigint, _end_station_id bigint) returns double precision
+    language plpgsql
+as
+$$
+    declare
+        sum_price double precision;
+        curr_start BIGINT;
+        curr_end BIGINT;
+        discount_value double precision;
+begin
+
+
+
+    curr_start:=_start_station_id;
+
+
+
+    CREATE TEMP TABLE temp_route_sections (
+                                              route_section_id BIGINT,
+                                              start_station_id BIGINT,
+                                              next_station_id BIGINT,
+                                              price double precision
+    );
+
+    INSERT INTO temp_route_sections (route_section_id, start_station_id, next_station_id, price)
+    SELECT rs.route_section_id, start_station_id, next_station_id, price
+    FROM route_sections rs
+             JOIN section_details sd ON rs.section_id = sd.section_id
+    WHERE rs.route_id = _route_id ;
+
+    select next_station_id into curr_end
+    from temp_route_sections
+    where start_station_id=curr_start;
+
+    sum_price=0;
+
+    while curr_end<=_end_station_id loop
+            sum_price=sum_price + (SELECT price from temp_route_sections where start_station_id=curr_start);
+
+            curr_start=curr_end;
+
+            select next_station_id into curr_end
+            from temp_route_sections
+            where start_station_id=curr_start;
+
+            if curr_end=NULL then
+                raise exception 'Cannot find direct route!';
+            end if;
+    end loop;
+    drop table temp_route_sections;
+
+    select percent into discount_value
+    from discounts
+    where discount_id=_discount_id;
+
+    if discount_value=NULL then
+        raise exception 'No such discount!';
+    end if;
+
+    return ((100-discount_value)*sum_price)/100;
+    end;
+
+$$;
+
+```
+
+## get_departure_from
+Zwraca czas odjazdu pociągu o danej trasie z danej stacji
+```sql
+create function get_departure_from(_start_station_id bigint, _route_id bigint) returns time without time zone
+    language plpgsql
+as
+$$
+declare
+    _departure time;
+begin
+    select departure into _departure
+    from route_sections join section_details
+    on route_sections.section_id = section_details.section_id
+    where _start_station_id=start_station_id and route_id=_route_id;
+
+    return _departure;
+end;$$;
+
+alter function get_departure_from(bigint, bigint) owner to ula;
+
+
+```
+
 # Triggery
 
 ## status_insert_trigger
@@ -673,7 +797,7 @@ AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         INSERT INTO log_reservation (reservation_id, new_status, date)
-        VALUES (NEW.reservation_id, NEW.status, CURRENT_TIMESTAMP);
+        VALUES (NEW.reservation_id, NEW.payment_status, CURRENT_TIMESTAMP);
     END IF;
     RETURN NEW;
 END;
