@@ -515,8 +515,71 @@ begin
             _price );
 
 end $$;
+```
 
+## change_route_status
 
+Jeżeli trasa jest aktywna, to ją dezaktywuje, w przeciwnym wypadku zmienia jej status na aktywną. 
+
+```sql
+create procedure change_route_status(IN _route_id bigint)
+    language plpgsql
+as
+$$
+DECLARE
+    curr_status boolean;
+BEGIN
+    IF EXISTS(SELECT * FROM route WHERE route_id = _route_id) THEN
+
+        SELECT active INTO curr_status FROM route WHERE route_id = _route_id;
+
+        IF curr_status IS NOT TRUE THEN
+            UPDATE route
+            SET active = true
+            WHERE route_id = _route_id;
+        ELSE
+            UPDATE route
+            SET active = false
+            WHERE route_id = _route_id;
+        END IF;
+    ELSE
+        RAISE EXCEPTION 'Route with ID %, does not exists!', _route_id;
+    END IF;
+END;
+$$;
+```
+
+Przykładowe użycie: 
+```sql
+CALL change_route_status(9);
+```
+
+## update_user_password
+
+Procedura przyjmuje login i nowe hasło użytkownika i jeżeli użytkownik istnieje to zmienia jego hasło.
+
+Implementacja: 
+```sql
+create or replace procedure update_user_password(_login varchar(30), _new_password varchar(30))
+language plpgsql
+as
+$$
+BEGIN
+    IF EXISTS(SELECT * FROM users WHERE login = _login) THEN
+        UPDATE users
+        SET password = _new_password
+        WHERE login = _login;
+    ELSE
+        RAISE EXCEPTION 'User with login % does not exists', _login;
+    end if;
+end;
+$$;
+```
+
+Przykładowe użycie: 
+
+```sql
+CALL update_user_password('alicesmith', 'alamakota124');
 ```
 
 
