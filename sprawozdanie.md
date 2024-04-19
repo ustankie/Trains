@@ -554,15 +554,16 @@ Przykładowe użycie:
 CALL change_route_status(9);
 ```
 
-## add_reservation - TO BE IMPROVED, pracuję nad integracją tego z rezerwacją siedzeń
-Procedura dodaje rezerwację dla podanego użytkownika, trasy, zniżki oraz stacji początkowych i końcowych
+## add_reservation - TO BE IMPROVED, pracuję nad integracją tego z rezerwacją siedzeń -> chyba działa ale sprawdź pls czy wszystko ok, bo skomplikowane to
+Procedura dodaje rezerwację dla podanego użytkownika, trasy, zniżki oraz stacji początkowych i końcowych, a także dodaje do tabeli seat_reservations informację o wszystkich odcinkach, na które zarezerwowane jest dane miejsce.
 ```sql
-create procedure add_reservation(IN _user_id bigint, IN _discount_id bigint, IN _route_id bigint, IN _start_station_id bigint, IN _end_station_id bigint, IN _departure_date date)
+create procedure add_reservation(IN _user_id bigint, IN _discount_id bigint, IN _route_id bigint, IN _start_station_id bigint, IN _end_station_id bigint, IN _departure_date date, IN _seat_id bigint)
     language plpgsql
 as
 $$
 declare
-    _price int;
+    t_section BIGINT;
+    _reservation_id BIGINT;
 BEGIN
 
     if _departure_date=CURRENT_DATE then
@@ -572,12 +573,26 @@ BEGIN
         end if;
     end if;
 
+    if _seat_id in (select *
+                    from get_occupied_seats(_route_id,_start_station_id,
+                                            _end_station_id,_departure_date)) then
+        raise exception 'This seat is already occupied!';
+    end if;
+
     INSERT INTO reservations(  user_id, payment_status, price, res_date, discount_id, route_id, start_station_id, end_station_id, departure_date)
     VALUES (_user_id,DEFAULT,
             count_sum_price(_discount_id,_route_id,
                             _start_station_id,_end_station_id),
-            current_timestamp, _discount_id, _route_id, _start_station_id, _end_station_id, _departure_date);
+            current_timestamp, _discount_id, _route_id, _start_station_id, _end_station_id, _departure_date)
+    RETURNING reservation_id INTO _reservation_id;
 
+
+    FOR t_section IN  (select * from get_sections(_route_id, _start_station_id,
+                                                  _end_station_id))
+    LOOP
+            INSERT INTO seat_reservations(reservation_id, seat_id, section_id)
+            values (_reservation_id,_seat_id,t_section);
+    end loop;
 
 END;
 $$;
@@ -782,6 +797,91 @@ end;$$;
 alter function get_departure_from(bigint, bigint) owner to ula;
 
 
+```
+
+## get_sections
+Zwraca tabelę zawierającą id wszystkich odcinków na trasie od stacji A do B
+```sql
+create function get_sections(_route_id bigint, _start_station_id bigint, _end_station_id bigint)
+    returns TABLE(section_id bigint)
+    language plpgsql
+as
+$$
+declare
+    curr_start BIGINT;
+    curr_end BIGINT;
+    temp_section BIGINT;
+begin
+    CREATE TEMP TABLE temp_route_sections (
+                                              route_section_id BIGINT,
+                                              start_station_id BIGINT,
+                                              next_station_id BIGINT
+    );
+
+    DROP TABLE IF EXISTS temp_sections;
+
+    CREATE TEMP TABLE temp_sections (
+                                             r_section_id BIGINT
+
+    );
+
+    INSERT INTO temp_route_sections (route_section_id, start_station_id, next_station_id)
+    SELECT rs.section_id, start_station_id, next_station_id
+    FROM route_sections rs
+    JOIN section_details sd ON rs.section_id = sd.section_id
+    WHERE rs.route_id = _route_id;
+
+
+    curr_start=_start_station_id;
+    select next_station_id into curr_end
+    from temp_route_sections
+    where start_station_id=curr_start;
+
+
+    while curr_end<=_end_station_id loop
+            select route_section_id into temp_section
+           from temp_route_sections
+           where start_station_id=curr_start and next_station_id=curr_end;
+
+
+            insert into temp_sections(r_section_id)
+            values (temp_section);
+
+            curr_start=curr_end;
+
+            select next_station_id into curr_end
+            from temp_route_sections
+            where start_station_id=curr_start;
+
+            if curr_end=NULL then
+                raise exception 'Cannot find direct route!';
+            end if;
+        end loop;
+    drop table temp_route_sections;
+
+
+    RETURN QUERY SELECT r_section_id FROM temp_sections;
+end$$;
+
+```
+
+## get_occupied_seats
+Zwraca tabelę zawierającą wszystkie seat_id siedzeń, które są zarezerwowane na którymkolwiek odcinku pomiędzy start_station i end_station na danej trasie danego dnia
+```sql
+create function get_occupied_seats(_route_id bigint, _start_station_id bigint, _end_station_id bigint, _date date)
+    returns TABLE(seat_id bigint)
+    language plpgsql
+as
+$$
+begin
+    return query (select sr.seat_id
+        from seat_reservations sr join reservations r
+        on r.reservation_id=sr.reservation_id
+        where
+            departure_date=_date and
+            section_id in (select * from get_sections(_route_id,_start_station_id ,_end_station_id)));
+end$$;
+    
 ```
 
 # Triggery
