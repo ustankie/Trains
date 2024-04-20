@@ -337,7 +337,7 @@ Procedura dodaje nową trasę.
 Procedura sprawdza 
 - czy stacja początkowa i końcowa istnieją
 - czy taka trasa już nie jest w bazie
-- <span style="color: red">sprawdzanie czy pociag jest dostepny</span> 
+- <span style="color: red">sprawdzanie czy pociag jest dostepny TODOTODO</span> 
 
 Implementacja: 
 ```sql
@@ -630,6 +630,66 @@ CALL update_user_password('alicesmith', 'alamakota124');
 
 
 # Funkcje
+
+## find_routes -- ULA SPRAWDZ BO XD
+
+Nie robie error checkingu czy stacja początkowa < stacja koncowa, bo nie wiem jak, ale chyba jakos tam dziala. 
+
+Dla podanej daty oraz nazw stacji poczatkowej i końcowej funkcja zwraca wszystkie połączenia. 
+
+Implementacja: 
+```sql
+CREATE OR REPLACE FUNCTION find_routes(_departure_date date, _start_station varchar(50), _end_station varchar(50))
+RETURNS TABLE(route_id bigint, departure_day varchar(10), departure_date date, departure_time time)
+LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    _start_station_id bigint;
+    _end_station_id bigint;
+    _day varchar(10);
+BEGIN
+    SELECT station_id INTO _start_station_id FROM stations WHERE name = _start_station;
+    SELECT station_id INTO _end_station_id FROM stations WHERE name = _end_station;
+
+    SELECT to_char(_departure_date, 'Day') INTO _day;
+
+    CREATE TEMP TABLE starts ON COMMIT DROP AS (
+        SELECT route.route_id, section_details.start_station_id, next_station_id, day_of_week
+        FROM route_sections
+        INNER JOIN section_details ON route_sections.section_id = section_details.section_id
+        INNER JOIN route ON route_sections.route_id = route.route_id
+        WHERE section_details.start_station_id = _start_station_id AND trim(day_of_week) = trim(_day)
+    );
+
+    CREATE TEMP TABLE ends ON COMMIT DROP AS (
+        SELECT route.route_id, section_details.start_station_id, next_station_id, day_of_week
+        FROM route_sections
+        INNER JOIN section_details ON route_sections.section_id = section_details.section_id
+        INNER JOIN route ON route_sections.route_id = route.route_id
+        WHERE section_details.next_station_id = _end_station_id AND trim(day_of_week) = trim(_day)
+    );
+
+    RETURN QUERY (
+        SELECT starts.route_id, starts.day_of_week, _departure_date, route_sections.departure
+        FROM starts
+        INNER JOIN ends ON starts.route_id = ends.route_id
+        INNER JOIN route_sections ON route_sections.route_id = starts.route_id
+        INNER JOIN section_details ON route_sections.section_id = section_details.section_id
+        WHERE trim(starts.day_of_week) = trim(ends.day_of_week) AND section_details.start_station_id = _start_station_id
+    );
+
+END;
+$$;
+```
+
+Przykładowe użycie: 
+```sql
+SELECT * FROM find_routes('2024-05-06', 'Dębica', 'Rzeszów Główny');
+```
+
+Wynik zapytania: 
+![find_routes](images/find_routes.png)
 
 ## user_reservations 
 
