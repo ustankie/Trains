@@ -35,6 +35,7 @@
     display: flex;
     justify-content: center;
     color: white;
+    text-align: center;
 }
 
 .hero--search--box {
@@ -81,4 +82,54 @@
     background-color: #0d94e2;
     cursor: pointer;
     transition: all 0.2s linear;
+}
+
+
+@media only screen and (max-width: 1200px) {
+    .content {
+        width: 100vw;
+    }
+
+    .hero--text {
+        font-size: 70px;
+    }
+    
+    .hero--search--box {
+        width: 80%;
+    }
+
+    .hero--large--input {
+        width: 20%;
+    }
+}
+
+@media only screen and (max-width: 900px) {
+    .hero--text {
+        font-size: 50px;
+    }
+
+    .hero--large--input {
+        font-size: 13px;
+    }
+
+    
+    .hero--search--btn {
+        width: 100px;
+    }
+}
+
+@media only screen and (max-width: 640px) {
+    .hero--text {
+        font-size: 28px;
+    }
+
+    .hero--large--input {
+        font-size: 11px;
+    }
+
+    .hero--search--box {
+        margin-top: 100px;
+        width: 95%;
+    }
+
 }
