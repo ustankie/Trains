@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Xdddd from './components/xdddd.jsx';
+import Hero from './components/Hero'
+
 
 function App() {
   return (
-    <BrowserRouter>
+	  <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Xdddd />} />
+        <Route path="/" element={<Hero />} />
       </Routes>
     </BrowserRouter>
   );
