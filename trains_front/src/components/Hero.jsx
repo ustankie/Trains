@@ -2,6 +2,8 @@ import "../styles/Hero.css";
 
 export default function Hero() {
     return (
+        <>
+        <div className="login">SIGN <span className="blue">IN</span></div>
         <div className="hero--wrapper">
             <div className="background"></div>
             <div className="content">
@@ -16,6 +18,7 @@ export default function Hero() {
                 </div>
             </div>
         </div>
+        </>
     )
 }
 
