@@ -18,6 +18,24 @@
     z-index: -1;
 }
 
+.login {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    font-size: 24px;
+    color: #FFF;
+    font-weight: 900;
+    letter-spacing: 2px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.login:hover {
+    cursor: pointer;
+    filter: brightness(85%);
+    transition: all 0.2s ease;
+}
+
 .content {
     width: 1200px;
     height: 100vh;
@@ -36,6 +54,7 @@
     justify-content: center;
     color: white;
     text-align: center;
+    user-select: none;
 }
 
 .hero--search--box {
@@ -50,38 +69,46 @@
 }
 
 .hero--large--input {
-    width: 200px;
-    height: 45px;
-    border: 2px solid #C6C3C3;
+    width: 180px;
+    height: 40px;
+    border: 2px solid #000;
     border-radius: 7px;
     text-align: center;
     font-weight: 700;
     font-size: 16px;
     text-transform: uppercase;
     transition: all 0.2s linear;
+    padding: 5px;
+    user-select: none;
+}
+
+.hero--large--input::placeholder {
+    color: #000;
 }
 
 .hero--search--btn {
-    width: 150px;
-    height: 45px;
+    width: 160px;
+    height: 54px;
     background-color: #0FA9FF;
     border-radius: 10px;
     color: #FFFFFF;
     font-weight: 700;
     font-size: 16px;
     transition: all 0.2s linear;
+    user-select: none;
 }
 
 .hero--large--input:focus { 
-    border: 2px solid #494949;
+    box-shadow: 0px 0px 25px -12px rgba(66, 68, 90, 1);
     transition: 0.1s ease;
     outline: none;
 }
 
 .hero--search--btn:hover {
-    background-color: #0d94e2;
+    background-color: #21abfc;
+    box-shadow: 0px 0px 25px -12px rgba(66, 68, 90, 1);
     cursor: pointer;
-    transition: all 0.2s linear;
+    transition: all 0.15s linear;
 }
 
 
@@ -124,12 +151,20 @@
     }
 
     .hero--large--input {
-        font-size: 11px;
+        font-size: 13px;
+        width: 70%;
+        height: 30px;
     }
 
     .hero--search--box {
-        margin-top: 100px;
-        width: 95%;
+        width: 70%;
+        height: 300px;
+        flex-direction: column;
+    }
+
+    .hero--search--btn {
+        width: 75%;
+        height: 44px;
     }
 
 }
