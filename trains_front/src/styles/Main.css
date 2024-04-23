@@ -5,6 +5,10 @@
     font-family: "Lato", sans-serif;
 }
 
+a {
+    all: unset;
+}
+
 .blue {
     color: #0FA9FF;
 }
