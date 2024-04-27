@@ -3,10 +3,13 @@ package com.trains.demo.controller;
 import com.trains.demo.model.RouteView;
 import com.trains.demo.model.SpecifiedRouteView;
 import com.trains.demo.repository.RouteViewRepository;
+import com.trains.demo.repository.SpecifiedRouteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -14,10 +17,12 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class RouteViewController {
     private final RouteViewRepository routeViewRepository;
+    private final SpecifiedRouteRepository specifiedRouteRepository;
 
     @Autowired
-    public RouteViewController(RouteViewRepository routeViewRepository) {
+    public RouteViewController(RouteViewRepository routeViewRepository, SpecifiedRouteRepository specifiedRouteRepository) {
         this.routeViewRepository = routeViewRepository;
+        this.specifiedRouteRepository = specifiedRouteRepository;
     }
 
     @GetMapping("/api/all_routes")
@@ -25,18 +30,23 @@ public class RouteViewController {
         return routeViewRepository.findAll();
     }
 
-    @GetMapping("/api/find_route")
-    public List<Object[]> getSpecifiedRoute(@RequestParam LocalDate departure_date,
-                                            @RequestParam Long start_station_id,
-                                            @RequestParam Long end_station_id) {
+        @GetMapping("/api/find_route")
+        public List<SpecifiedRouteView> getSpecifiedRoute(@RequestParam LocalDate departure_date,
+                                                          @RequestParam Long start_station_id,
+                                                          @RequestParam Long end_station_id) {
 
-        return routeViewRepository.getSpecifiedRoute(departure_date,
-                start_station_id,end_station_id);
-    }
+    //        Long start_station_id=routeViewRepository.getStationId(start_station);
+    //        Long end_station_id=routeViewRepository.getStationId(end_station);
 
-    @GetMapping("/api/station")
-    public int getStationId(){
-        return routeViewRepository.getStationId("Dębica");
-    }
+            System.out.println(start_station_id+" "+end_station_id);
+
+            return specifiedRouteRepository.getSpecifiedRoute(departure_date,
+                    start_station_id, end_station_id);
+        }
+
+//    @GetMapping("/api/station")
+//    public int getStationId() {
+//        return routeViewRepository.getStationId("Dębica");
+//    }
 
 }

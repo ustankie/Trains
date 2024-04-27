@@ -1,17 +1,14 @@
 package com.trains.demo.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
-import java.math.BigInteger;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+
 @Entity
-@Table(name = "specified_routes")
+
 public class SpecifiedRouteView {
     @Id
     private Long routeId;
