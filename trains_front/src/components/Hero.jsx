@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom"
 import "../styles/Hero.css";
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
 
 export default function Hero() {
     const [routeData, setRouteData] = useState({
@@ -9,17 +10,22 @@ export default function Hero() {
         start_station: '',
         end_station: ''
       });
+      const [fetchedData, setFetchedData] = useState(null); 
+      const navigate = useNavigate(); 
+      
       function searchRoute() { 
         const { date, start_station, end_station } = routeData;
         
         axios.get('/api/find_route', { params: { departure_date: date, start_station_id: start_station, end_station_id: end_station }})
             .then(response => {
-                console.log(response.data); 
+                console.log(response.data);
+                setFetchedData(response.data); 
+                navigate('/routes-display', { state: { data: response.data } });
             })
             .catch(error => {
                 console.error('Error finding route:', error);
             });
-    }
+      }
     
 
     return (
