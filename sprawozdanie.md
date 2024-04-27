@@ -631,7 +631,7 @@ CALL update_user_password('alicesmith', 'alamakota124');
 
 # Funkcje
 
-## find_routes -- ULA SPRAWDZ BO XD
+## find_routes -- ULA SPRAWDZ BO XD -> DODAŁAM DODATKOWO ZWRACANIE CZASU DOJAZDU NA STACJĘ DOCELOWĄ I SPRAWDZANIE CZY ARRIVAL>DEPARTURE, ŻEBY ZAPEWNIĆ DOBRY KIERUNEK TRASY
 
 Nie robie error checkingu czy stacja początkowa < stacja koncowa, bo nie wiem jak, ale chyba jakos tam dziala. 
 
@@ -639,18 +639,15 @@ Dla podanej daty oraz nazw stacji poczatkowej i końcowej funkcja zwraca wszystk
 
 Implementacja: 
 ```sql
-CREATE OR REPLACE FUNCTION find_routes(_departure_date date, _start_station varchar(50), _end_station varchar(50))
-RETURNS TABLE(route_id bigint, departure_day varchar(10), departure_date date, departure_time time)
-LANGUAGE plpgsql
-AS
+create function find_routes(_departure_date date, _start_station_id bigint, _end_station_id bigint)
+    returns TABLE(route_id bigint, departure_day character varying, departure_date date, departure_time time without time zone, arrival_time time without time zone)
+    language plpgsql
+as
 $$
 DECLARE
-    _start_station_id bigint;
-    _end_station_id bigint;
     _day varchar(10);
 BEGIN
-    SELECT station_id INTO _start_station_id FROM stations WHERE name = _start_station;
-    SELECT station_id INTO _end_station_id FROM stations WHERE name = _end_station;
+
 
     SELECT to_char(_departure_date, 'Day') INTO _day;
 
@@ -663,7 +660,7 @@ BEGIN
     );
 
     CREATE TEMP TABLE ends ON COMMIT DROP AS (
-        SELECT route.route_id, section_details.start_station_id, next_station_id, day_of_week
+        SELECT route.route_id, section_details.start_station_id, next_station_id, day_of_week, arrival
         FROM route_sections
         INNER JOIN section_details ON route_sections.section_id = section_details.section_id
         INNER JOIN route ON route_sections.route_id = route.route_id
@@ -671,16 +668,21 @@ BEGIN
     );
 
     RETURN QUERY (
-        SELECT starts.route_id, starts.day_of_week, _departure_date, route_sections.departure
+        SELECT starts.route_id, starts.day_of_week, _departure_date, route_sections.departure,ends.arrival
         FROM starts
         INNER JOIN ends ON starts.route_id = ends.route_id
         INNER JOIN route_sections ON route_sections.route_id = starts.route_id
         INNER JOIN section_details ON route_sections.section_id = section_details.section_id
-        WHERE trim(starts.day_of_week) = trim(ends.day_of_week) AND section_details.start_station_id = _start_station_id
+        WHERE trim(starts.day_of_week) = trim(ends.day_of_week) AND section_details.start_station_id = _start_station_id 
+          AND route_sections.departure<=ends.arrival
     );
 
 END;
 $$;
+
+alter function find_routes(date, bigint, bigint) owner to kamil;
+
+
 ```
 
 Przykładowe użycie: 
