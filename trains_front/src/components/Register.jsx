@@ -1,7 +1,11 @@
 import '../styles/Login.css'
 import { Link } from "react-router-dom"
 
+
 export default function Register() {
+
+
+
     return (
         <div className="login--container">
             <div className="home--link"><Link to="/">TRAIN <span className="blue">SERVICE</span></Link></div>
