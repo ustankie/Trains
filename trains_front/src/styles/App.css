@@ -1,0 +1,15 @@
+.blue--btn {
+    font-size: 22px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 0 15px 0 0;
+    user-select: none;
+    padding-bottom: 3px;
+    transition: all 0.4s ease;
+}
+
+.blue--btn:hover {
+    cursor: pointer;
+    color: #eeeded;
+    transition: all 0.4s ease;
+}

@@ -831,7 +831,9 @@ $$
         curr_end BIGINT;
         discount_value double precision;
 begin
-
+    if _end_station_id=_start_station_id then
+        raise exception 'Same stations! Go on foot!';
+    end if;
 
 
     curr_start:=_start_station_id;
@@ -848,7 +850,7 @@ begin
     INSERT INTO temp_route_sections (route_section_id, start_station_id, next_station_id, price)
     SELECT rs.route_section_id, start_station_id, next_station_id, price
     FROM route_sections rs
-             JOIN section_details sd ON rs.section_id = sd.section_id
+    JOIN section_details sd ON rs.section_id = sd.section_id
     WHERE rs.route_id = _route_id ;
 
     select next_station_id into curr_end
@@ -857,10 +859,11 @@ begin
 
     sum_price=0;
 
-    while curr_end<=_end_station_id loop
+    while curr_end!=_end_station_id loop
             sum_price=sum_price + (SELECT price from temp_route_sections where start_station_id=curr_start);
-
-            curr_start=curr_end;
+            raise notice '% % % %', curr_start, curr_end,sum_price, _end_station_id;
+            curr_start:=curr_end;
+            
 
             select next_station_id into curr_end
             from temp_route_sections
@@ -870,6 +873,7 @@ begin
                 raise exception 'Cannot find direct route!';
             end if;
     end loop;
+    sum_price=sum_price + (SELECT price from temp_route_sections where start_station_id=curr_start);
     drop table temp_route_sections;
 
     select percent into discount_value
@@ -880,10 +884,14 @@ begin
         raise exception 'No such discount!';
     end if;
 
-    return ((100-discount_value)*sum_price)/100;
+    return ROUND((((100-discount_value)*sum_price)/100)::numeric,2);
     end;
 
 $$;
+
+
+
+
 ```
 
 ## get_departure_time
