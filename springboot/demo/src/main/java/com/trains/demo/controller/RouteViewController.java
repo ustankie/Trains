@@ -37,12 +37,11 @@ public class RouteViewController {
 
             Long start_station_id=routeViewRepository.getStationId(start_station.trim());
             Long end_station_id=routeViewRepository.getStationId(end_station.trim());
-            
-            if(start_station_id!=null){
-                return specifiedRouteRepository.getSpecifiedRoute(departure_date,
+
+
+            return specifiedRouteRepository.getSpecifiedRoute(departure_date,
                         start_station_id, end_station_id);
-            }
-            return null;
+
         }
 
 //    @GetMapping("/api/station")
