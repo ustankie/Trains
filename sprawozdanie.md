@@ -884,10 +884,13 @@ begin
         raise exception 'No such discount!';
     end if;
 
-    return ((100-discount_value)*sum_price)/100;
+    return ROUND((((100-discount_value)*sum_price)/100)::numeric,2);
     end;
 
 $$;
+
+
+
 
 ```
 
