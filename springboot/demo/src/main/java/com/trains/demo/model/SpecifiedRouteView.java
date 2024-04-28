@@ -16,14 +16,16 @@ public class SpecifiedRouteView {
     private LocalDate departureDate;
     private LocalTime departureTime;
     private LocalTime arrivalTime;
+    private Double price;
 
     public SpecifiedRouteView(Long routeId, String departureDay,
-                              LocalDate departureDate, LocalTime departureTime, LocalTime arrivalTime) {
+                              LocalDate departureDate, LocalTime departureTime, LocalTime arrivalTime, Double price) {
         this.routeId = routeId;
         this.departureDay = departureDay;
         this.departureDate = departureDate;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
+        this.price = price;
     }
 
     public SpecifiedRouteView() {
@@ -64,6 +66,10 @@ public class SpecifiedRouteView {
 
     public LocalTime getArrivalTime() {
         return arrivalTime;
+    }
+
+    public Double getPrice() {
+        return price;
     }
 
     public void setArrivalTime(LocalTime arrivalTime) {
