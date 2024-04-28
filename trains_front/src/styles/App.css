@@ -8,6 +8,7 @@
     font-size: 16px;
     transition: all 0.2s linear;
     user-select: none;
+    text-transform: uppercase;
 }
 
 .blue--btn:hover {

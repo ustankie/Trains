@@ -16,14 +16,16 @@ export default function RoutesDisplay() {
 
     return (
         <>
-            {data && data.length > 0 ? (
-                <div className='cardWrapper'>
-                    <Form />
-                    <div className="route--info">
-                        <p>{startStation} <span class="material-symbols-outlined">arrow_forward</span> {endStation}</p>
-                    </div>
-                    <div className="home--link"><Link to="/"><span className="black">TRAIN</span> 
+        
+            <div className='cardWrapper'>
+                <div className="home--link"><Link to="/"><span className="black">TRAIN</span> 
                     <span className="blue">SERVICE</span></Link></div>
+                <Form />
+                {data && data.length > 0 ? (
+                    <>
+                    <div className="route--info">
+                        <p>{startStation} <span className="material-symbols-outlined">arrow_forward</span> {endStation}</p>
+                    </div>
                     <div className="cards">
                         {data.map((route) => (
                             <Card key={route.routeId} className="routeCard">
@@ -41,14 +43,14 @@ export default function RoutesDisplay() {
                                             <p className="routeCardHeaders">Total Price</p>
                                             <p className="routeCardDetails">{route.price} PLN</p>
                                         </div>
-                                        <Button className="blue--btn">Book</Button>
+                                        <button className="blue--btn">Book</button>
                                     </div>
                                 </Card.Body>
                             </Card>
                         ))}
-                    </div>
-                </div>
-            ) : (
+                        </div>
+                        </>
+                ) : (
                 <div className="backgroundBottom">
                     <div className="noRouteFound">
                         <p id="noRoutesText">No routes found...</p>
@@ -56,6 +58,8 @@ export default function RoutesDisplay() {
                     </div>
                 </div>
             )}
+
+            </div>
         </>
     );
 }
