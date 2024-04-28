@@ -6,7 +6,7 @@
 }
 
 a {
-    all: unset;
+    all: unset !important;
 }
 
 .blue {
