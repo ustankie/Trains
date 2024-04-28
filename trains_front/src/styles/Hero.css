@@ -69,7 +69,7 @@
 }
 
 .hero--large--input {
-    width: 200px;
+    min-width: 200px;
     height: 40px;
     border: 2px solid #000;
     border-radius: 7px;
@@ -80,6 +80,7 @@
     transition: all 0.2s linear;
     padding: 25px;
     user-select: none;
+    text-size-adjust: auto;
 }
 
 .hero--large--input::placeholder {
@@ -121,7 +122,7 @@
     border-radius: 7px;
     position: absolute;
     top: 60px;
-    width: 200px;
+    width: 100%;
     background: #FFF;
     font-size: 14px;
     font-weight: 600;

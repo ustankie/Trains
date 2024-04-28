@@ -5,6 +5,7 @@ import "../styles/App.css";
 import "../styles/Main.css";
 import axios from 'axios';
 import RoutesDisplay from '../components/RoutesDisplay';
+import { useNavigate } from 'react-router-dom';
 
 export default function Hero() {
     const [routeData, setRouteData] = useState({
@@ -16,6 +17,7 @@ export default function Hero() {
     const [startSuggestions, setStartSuggestions] = useState([]);
     const [endSuggestions, setEndSuggestions] = useState([]);
     const [fetchedData, setFetchedData] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedData = localStorage.getItem('fetchedData');
@@ -43,6 +45,7 @@ export default function Hero() {
                 console.log(response.data);
                 setFetchedData(response.data); 
                 localStorage.setItem('fetchedData', JSON.stringify({ data: response.data, routeData }));
+                navigate('/routes-display', { state: { data: response.data } });
             })
             .catch(error => {
                 console.error('Error finding route:', error);
@@ -85,6 +88,8 @@ export default function Hero() {
             setEndSuggestions([]);
         }, 150);
     };
+
+    
 
     return (
         <>      
@@ -150,12 +155,6 @@ export default function Hero() {
                 </div>
             </div>
         </div>
-        {fetchedData ?(
-            <div style={{ display: 'flex', justifyContent:'center', alignItems:'center', alignSelf: 'center', borderRadius: '13px', position:'absolute', width:'100%'}}>
-                <RoutesDisplay
-                data={fetchedData}/>
-            </div>
-        ):(null)}
-        </>
+    </>
     )
 }
