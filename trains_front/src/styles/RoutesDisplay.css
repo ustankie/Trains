@@ -48,12 +48,6 @@
     font-size: 20px;
 }
 
-.bookButton{
-    background-color: #0FA9FF;
-    text-transform:uppercase;
-    height: min-content;
-}
-
 
 .routeCard{
     
@@ -112,8 +106,8 @@
 
 .backgroundBottom{
     display: flex;
-    position: relative;
     width:100%;
+    justify-content: center;
 }
 
   
