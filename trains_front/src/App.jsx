@@ -3,7 +3,7 @@ import Hero from './pages/Hero'
 import Login from './pages/Login'
 import Register from './pages/Register';
 import axios from 'axios';
-import RoutesDisplay from './pages/RoutesDisplay';
+import RoutesDisplay from './components/RoutesDisplay';
 import "./styles/App.css";
 
 import "bootstrap/dist/css/bootstrap.min.css";
