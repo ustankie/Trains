@@ -12,8 +12,9 @@ export default function Register() {
             <div className="login--bg"></div>
             <div className="login--wrapper">
                 <div className="login--tabs">
-                    <p className="sign--btn login--active">Sign up</p>
                     <Link to="/login"><p className="sign--btn login--not--active">Sign in</p></Link>
+                    <p className="sign--btn login--active">Sign up</p>
+                    
                 </div>
 
                 <form className="login--form">
