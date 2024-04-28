@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import "../styles/Hero.css";
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
-import RoutesDisplay from './RoutesDisplay';
+import RoutesDisplay from '../components/RoutesDisplay';
 
 export default function Hero() {
     const [routeData, setRouteData] = useState({

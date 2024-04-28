@@ -1,6 +1,7 @@
 import React from "react";
 import '../styles/RoutesDisplay.css'
 import { Card, Button, Image } from 'react-bootstrap'
+import tom from '../images/sad_tom.png'
 
 
 export default function RoutesDisplay({data}) {
@@ -9,8 +10,8 @@ export default function RoutesDisplay({data}) {
     return (
         <>
             <div>
-                {data ? (
-                    <div>
+                {data && len>0 ? (
+                    <div className='cardWrapper'>
                         {data.map((route, index) => (!len || index < len) ? (
                             <Card key={route.routeId} className= "routeCard"  >
                                 <Card.Body className="routeCardBody">
@@ -36,7 +37,16 @@ export default function RoutesDisplay({data}) {
                         ):(null))}
                     </div>
                     
-                ):(null)}
+                ):data && len === 0 ? (
+                    <div className="backgroundBottom">
+                        <div className="noRouteFound">
+                            <p id="noRoutesText">No routes found...</p>
+                            <img src={tom} alt="Sad Tom" id="tom"/>
+                        </div>
+                    </div>
+                ) : (
+                    null
+                )}
             </div>
         </>
     );
