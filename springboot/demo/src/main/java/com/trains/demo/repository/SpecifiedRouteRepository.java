@@ -11,8 +11,7 @@ import java.util.List;
 
 @Repository
 public interface SpecifiedRouteRepository extends JpaRepository<SpecifiedRouteView, Long> {
-    @Query(nativeQuery = true, value = "SELECT *" +
-            "from find_routes(:_departure_date, :_start_station_id, :_end_station_id) as route")
+    @Query(nativeQuery = true, value = "SELECT *" + "from find_routes(:_departure_date, :_start_station_id, :_end_station_id) as route")
     List<SpecifiedRouteView> getSpecifiedRoute(@Param("_departure_date") LocalDate departure_date,
                                                @Param("_start_station_id") Long start_station_id,
                                                @Param("_end_station_id") Long end_station_id);
