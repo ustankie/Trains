@@ -32,16 +32,17 @@ public class RouteViewController {
 
         @GetMapping("/api/find_route")
         public List<SpecifiedRouteView> getSpecifiedRoute(@RequestParam LocalDate departure_date,
-                                                          @RequestParam Long start_station_id,
-                                                          @RequestParam Long end_station_id) {
+                                                          @RequestParam String start_station,
+                                                          @RequestParam String end_station) {
 
-    //        Long start_station_id=routeViewRepository.getStationId(start_station);
-    //        Long end_station_id=routeViewRepository.getStationId(end_station);
-
-            System.out.println(start_station_id+" "+end_station_id);
-
-            return specifiedRouteRepository.getSpecifiedRoute(departure_date,
-                    start_station_id, end_station_id);
+            Long start_station_id=routeViewRepository.getStationId(start_station.trim());
+            Long end_station_id=routeViewRepository.getStationId(end_station.trim());
+            
+            if(start_station_id!=null){
+                return specifiedRouteRepository.getSpecifiedRoute(departure_date,
+                        start_station_id, end_station_id);
+            }
+            return null;
         }
 
 //    @GetMapping("/api/station")
