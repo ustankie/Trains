@@ -16,7 +16,7 @@ export default function Hero() {
       function searchRoute() { 
         const { date, start_station, end_station } = routeData;
         
-        axios.get('/api/find_route', { params: { departure_date: date, start_station_id: start_station, end_station_id: end_station }})
+        axios.get('/api/find_route', { params: { departure_date: date, start_station_id: start_station, end_station_id: end_station}})
             .then(response => {
                 console.log(response.data);
                 setFetchedData(response.data); 
