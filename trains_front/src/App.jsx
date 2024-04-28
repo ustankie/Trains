@@ -1,15 +1,18 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Hero from './components/Hero'
-import Login from './components/Login'
-import Register from './components/Register';
+import Hero from './pages/Hero'
+import Login from './pages/Login'
+import Register from './pages/Register';
 import axios from 'axios';
 import RoutesDisplay from './components/RoutesDisplay';
+import "./styles/App.css";
+
+import "bootstrap/dist/css/bootstrap.min.css";
 
 axios.defaults.baseURL = 'http://localhost:8080'
 
 function App() {
     return (
-	    <BrowserRouter>
+        <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Hero />} />
                 <Route path="/login" element={<Login />} />

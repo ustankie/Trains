@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import "../styles/Hero.css";
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
+import RoutesDisplay from '../components/RoutesDisplay';
 
 export default function Hero() {
     const [routeData, setRouteData] = useState({
@@ -11,16 +12,27 @@ export default function Hero() {
         end_station: ''
       });
       const [fetchedData, setFetchedData] = useState(null); 
-      const navigate = useNavigate(); 
+      
+      useEffect(() => {
+        const storedData = localStorage.getItem('fetchedData');
+        if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            setFetchedData(parsedData.data);
+            if(parsedData.routeData){
+                setRouteData(parsedData.routeData);
+            }
+            
+        }
+    }, []);
       
       function searchRoute() { 
         const { date, start_station, end_station } = routeData;
         
-        axios.get('/api/find_route', { params: { departure_date: date, start_station_id: start_station, end_station_id: end_station}})
+        axios.get('/api/find_route', { params: { departure_date: date, start_station: start_station, end_station: end_station}})
             .then(response => {
                 console.log(response.data);
                 setFetchedData(response.data); 
-                navigate('/routes-display', { state: { data: response.data } });
+                localStorage.setItem('fetchedData', JSON.stringify({data: response.data, routeData: routeData}));
             })
             .catch(error => {
                 console.error('Error finding route:', error);
@@ -29,7 +41,7 @@ export default function Hero() {
     
 
     return (
-        <>
+        <>      
         <div className="login--link"><Link to="/login">SIGN <span className="blue">IN</span></Link></div>
         <div className="hero--wrapper">
             <div className="background"></div>
@@ -48,6 +60,12 @@ export default function Hero() {
                 </div>
             </div>
         </div>
+        {fetchedData ?(
+            <div style={{ display: 'flex', justifyContent:'center', alignItems:'center',alignSelf: 'center', borderRadius: '13px',position:'absolute', width:'100%'}}>
+                <RoutesDisplay
+                data={fetchedData}/>
+            </div>
+        ):(null)}
         </>
     )
 }

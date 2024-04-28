@@ -1,0 +1,96 @@
+.routeCardBody {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    row-gap: 10px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    align-items: left;
+    background-color: rgba(0, 0, 0, 0.9);
+
+  }
+.routeCardHeaders{
+    color:white;
+    font-style: italic;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.routeCardDetails{
+    color:white;
+    font-size: 20px;
+}
+
+.bookButton{
+    background-color: #0FA9FF;
+    text-transform:uppercase;
+    height: min-content;
+}
+
+.cardWrapper{
+    margin:30px;
+}
+
+
+.routeCard{
+    
+    width: 50rem;
+    margin: 7px;
+    background-color: rgba(0, 0, 0, 0.9);
+    justify-content: center;
+    align-items: center;
+    border-radius: 13px;
+    align-self: center;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    
+}
+
+.routeCardBodyContent{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items:center;
+}
+
+.routeDetails{
+    display: flex;
+    flex-direction: column;
+    row-gap: 2px;
+}
+
+.noRouteFound{
+    margin:20px;
+    border-color: black;
+    width: 50rem;
+    border-width: 3px;
+    /* border-style:solid; */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    align-self:center;
+    border-radius: 7px;
+
+}
+#tom{
+    width:30rem;
+    align-self: center;
+}
+
+#noRoutesText{
+    font-size: 30px;
+    text-decoration: underline;
+}
+
+.backgroundBottom{
+    display: flex;
+    position: relative;
+    width:100%;
+}
+
+  
