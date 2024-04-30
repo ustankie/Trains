@@ -30,23 +30,16 @@ public class RouteViewController {
         return routeViewRepository.findAll();
     }
 
-        @GetMapping("/api/find_route")
-        public List<SpecifiedRouteView> getSpecifiedRoute(@RequestParam LocalDate departure_date,
+    @GetMapping("/api/find_route")
+    public List<SpecifiedRouteView> getSpecifiedRoute(@RequestParam LocalDate departure_date,
                                                           @RequestParam String start_station,
                                                           @RequestParam String end_station) {
 
-            Long start_station_id=routeViewRepository.getStationId(start_station.trim());
-            Long end_station_id=routeViewRepository.getStationId(end_station.trim());
+        Long start_station_id=routeViewRepository.getStationId(start_station.trim());
+        Long end_station_id=routeViewRepository.getStationId(end_station.trim());
 
 
-            return specifiedRouteRepository.getSpecifiedRoute(departure_date,
-                        start_station_id, end_station_id);
+        return specifiedRouteRepository.getSpecifiedRoute(departure_date, start_station_id, end_station_id);
 
-        }
-
-//    @GetMapping("/api/station")
-//    public int getStationId() {
-//        return routeViewRepository.getStationId("Dębica");
-//    }
-
+    }
 }

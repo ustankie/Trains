@@ -1,3 +1,29 @@
+.cardWrapper{
+    width: 100vw;
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.cards {
+    margin-top: 50px;
+}
+
+.route--info {
+    margin-top: 80px;
+}
+
+.route--info > p {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
+    gap: 20px;
+}
+
+
 .routeCardBody {
     display: flex;
     width: 100%;
@@ -5,30 +31,21 @@
     row-gap: 10px;
     padding-left: 2rem;
     padding-right: 2rem;
+    border-radius: 7px;
     align-items: left;
     background-color: rgba(0, 0, 0, 0.9);
+    color:white;
+}
 
-  }
 .routeCardHeaders{
     color:white;
-    font-style: italic;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .routeCardDetails{
     color:white;
     font-size: 20px;
-}
-
-.bookButton{
-    background-color: #0FA9FF;
-    text-transform:uppercase;
-    height: min-content;
-}
-
-.cardWrapper{
-    margin:30px;
 }
 
 
@@ -89,8 +106,8 @@
 
 .backgroundBottom{
     display: flex;
-    position: relative;
     width:100%;
+    justify-content: center;
 }
 
   

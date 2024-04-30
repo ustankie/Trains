@@ -69,7 +69,7 @@
 }
 
 .hero--large--input {
-    width: 180px;
+    min-width: 150px;
     height: 40px;
     border: 2px solid #000;
     border-radius: 7px;
@@ -78,24 +78,13 @@
     font-size: 16px;
     text-transform: uppercase;
     transition: all 0.2s linear;
-    padding: 5px;
+    padding: 25px;
     user-select: none;
+    text-size-adjust: auto;
 }
 
 .hero--large--input::placeholder {
     color: #000;
-}
-
-.hero--search--btn {
-    width: 160px;
-    height: 54px;
-    background-color: #0FA9FF;
-    border-radius: 10px;
-    color: #FFFFFF;
-    font-weight: 700;
-    font-size: 16px;
-    transition: all 0.2s linear;
-    user-select: none;
 }
 
 .hero--large--input:focus { 
@@ -104,12 +93,39 @@
     outline: none;
 }
 
-.hero--search--btn:hover {
-    background-color: #21abfc;
-    box-shadow: 0px 0px 25px -12px rgba(66, 68, 90, 1);
-    cursor: pointer;
-    transition: all 0.15s linear;
+.autocomplete {
+    position: relative;
 }
+
+.hero--suggestions--box {
+    border: 2px solid #000;
+    overflow-y: auto;
+    border-radius: 7px;
+    position: absolute;
+    top: 60px;
+    width: 100%;
+    background: #FFF;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: center;
+    max-height: 200px;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 5;
+}
+
+.hero--suggestion{
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.hero--suggestion:hover {
+    background-color: #21abfc;
+    cursor: pointer;
+    transition: all 0.10s ease;
+    color: #FFF;
+}
+
 
 
 @media only screen and (max-width: 1200px) {
@@ -126,7 +142,13 @@
     }
 
     .hero--large--input {
-        width: 20%;
+        font-size: 13px;
+        width: 170px;
+        height: 30px;
+    }
+
+    .hero--suggestions--box {
+        width: 170px;
     }
 }
 
@@ -137,11 +159,22 @@
 
     .hero--large--input {
         font-size: 13px;
+        width: 250px;
+        height: 30px;
     }
 
+    .hero--suggestions--box {
+        width: 250px;
+    }
+
+    .hero--search--box {
+        width: 50%;
+        height: 300px;
+        flex-direction: column;
+    }
     
     .hero--search--btn {
-        width: 100px;
+        width: 250px;
     }
 }
 
@@ -152,14 +185,12 @@
 
     .hero--large--input {
         font-size: 13px;
-        width: 70%;
+        width: 170px;
         height: 30px;
     }
 
-    .hero--search--box {
-        width: 70%;
-        height: 300px;
-        flex-direction: column;
+    .hero--suggestions--box {
+        width: 170px;
     }
 
     .hero--search--btn {
