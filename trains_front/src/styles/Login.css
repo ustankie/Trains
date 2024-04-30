@@ -17,6 +17,7 @@
     letter-spacing: 2px;
     transition: all 0.2s ease;
     user-select: none;
+    z-index: 5;
 }
 
 .home--link:hover {
