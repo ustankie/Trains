@@ -18,6 +18,10 @@ export default function Reservation() {
              .then(response => {
                  if (response.data) {
                      setDiscounts(response.data);
+                     const noDiscount = response.data.find(discount => discount.discountName === 'Brak zniżki');
+                     if (noDiscount) {
+                         setDiscountId(noDiscount.discountId.toString());
+                     }
                  }
              })
              .catch(error => console.error("Failed to load discounts", error));
@@ -66,7 +70,6 @@ export default function Reservation() {
                     <input className="reservation--input" type="text" value={userId} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
                     DiscountId
                     <select className="reservation--input" value={discountId} onChange={e => setDiscountId(e.target.value)}>
-                        <option value="" disabled>Select a discount</option>
                         {discounts.map((discount) => (
                             <option key={discount.discountId} value={discount.discountId}>{discount.discountName}</option>
                         ))}
