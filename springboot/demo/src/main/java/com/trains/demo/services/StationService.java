@@ -15,4 +15,11 @@ public class StationService {
     public List<String> getAllStationNames() {
         return stationRepository.findAllStationNames();
     }
+
+    public Long getStationId(String stationName) {
+        return stationRepository.getStationId(stationName);
+    }
+
+
+
 }
