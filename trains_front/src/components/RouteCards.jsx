@@ -3,7 +3,7 @@ import '../styles/RoutesDisplay.css';
 import '../styles/Login.css'
 import '../styles/Main.css'
 import tom from '../images/sad_tom.png';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, Button } from 'react-bootstrap';
 
 export default function RoutesDisplay() {
@@ -11,6 +11,11 @@ export default function RoutesDisplay() {
     const data = location.state?.data;
     const startStation = location.state?.startStation;
     const endStation = location.state?.endStation;
+    const navigate = useNavigate();
+
+    function addReservation() {
+        navigate("/add-reservation");
+    }
 
     return (
         <>
@@ -38,7 +43,7 @@ export default function RoutesDisplay() {
                                                 <p className="routeCardHeaders">Total Price</p>
                                                 <p className="routeCardDetails">{route.price} PLN</p>
                                             </div>
-                                            <button className="blue--btn">Book</button>
+                                            <button className="blue--btn" onClick={addReservation}>Book</button>
                                         </div>
                                     </Card.Body>
                                 </Card>
