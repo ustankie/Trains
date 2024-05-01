@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import "../styles/Reservation.css"
@@ -10,6 +10,27 @@ export default function Reservation() {
     const [userId, setUserId] = useState('');
     const [discountId, setDiscountId] = useState('');
     const [seatId, setSeatId] = useState('');
+    const [discounts, setDiscounts] = useState([]);
+    const [finalPrice, setFinalPrice] = useState(price);
+
+    useEffect(() => {
+        axios.get('api/getAllDiscounts')
+             .then(response => {
+                 if (response.data) {
+                     setDiscounts(response.data);
+                 }
+             })
+             .catch(error => console.error("Failed to load discounts", error));
+    }, []);
+
+    useEffect(() => {
+        const selectedDiscount = discounts.find(discount => discount.discountId.toString() === discountId);
+        if (selectedDiscount) {
+            const discountValue = selectedDiscount.percent;
+            const discountedPrice = price - (price * discountValue / 100);
+            setFinalPrice(discountedPrice.toFixed(2));
+        }
+    }, [discountId, discounts, price]);
 
     function addReservation() {
         axios.post('api/reservations/add', {
@@ -44,9 +65,17 @@ export default function Reservation() {
                     UserId
                     <input className="reservation--input" type="text" value={userId} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
                     DiscountId
-                    <input className="reservation--input" type="text" value={discountId} onChange={e => setDiscountId(e.target.value)} placeholder="Discount ID" />
+                    <select className="reservation--input" value={discountId} onChange={e => setDiscountId(e.target.value)}>
+                        <option value="" disabled>Select a discount</option>
+                        {discounts.map((discount) => (
+                            <option key={discount.discountId} value={discount.discountId}>{discount.discountName}</option>
+                        ))}
+                    </select>
                     SeatId
                     <input className="reservation--input" type="text" value={seatId} onChange={e => setSeatId(e.target.value)} placeholder="Seat ID" />
+
+                    Final Price 
+                    <p className='reservation--price'>{finalPrice} zł</p>
                     <button className="blue--btn" onClick={addReservation}>Book</button>
                 </div>
             </div>
