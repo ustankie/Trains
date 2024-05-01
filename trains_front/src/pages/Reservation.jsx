@@ -41,8 +41,11 @@ export default function Reservation() {
                     {endStation + " " + arrivalTime.slice(0, -3)}</p>
                 </div>  
                 <div className="reservation--box">
+                    UserId
                     <input className="reservation--input" type="text" value={userId} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
+                    DiscountId
                     <input className="reservation--input" type="text" value={discountId} onChange={e => setDiscountId(e.target.value)} placeholder="Discount ID" />
+                    SeatId
                     <input className="reservation--input" type="text" value={seatId} onChange={e => setSeatId(e.target.value)} placeholder="Seat ID" />
                     <button className="blue--btn" onClick={addReservation}>Book</button>
                 </div>
