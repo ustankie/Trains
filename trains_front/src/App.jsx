@@ -7,6 +7,7 @@ import RoutesDisplay from './pages/RoutesDisplay';
 import "./styles/App.css";
 
 import "bootstrap/dist/css/bootstrap.min.css";
+import Reservation from './pages/Reservation';
 
 axios.defaults.baseURL = 'http://localhost:8080'
 
@@ -18,6 +19,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/routes-display" element={<RoutesDisplay />} />
+                <Route path="/add-reservation" element={<Reservation />} />
             </Routes>
         </BrowserRouter>
     );
