@@ -15,7 +15,7 @@ export default function Reservation() {
             startStation: startStation,
             endStation: endStation,
             departureDate: departureDate,
-            seatId: 13
+            seatId: 40
         })
         .then(response => {
             console.log(response);
