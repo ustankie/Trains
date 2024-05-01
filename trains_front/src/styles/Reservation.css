@@ -1,0 +1,25 @@
+.reservation--container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.reservation--box {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.reservation--input {
+    margin: 25px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    height: 50px;
+    padding: 5px;
+}
+

@@ -16,8 +16,8 @@ export default function RoutesDisplay() {
 
     
 
-    function addReservation(routeId) {
-        navigate("/add-reservation", {state : { routeId, startStation, endStation, departureDate }});
+    function addReservation(routeId, departureTime, arrivalTime, price) {
+        navigate("/add-reservation", {state : { routeId, startStation, endStation, departureDate, departureTime, arrivalTime, price }});
     }
 
     return (
@@ -25,8 +25,9 @@ export default function RoutesDisplay() {
             {data && data.length > 0 ? (
                 <div>
                     <div className="route--info">
-                        <p>{startStation.charAt(0).toUpperCase() + startStation.slice(1)} 
-                        <span className="material-symbols-outlined">arrow_forward</span> {endStation.charAt(0).toUpperCase() + endStation.slice(1)}</p>
+                        <p>{startStation} 
+                        <span className="material-symbols-outlined">arrow_forward</span> 
+                        {endStation}</p>
                     </div>  
                     <div className="cards">
                         {data.map((route) => (
@@ -45,7 +46,7 @@ export default function RoutesDisplay() {
                                             <p className="routeCardHeaders">Total Price</p>
                                             <p className="routeCardDetails">{route.price} PLN</p>
                                         </div>
-                                        <button className="blue--btn" onClick={() => addReservation(route.routeId)}>Book</button>
+                                        <button className="blue--btn" onClick={() => addReservation(route.routeId, route.departureTime, route.arrivalTime, route.price)}>Book</button>
                                     </div>
                                 </Card.Body>
                             </Card>
