@@ -1,13 +1,17 @@
 package com.trains.demo.repository;
 
 import com.trains.demo.model.Reservation;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+    @Modifying
+    @Transactional
     @Query(value = "CALL add_reservation(:_user_id, :_discount_id, :_route_id, :_start_station_id, :_end_station_id, :_departure_date, :_seat_id)", nativeQuery = true)
     void callAddReservation(
             @Param("_user_id") Long userId,
