@@ -14,8 +14,12 @@ public class ReservationService {
     @Autowired
     private ReservationRepository reservationRepository;
 
-    public void addReservation(Long userId, Long discountId, Long routeId, Long startStationId,
-                                  Long endStationId, LocalDate departureDate, Long seatId) {
+    public void addReservation(Long userId, Long discountId, Long routeId, String startStation,
+                                  String endStation, LocalDate departureDate, Long seatId) {
+
+        Long startStationId = reservationRepository.getStationId(startStation.trim());
+        Long endStationId = reservationRepository.getStationId(endStation.trim());
+
         reservationRepository.callAddReservation(userId, discountId, routeId, startStationId,
                 endStationId, departureDate, seatId);
     }

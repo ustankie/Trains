@@ -18,5 +18,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("_departure_date") LocalDate departureDate,
             @Param("_seat_id") Long seatId
     );
+
+    @Query(nativeQuery = true, value = "SELECT get_station_id(:_name)")
+    Long getStationId(@Param("_name") String stationName);
 }
 

@@ -12,8 +12,8 @@ public class Reservation {
     private Long userId;
     private Long discountId;
     private Long routeId;
-    private Long startStationId;
-    private Long endStationId;
+    private String startStation;
+    private String endStation;
     private LocalDate departureDate;
     private Long seatId;
 
@@ -29,12 +29,12 @@ public class Reservation {
         return routeId;
     }
 
-    public Long getStartStationId() {
-        return startStationId;
+    public String getStartStation() {
+        return startStation;
     }
 
-    public Long getEndStationId() {
-        return endStationId;
+    public String getEndStation() {
+        return endStation;
     }
 
     public LocalDate getDepartureDate() {
