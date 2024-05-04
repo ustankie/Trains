@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import "../styles/Reservation.css"
+import data from "../data.js"
+import Seat from "../components/Seat"
 
 export default function Reservation() {
     const { state } = useLocation();
@@ -12,6 +14,20 @@ export default function Reservation() {
     const [seatId, setSeatId] = useState('');
     const [discounts, setDiscounts] = useState([]);
     const [finalPrice, setFinalPrice] = useState(price);
+    const [currentSeat, setCurrentSeat] = useState('');
+
+    function pickSeat(seatNumber) {
+        setCurrentSeat(seatNumber)   
+    }
+
+
+    const seats = data.map(seat => {
+        return <Seat key={seat.id} id={seat.id} 
+        seatNumber={seat.seatNumber} pickSeat={pickSeat} 
+        isPicked={currentSeat === seat.seatNumber}/>
+    })
+
+
 
     useEffect(() => {
         axios.get('api/getAllDiscounts')
@@ -80,6 +96,14 @@ export default function Reservation() {
                     Final Price 
                     <p className='reservation--price'>{finalPrice} zł</p>
                     <button className="blue--btn" onClick={addReservation}>Book</button>
+                </div>
+                <div className="reservation--seats--container">
+                    <h1>Wybieranie miejsc jest eksperymentalne</h1>
+                    <div className="seats--grid">
+                        {seats}
+                        
+                    </div>
+                    {currentSeat && <p>Wybrane siedzenie: {currentSeat}</p>}
                 </div>
             </div>
         </>
