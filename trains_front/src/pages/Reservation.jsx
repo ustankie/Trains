@@ -130,7 +130,7 @@ export default function Reservation() {
                 </div>
 
                 <div className="reservation--summary">
-                    {currentSeat && <p>Chosen seat: {currentSeat[1]}</p>}
+                    {currentSeat[1] && <p>Chosen seat: {currentSeat[1]}</p>}
                     <p>Total Price: {finalPrice} zł</p>
                     <button className="blue--btn" onClick={addReservation}>Book</button>
                 </div>
