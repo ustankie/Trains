@@ -11,7 +11,6 @@ export default function Reservation() {
 
     const [userId, setUserId] = useState('');
     const [discountId, setDiscountId] = useState('');
-    const [seatId, setSeatId] = useState('');
     const [discounts, setDiscounts] = useState([]);
     const [finalPrice, setFinalPrice] = useState(price);
     const [currentSeat, setCurrentSeat] = useState('');
@@ -88,10 +87,9 @@ export default function Reservation() {
             startStation: startStation,
             endStation: endStation,
             departureDate: departureDate,
-            seatId: seatId
+            seatId: currentSeat
         })
         .then(response => {
-            console.log(response);
             alert("Reservation added successfully!");
         })
         .catch(error => {
@@ -110,28 +108,31 @@ export default function Reservation() {
                     {endStation + " " + arrivalTime.slice(0, -3)}</p>
                 </div>  
                 <div className="reservation--box">
-                    UserId
-                    <input className="reservation--input" type="text" value={userId} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
-                    DiscountId
-                    <select className="reservation--input" value={discountId} onChange={e => setDiscountId(e.target.value)}>
-                        {discounts.map((discount) => (
-                            <option key={discount.discountId} value={discount.discountId}>{discount.discountName}</option>
-                        ))}
-                    </select>
-                    SeatId
-                    <input className="reservation--input" type="text" value={seatId} onChange={e => setSeatId(e.target.value)} placeholder="Seat ID" />
-
-                    Final Price 
-                    <p className='reservation--price'>{finalPrice} zł</p>
-                    <button className="blue--btn" onClick={addReservation}>Book</button>
+                    <div className="reservation--inner--box">
+                        <p>UserID</p>
+                        <input className="reservation--input" type="text" value={userId} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
+                    </div>
+                    <div className="reservation--inner--box">
+                        <p>Choose your discount</p>
+                        <select className="reservation--input" value={discountId} onChange={e => setDiscountId(e.target.value)}>
+                            {discounts.map((discount) => (
+                                <option key={discount.discountId} value={discount.discountId}>{discount.discountName}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="reservation--seats--container">
-                    <h1>Wybieranie miejsc jest eksperymentalne</h1>
+                    <p>Choose your seat</p>
                     <div className="seats--grid">
                         {seats}
-                        
                     </div>
-                    {currentSeat && <p>Wybrane siedzenie: {currentSeat}</p>}
+                    
+                </div>
+
+                <div className="reservation--summary">
+                    {currentSeat && <p>Chosen seat: {currentSeat}</p>}
+                    <p>Total Price: {finalPrice} zł</p>
+                    <button className="blue--btn" onClick={addReservation}>Book</button>
                 </div>
             </div>
         </>
