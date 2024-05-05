@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import "../styles/Reservation.css"
-import data from "../data.js"
+import takenData from "../data.js"
 import Seat from "../components/Seat"
 
 export default function Reservation() {
@@ -15,17 +15,45 @@ export default function Reservation() {
     const [discounts, setDiscounts] = useState([]);
     const [finalPrice, setFinalPrice] = useState(price);
     const [currentSeat, setCurrentSeat] = useState('');
+    const [seatsData, setSeatsData] = useState([]);
 
-    function pickSeat(seatNumber) {
-        setCurrentSeat(seatNumber)   
+
+    function pickSeat(seatId, seatNumber) {
+        const isTaken = taken.includes(seatId);
+        if (!isTaken) {
+            setCurrentSeat(seatNumber);
+        } 
     }
 
+    const taken = takenData.map(item => item.seat_id);
 
-    const seats = data.map(seat => {
-        return <Seat key={seat.id} id={seat.id} 
-        seatNumber={seat.seatNumber} pickSeat={pickSeat} 
-        isPicked={currentSeat === seat.seatNumber}/>
-    })
+    useEffect(() => {
+        axios.get('api/getAllSeats')
+            .then(response => {
+                if (response.data) {
+                    const sortedSeats = response.data.sort((a, b) => a.seatNumber - b.seatNumber);
+                    setSeatsData(sortedSeats);
+                }
+            })
+            .catch(error => {
+                console.error('Błąd podczas pobierania danych o miejscach:', error);
+            });
+    }, []);
+
+    const seats = seatsData.map(seat => {
+        const isTaken = taken.includes(seat.seatId);
+
+        return (
+            <Seat
+                key={seat.seatId}
+                seatId={seat.seatId}
+                seatNumber={seat.seatNumber}
+                pickSeat={pickSeat}
+                isPicked={currentSeat === seat.seatNumber}
+                isTaken={isTaken}
+            />
+        );
+    });
 
 
 
