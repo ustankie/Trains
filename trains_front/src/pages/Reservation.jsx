@@ -13,14 +13,14 @@ export default function Reservation() {
     const [discountId, setDiscountId] = useState('');
     const [discounts, setDiscounts] = useState([]);
     const [finalPrice, setFinalPrice] = useState(price);
-    const [currentSeat, setCurrentSeat] = useState('');
+    const [currentSeat, setCurrentSeat] = useState([]);
     const [seatsData, setSeatsData] = useState([]);
 
 
     function pickSeat(seatId, seatNumber) {
         const isTaken = taken.includes(seatId);
         if (!isTaken) {
-            setCurrentSeat(seatNumber);
+            setCurrentSeat([seatId, seatNumber]);
         } 
     }
 
@@ -48,7 +48,7 @@ export default function Reservation() {
                 seatId={seat.seatId}
                 seatNumber={seat.seatNumber}
                 pickSeat={pickSeat}
-                isPicked={currentSeat === seat.seatNumber}
+                isPicked={currentSeat[0] === seat.seatId}
                 isTaken={isTaken}
             />
         );
@@ -87,7 +87,7 @@ export default function Reservation() {
             startStation: startStation,
             endStation: endStation,
             departureDate: departureDate,
-            seatId: currentSeat
+            seatId: currentSeat[0]
         })
         .then(response => {
             alert("Reservation added successfully!");
@@ -130,7 +130,7 @@ export default function Reservation() {
                 </div>
 
                 <div className="reservation--summary">
-                    {currentSeat && <p>Chosen seat: {currentSeat}</p>}
+                    {currentSeat && <p>Chosen seat: {currentSeat[1]}</p>}
                     <p>Total Price: {finalPrice} zł</p>
                     <button className="blue--btn" onClick={addReservation}>Book</button>
                 </div>
