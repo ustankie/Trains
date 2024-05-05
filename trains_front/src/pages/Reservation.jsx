@@ -15,6 +15,7 @@ export default function Reservation() {
     const [finalPrice, setFinalPrice] = useState(price);
     const [currentSeat, setCurrentSeat] = useState([]);
     const [seatsData, setSeatsData] = useState([]);
+    const [taken, setTaken] = useState([]);
 
 
     function pickSeat(seatId, seatNumber) {
@@ -23,21 +24,24 @@ export default function Reservation() {
             setCurrentSeat([seatId, seatNumber]);
         } 
     }
-
-    const taken = takenData.map(item => item.seat_id);
-
     useEffect(() => {
-        axios.get('api/getAllSeats')
-            .then(response => {
-                if (response.data) {
-                    const sortedSeats = response.data.sort((a, b) => a.seatNumber - b.seatNumber);
-                    setSeatsData(sortedSeats);
-                }
-            })
-            .catch(error => {
-                console.error('Błąd podczas pobierania danych o miejscach:', error);
-            });
-    }, []);
+        axios.get('/api/getOccupiedSeats', {
+            params: {
+                routeId: routeId,
+                startStation: startStation,
+                endStation: endStation,
+                date: departureDate
+            }
+        })
+        .then(response => {
+            const takenData = response.data;
+            const takenSeats = takenData.map(item => item.seatId); 
+            setTaken(takenSeats);
+        })
+        .catch(error => {
+            console.error('Error fetching occupied seats:', error);
+        });
+    }, [addReservation]);
 
     const seats = seatsData.map(seat => {
         const isTaken = taken.includes(seat.seatId);
@@ -52,8 +56,21 @@ export default function Reservation() {
                 isTaken={isTaken}
             />
         );
-    });
+    })
+    
 
+    useEffect(() => {
+        axios.get('api/getAllSeats')
+            .then(response => {
+                if (response.data) {
+                    const sortedSeats = response.data.sort((a, b) => a.seatNumber - b.seatNumber);
+                    setSeatsData(sortedSeats);
+                }
+            })
+            .catch(error => {
+                console.error('Błąd podczas pobierania danych o miejscach:', error);
+            });
+    }, []);
 
 
     useEffect(() => {
@@ -91,6 +108,7 @@ export default function Reservation() {
         })
         .then(response => {
             alert("Reservation added successfully!");
+            setCurrentSeat([]);
         })
         .catch(error => {
             console.error(error);
