@@ -1,14 +1,32 @@
 export default [
-    { seat_id: 19 },
-    { seat_id: 22 },
-    { seat_id: 23 },
-    { seat_id: 47 },
-    { seat_id: 54 },
-    { seat_id: 63 },
-    { seat_id: 71 },
-    { seat_id: 87 },
-    { seat_id: 94 },
-    { seat_id: 50 },
-    { seat_id: 41 },
-    { seat_id: 32 }
+    {
+        startStation: 'Ropczyce', 
+        endStation: 'Łańcut',
+        departure: '2024-05-22',
+        seat: 26
+    },
+    {
+        startStation: 'Ropczyce', 
+        endStation: 'Łańcut',
+        departure: '2024-05-22',
+        seat: 27
+    },
+    {
+        startStation: 'Ropczyce', 
+        endStation: 'Łańcut',
+        departure: '2024-05-22',
+        seat: 28
+    },
+    {
+        startStation: 'Ropczyce', 
+        endStation: 'Łańcut',
+        departure: '2024-05-22',
+        seat: 28
+    },
+    {
+        startStation: 'Ropczyce', 
+        endStation: 'Łańcut',
+        departure: '2024-05-22',
+        seat: 28
+    }
 ]

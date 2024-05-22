@@ -10,7 +10,8 @@
 .home--link {
     display: flex;
     justify-content: center;
-    margin: auto;
+    margin: 30px auto;
+    height: 50px;
     font-size: 24px;
     color: #FFF;
     font-weight: 900;
@@ -18,7 +19,6 @@
     transition: all 0.2s ease;
     user-select: none;
     z-index: 5;
-    margin-top: 30px;
 }
 
 .home--link:hover {
