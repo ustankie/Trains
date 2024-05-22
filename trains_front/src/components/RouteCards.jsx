@@ -4,7 +4,7 @@ import '../styles/Login.css'
 import '../styles/Main.css'
 import tom from '../images/sad_tom.png';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Card, Button } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 
 export default function RoutesDisplay() {
     const location = useLocation();

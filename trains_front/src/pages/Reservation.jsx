@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import "../styles/Reservation.css"
-import takenData from "../data.js"
 import Seat from "../components/Seat"
 
 export default function Reservation() {
@@ -124,6 +123,7 @@ export default function Reservation() {
                     <p>{startStation + " " + departureTime.slice(0, -3)} 
                     <span className="material-symbols-outlined">arrow_forward</span> 
                     {endStation + " " + arrivalTime.slice(0, -3)}</p>
+                    <p>Departure Date <span className="material-symbols-outlined">arrow_forward</span>  {departureDate}</p>
                 </div>  
                 <div className="reservation--box">
                     <div className="reservation--inner--box">
