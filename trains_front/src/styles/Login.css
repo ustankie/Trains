@@ -192,11 +192,14 @@
     padding: 40px;
 }
 
-/*to handle
-.login--input-error { 
-    background-color: rgba(245, 40, 40, 0.1);
-    border-bottom: 2px solid rgba(245, 40, 40, 0.8);
-}*/
+
+.register--error-message{
+    color: rgb(130, 0, 0);
+    font-size: 16px;
+    font-weight: 500;
+    margin:0;
+
+}
 
 @media only screen and (max-width: 640px) {   
     .login--wrapper {
