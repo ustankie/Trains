@@ -1,30 +1,32 @@
 import axios from "axios";
 
-export const getAuthToken=()=>{
+export const getAuthToken = () => {
     return window.localStorage.getItem("auth_token");
 };
 
-export const getUserId=()=>{
+export const getUserId = () => {
     return window.localStorage.getItem("user_id");
 };
 
 
 
-export const setAuthToken=(token, userId)=>{
-    window.localStorage.setItem("auth_token",token);
-    window.localStorage.setItem("user_id",userId);
+export const setAuthToken = (token, userId) => {
+    window.localStorage.setItem("auth_token", token);
+    window.localStorage.setItem("user_id", userId);
 
 };
 
-export const request=(method, url,data,params)=>{
-    let headers={};
-    try{let token=getAuthToken();
-        if (token!==null && token!="null"){
-            headers={"Authorization":`Bearer ${token}`};
+export const request = (method, url, data, params) => {
+    let headers = {};
+    try {
+        let token = getAuthToken();
+        if (token !== null && token != "null") {
+            headers = { "Authorization": `Bearer ${token}` };
         }
-    }catch(error){
+    } catch (error) {
         console.log("No auth_token");
     }
+    console.log(getAuthToken());
 
     return axios({
         method: method,
@@ -32,5 +34,8 @@ export const request=(method, url,data,params)=>{
         url: url,
         data: data,
         params: params
-    }).catch((error)=>{console.log("autherror"); throw error;})
+    }).catch((error) => {
+        console.log("authError");
+        throw error;
+    })
 }

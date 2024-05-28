@@ -25,7 +25,10 @@ export default function Login() {
                 setAuthToken(response.data.token,response.data.userId); 
                 console.log(response.data.userId); 
                 toast.success('Login successful'); 
-                navigate("/") });
+                navigate("/") })
+            .catch((error)=>{
+                toast.error('Wrong credentials!'); 
+                console.log(error.response.data);});
 
 
     }
