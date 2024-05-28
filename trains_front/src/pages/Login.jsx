@@ -2,7 +2,7 @@ import '../styles/Login.css'
 import { Link } from "react-router-dom"
 import Register from './Register'
 import React, { useEffect, useState } from 'react';
-import { request, setAuthToken, getAuthToken } from '../util/Authentication';
+import { request, setAuthToken,isTokenExpired } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
@@ -38,7 +38,7 @@ export default function Login() {
             <div className="login--container">
                 <div className="home--link"><Link to="/">TRAIN <span className="blue">SERVICE</span></Link></div>
                 <div className="login--bg"></div>
-                {getAuthToken() == null || getAuthToken() == "null" ?
+                {isTokenExpired() ?
                     <div className="login--wrapper">
                         <div className="login--tabs">
                             <p className="sign--btn login--active">Sign in</p>
