@@ -4,7 +4,7 @@ import "../styles/Hero.css";
 import "../styles/App.css";
 import "../styles/Main.css";
 import Form from '../components/Form';
-import {getAuthToken,setAuthToken} from '../util/Authentication';
+import {isTokenExpired,setAuthToken} from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
@@ -15,7 +15,7 @@ export default function Hero() {
     
     return (
         <>      
-        {getAuthToken()!==null && getAuthToken()!=="null" ?
+        {!isTokenExpired() ?
             <div className="login--link" onClick={()=>{setAuthToken("null", "null"); toast.success("Logout successful"); navigate("/")}}>LOG <span className="blue">OUT</span></div>
            : <div className="login--link"><Link to="/login">SIGN <span className="blue">IN</span></Link></div>
 }

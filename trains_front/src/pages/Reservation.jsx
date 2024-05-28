@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import "../styles/Reservation.css"
 import Seat from "../components/Seat"
 import { toast } from 'react-hot-toast';
-import { getAuthToken, getUserId, request } from '../util/Authentication';
+import { getAuthToken, getUserId, isTokenExpired, request } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
 
 export default function Reservation() {
@@ -67,6 +67,12 @@ export default function Reservation() {
         if (getAuthToken() == null || getAuthToken() == "null") {
             navigate("/login");
             toast.error("First log in!");
+            return;
+        }
+        if(isTokenExpired()){
+            navigate("/login");
+            toast.error("Your session expired");
+            return;
         }
         request("GET", 'api/getAllSeats', {}, {})
             .then(response => {
@@ -103,6 +109,11 @@ export default function Reservation() {
     }, [discountId, discounts, price]);
 
     function addReservation() {
+        if(isTokenExpired()){
+            navigate("/login");
+            toast.error("Your session expired");
+            return;
+        }
         request("POST", 'api/reservations/add', {
             userId: getUserId(),
             discountId: discountId,

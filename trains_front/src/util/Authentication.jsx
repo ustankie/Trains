@@ -1,4 +1,5 @@
 import axios from "axios";
+import {jwtDecode} from "jwt-decode";
 
 export const getAuthToken = () => {
     return window.localStorage.getItem("auth_token");
@@ -39,3 +40,19 @@ export const request = (method, url, data, params) => {
         throw error;
     })
 }
+
+export const isTokenExpired = () => {
+    const token = getAuthToken();
+    if (!token || token=="null" || token==null) {
+        return true; 
+    }
+
+    try {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000; 
+        return decodedToken.exp < currentTime;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return true; 
+    }
+  };

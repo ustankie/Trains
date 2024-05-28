@@ -9,7 +9,6 @@
 
 .register--container {
     width: 100vw;
-    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,13 +63,16 @@
 
 .register--wrapper {
     width: 500px;
-    height: 850px;
+    height: fit-content;
+    padding-top: 70px;
+    padding-bottom: 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.9);
     margin: auto;
+    margin-bottom: 20px;
 }
 
 .login--tabs {
