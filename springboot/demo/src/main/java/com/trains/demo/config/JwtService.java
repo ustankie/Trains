@@ -1,8 +1,12 @@
 package com.trains.demo.config;
 
+import com.trains.demo.controller.AuthController;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +21,10 @@ import static io.jsonwebtoken.Jwts.*;
 
 @Service
 public class JwtService {
-    private static final String SECRET_KEY="404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    @Value("${security.key}")
+    private String SECRET_KEY;
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     public String extractUserLogin(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -31,6 +38,7 @@ public class JwtService {
         return generateToken(new HashMap<>(),userDetails);
     }
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails){
+
         return Jwts
                 .builder()
                 .claims(extraClaims)
