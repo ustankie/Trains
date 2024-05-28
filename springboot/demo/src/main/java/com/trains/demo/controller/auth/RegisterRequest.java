@@ -1,5 +1,6 @@
 package com.trains.demo.controller.auth;
 
+import com.trains.demo.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +17,6 @@ public class RegisterRequest {
     private String phone;
     private String login;
     private String password;
+    private Role role;
 
 }

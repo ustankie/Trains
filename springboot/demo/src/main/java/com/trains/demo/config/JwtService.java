@@ -17,13 +17,13 @@ import static io.jsonwebtoken.Jwts.*;
 
 @Service
 public class JwtService {
-    private static final String SECRET_KEY="2A78EEC39B3CDF3BFAF27DB2DFC5D ";
+    private static final String SECRET_KEY="404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
     public String extractUserLogin(String token) {
-        return extractAllClaims(token).getSubject();
+        return extractClaim(token, Claims::getSubject);
     }
 
     private Claims extractAllClaims(String token) {
-        return parser().setSigningKey(getSignInKey()).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser().setSigningKey(getSignInKey()).build().parseSignedClaims(token).getPayload();
 
 
     }
@@ -36,7 +36,7 @@ public class JwtService {
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+1000*60))
+                .expiration(new Date(System.currentTimeMillis()+1000*60*24))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

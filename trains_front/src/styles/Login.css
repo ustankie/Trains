@@ -7,6 +7,16 @@
     flex-direction: column;
 }
 
+.register--container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+
 .home--link {
     display: flex;
     justify-content: center;
@@ -52,6 +62,17 @@
     margin: auto;
 }
 
+.register--wrapper {
+    width: 500px;
+    height: 850px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.9);
+    margin: auto;
+}
+
 .login--tabs {
     width: 350px;
     height: 25px;
@@ -76,11 +97,13 @@
 }
 
 .login--form {
+    margin-top: 15px;
     width: 350px;
     min-height: 370px;
     display: flex;
     flex-direction: column;
 }
+
 
 .login--text{
     font-size: 18px;
@@ -146,6 +169,9 @@
     transition: all 0.2s ease;
     user-select: none;
     margin-top: auto;
+}
+.login--btn#register{
+    margin-top: 40px;
 }
 
 .login--btn:hover {
