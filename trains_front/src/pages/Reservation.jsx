@@ -113,13 +113,13 @@ export default function Reservation() {
             seatId: currentSeat[0]
         }, {})
             .then(response => {
-                alert("Reservation added successfully!");
+                toast.success("Reservation added successfully!");
                 setCurrentSeat([]);
                 setNewReservation(true);
             })
             .catch(error => {
                 console.error(error);
-                alert("Failed to add reservation.");
+                toast.error("Failed to add reservation.");
             });
         setNewReservation(false);
     }
