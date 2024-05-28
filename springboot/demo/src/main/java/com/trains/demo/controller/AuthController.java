@@ -1,8 +1,8 @@
 package com.trains.demo.controller;
 
-import com.trains.demo.controller.auth.AuthenticationRequest;
-import com.trains.demo.controller.auth.AuthenticationResponse;
-import com.trains.demo.controller.auth.RegisterRequest;
+import com.trains.demo.model.auth.AuthenticationRequest;
+import com.trains.demo.model.auth.AuthenticationResponse;
+import com.trains.demo.model.auth.RegisterRequest;
 import com.trains.demo.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

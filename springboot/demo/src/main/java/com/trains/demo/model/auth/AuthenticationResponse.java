@@ -1,4 +1,4 @@
-package com.trains.demo.controller.auth;
+package com.trains.demo.model.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
