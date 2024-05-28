@@ -4,12 +4,19 @@ export const getAuthToken=()=>{
     return window.localStorage.getItem("auth_token");
 };
 
-
-export const setAuthToken=(token)=>{
-    window.localStorage.setItem("auth_token",token);
+export const getUserId=()=>{
+    return window.localStorage.getItem("user_id");
 };
 
-export const request=(method, url,data)=>{
+
+
+export const setAuthToken=(token, userId)=>{
+    window.localStorage.setItem("auth_token",token);
+    window.localStorage.setItem("user_id",userId);
+
+};
+
+export const request=(method, url,data,params)=>{
     let headers={};
     try{let token=getAuthToken();
         if (token!==null && token!="null"){
@@ -23,6 +30,7 @@ export const request=(method, url,data)=>{
         method: method,
         headers: headers,
         url: url,
-        data: data
+        data: data,
+        params: params
     }).catch((error)=>{console.log("autherror"); throw error;})
 }

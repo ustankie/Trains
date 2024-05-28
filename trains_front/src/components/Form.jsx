@@ -5,6 +5,7 @@ import "../styles/App.css";
 import "../styles/Main.css";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { request } from '../util/Authentication';
 
 
 export default function Form() {
@@ -30,7 +31,7 @@ export default function Form() {
         }
 
         const url = 'http://localhost:8080/api/stations';
-        axios.get(url).then(response => {
+        request("GET",url,{},{}).then(response => {
             setStationNames(response.data);
         }).catch(error => {
             console.error('There was an error!', error);
