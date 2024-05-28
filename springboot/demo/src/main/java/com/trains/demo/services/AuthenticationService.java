@@ -1,9 +1,9 @@
 package com.trains.demo.services;
 
 import com.trains.demo.controller.AuthController;
-import com.trains.demo.controller.auth.AuthenticationRequest;
-import com.trains.demo.controller.auth.AuthenticationResponse;
-import com.trains.demo.controller.auth.RegisterRequest;
+import com.trains.demo.model.auth.AuthenticationRequest;
+import com.trains.demo.model.auth.AuthenticationResponse;
+import com.trains.demo.model.auth.RegisterRequest;
 import com.trains.demo.model.Role;
 import com.trains.demo.model.User;
 import com.trains.demo.repository.UserRepository;
