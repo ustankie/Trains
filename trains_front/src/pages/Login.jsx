@@ -20,10 +20,10 @@ export default function Login() {
     function login(e) {
         e.preventDefault()
         const { login, password } = data;
-        request("POST", "/api/auth/authenticate", { login: login, password: password })
+        request("POST", "/api/auth/authenticate", { login: login, password: password },{})
             .then((response) => { 
-                setAuthToken(response.data.token); 
-                console.log("succ"); 
+                setAuthToken(response.data.token,response.data.userId); 
+                console.log(response.data.userId); 
                 toast.success('Login successful'); 
                 navigate("/") });
 
@@ -55,7 +55,7 @@ export default function Login() {
                     :
                     <div className="login--wrapper" id="logged-in">
                         <p className="login--logged-in-text">Already logged in!</p>
-                        <button className="login--btn" onClick={() => { setAuthToken("null"); navigate("/login") }}>Log out</button>
+                        <button className="login--btn" onClick={() => { setAuthToken("null","null"); navigate("/login") }}>Log out</button>
                     </div>
                 }
             </div>

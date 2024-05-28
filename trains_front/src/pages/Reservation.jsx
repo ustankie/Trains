@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import axios from 'axios';
 import "../styles/Reservation.css"
 import Seat from "../components/Seat"
+import { getAuthToken, getUserId, request } from '../util/Authentication';
+import { useNavigate } from 'react-router-dom';
 
 export default function Reservation() {
     const { state } = useLocation();
@@ -16,6 +17,13 @@ export default function Reservation() {
     const [seatsData, setSeatsData] = useState([]);
     const [taken, setTaken] = useState([]);
 
+    const navigate=useNavigate();
+
+    useEffect(()=>{
+        if(getAuthToken()==null || getAuthToken()=="null"){
+            
+        navigate("/login");}
+    },[]);
 
     function pickSeat(seatId, seatNumber) {
         const isTaken = taken.includes(seatId);
@@ -24,18 +32,24 @@ export default function Reservation() {
         } 
     }
     useEffect(() => {
-        axios.get('/api/getOccupiedSeats', {
-            params: {
+        request("GET",'/api/getOccupiedSeats', {},{
+            
                 routeId: routeId,
                 startStation: startStation,
                 endStation: endStation,
                 date: departureDate
-            }
+            
         })
         .then(response => {
             const takenData = response.data;
+            console.log(takenData);
             const takenSeats = takenData.map(item => item.seatId); 
-            setTaken(takenSeats);
+            if(takenSeats!=takenSeats){
+                setTaken(takenSeats);
+            }
+            
+            console.log("Sss",takenSeats)
+
         })
         .catch(error => {
             console.error('Error fetching occupied seats:', error);
@@ -59,7 +73,7 @@ export default function Reservation() {
     
 
     useEffect(() => {
-        axios.get('api/getAllSeats')
+        request("GET",'api/getAllSeats', {},{})
             .then(response => {
                 if (response.data) {
                     const sortedSeats = response.data.sort((a, b) => a.seatNumber - b.seatNumber);
@@ -73,7 +87,7 @@ export default function Reservation() {
 
 
     useEffect(() => {
-        axios.get('api/getAllDiscounts')
+        request("GET",'api/getAllDiscounts',{},{})
              .then(response => {
                  if (response.data) {
                      setDiscounts(response.data);
@@ -96,15 +110,15 @@ export default function Reservation() {
     }, [discountId, discounts, price]);
 
     function addReservation() {
-        axios.post('api/reservations/add', {
-            userId: userId,
+        request("POST",'api/reservations/add', {
+            userId: getUserId(),
             discountId: discountId,
             routeId: routeId,
             startStation: startStation,
             endStation: endStation,
             departureDate: departureDate,
             seatId: currentSeat[0]
-        })
+        },{})
         .then(response => {
             alert("Reservation added successfully!");
             setCurrentSeat([]);
@@ -128,7 +142,7 @@ export default function Reservation() {
                 <div className="reservation--box">
                     <div className="reservation--inner--box">
                         <p>UserID</p>
-                        <input className="reservation--input" type="text" value={userId} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
+                        <input className="reservation--input" type="text" value={getUserId()} onChange={e => setUserId(e.target.value)} placeholder="User ID" />
                     </div>
                     <div className="reservation--inner--box">
                         <p>Choose your discount</p>

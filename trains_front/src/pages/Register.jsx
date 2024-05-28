@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { request } from '../util/Authentication';
 
 
 export default function Register() {
@@ -20,14 +21,14 @@ export default function Register() {
 
     function register() {
         const {firstname, lastname, email, phone, login, password}=data;
-        axios.post("/api/auth/register",{
+        request("POST","/api/auth/register",{
             firstname: firstname,
             lastname: lastname,
             email: email,
             phone: phone,
             login: login,
             password: password
-        })  
+        },{})  
         .then((response) => console.log(response.data))
         .then((error) => console.log(error));
         console.log("post");    

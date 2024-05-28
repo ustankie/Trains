@@ -16,7 +16,7 @@ export default function Hero() {
     return (
         <>      
         {getAuthToken()!==null && getAuthToken()!=="null" ?
-            <div className="login--link" onClick={()=>{setAuthToken("null"); toast.success("Logout successful"); navigate("/")}}>LOG <span className="blue">OUT</span></div>
+            <div className="login--link" onClick={()=>{setAuthToken("null", "null"); toast.success("Logout successful"); navigate("/")}}>LOG <span className="blue">OUT</span></div>
            : <div className="login--link"><Link to="/login">SIGN <span className="blue">IN</span></Link></div>
 }
         <div className="hero--wrapper">
