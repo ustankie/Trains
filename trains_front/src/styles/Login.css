@@ -181,6 +181,17 @@
     box-shadow: 0px 0px 80px -30px rgba(66, 68, 90, 1);
 }
 
+.login--logged-in-text{
+    font-size: 30px;
+    color: rgba(255, 255, 255, 1);
+    font-weight: 450;
+    margin: 25px 0 5px 0;
+}
+.login--wrapper#logged-in{
+    height: 300px;
+    padding: 40px;
+}
+
 /*to handle
 .login--input-error { 
     background-color: rgba(245, 40, 40, 0.1);
