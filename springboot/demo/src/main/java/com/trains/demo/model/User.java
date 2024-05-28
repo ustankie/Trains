@@ -18,6 +18,7 @@ import java.util.List;
 public class User implements UserDetails {
 
     @Id
+    @GeneratedValue
     private Long userId;
     private String firstname;
     private String lastname;
