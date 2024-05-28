@@ -6,6 +6,7 @@ import axios from 'axios';
 import RoutesDisplay from './pages/RoutesDisplay';
 import "./styles/App.css";
 import UserDashboard from './pages/UserDashboard';
+import { Toaster } from 'react-hot-toast'
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import Reservation from './pages/Reservation';
@@ -15,6 +16,7 @@ axios.defaults.baseURL = 'http://localhost:8080'
 function App() {
     return (
         <BrowserRouter>
+            <Toaster position='bottom-right' toastOptions={{ duration: 2000 }} />
             <Routes>
                 <Route path="/" element={<Hero />} />
                 <Route path="/login" element={<Login />} />
