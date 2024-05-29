@@ -126,6 +126,13 @@
     color: #FFF;
 }
 
+@media only screen and (max-width: 1600px) {
+    .hero--text {
+        font-size: 64px;
+    }
+
+}
+
 
 
 @media only screen and (max-width: 1200px) {
@@ -134,11 +141,12 @@
     }
 
     .hero--text {
-        font-size: 70px;
+        font-size: 58px;
     }
     
     .hero--search--box {
         width: 80%;
+        margin-top: 50px;
     }
 
     .hero--large--input {
@@ -171,6 +179,7 @@
         width: 50%;
         height: 300px;
         flex-direction: column;
+        margin-top: 20px;
     }
     
     .hero--search--btn {

@@ -8,9 +8,10 @@
 }
 
 .home--link {
-    position: absolute;
-    top: 30px;
-    margin: auto;
+    display: flex;
+    justify-content: center;
+    margin: 30px auto;
+    height: 50px;
     font-size: 24px;
     color: #FFF;
     font-weight: 900;

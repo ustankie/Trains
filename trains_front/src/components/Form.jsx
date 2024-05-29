@@ -48,7 +48,8 @@ export default function Form() {
                 navigate('/routes-display', { state: { 
                     data: response.data,
                     startStation: start_station, 
-                    endStation: end_station 
+                    endStation: end_station, 
+                    departureDate: date
                 } });
             })
             .catch(error => {
@@ -95,57 +96,57 @@ export default function Form() {
 
     return (
         <div className="hero--search--box">
-                    <div className="autocomplete">
-                        <input
-                            type="text"
-                            className="hero--large--input"
-                            placeholder="ORIGIN"
-                            name="origin"
-                            value={routeData.start_station}
-                            onChange={(e) => onInputChange(e, 'start_station')}
-                            onBlur={onBlurHandler}
-                            autoComplete="off"
-                        />
-                        {startSuggestions.length > 0 && (
-                        <div className="hero--suggestions--box">
-                            {startSuggestions.map((name, index) => (
-                            <div 
-                                className="hero--suggestion"
-                                key={index}
-                                onMouseDown={() => onSuggestionClicked(name, 'start_station')} >
-                                {name}
-                            </div>
-                            ))}
-                        </div>
-                        )}
+            <div className="autocomplete">
+                <input
+                    type="text"
+                    className="hero--large--input"
+                    placeholder="ORIGIN"
+                    name="origin"
+                    value={routeData.start_station}
+                    onChange={(e) => onInputChange(e, 'start_station')}
+                    onBlur={onBlurHandler}
+                    autoComplete="off"
+                />
+                {startSuggestions.length > 0 && (
+                <div className="hero--suggestions--box">
+                    {startSuggestions.map((name, index) => (
+                    <div 
+                        className="hero--suggestion"
+                        key={index}
+                        onMouseDown={() => onSuggestionClicked(name, 'start_station')} >
+                        {name}
                     </div>
-                    <div className="autocomplete">
-                        <input
-                            type="text"
-                            className="hero--large--input"
-                            placeholder="DESTINATION"
-                            name="destination"
-                            value={routeData.end_station}
-                            onChange={(e) => onInputChange(e, 'end_station')}
-                            onBlur={onBlurHandler}
-                            autoComplete="off"
-                        />
-                        {endSuggestions.length > 0 && (
-                        <div className="hero--suggestions--box">
-                            {endSuggestions.map((name, index) => (
-                            <div 
-                                className="hero--suggestion"
-                                key={index}
-                                onMouseDown={() => onSuggestionClicked(name, 'end_station')} >
-                                {name}
-                            </div>
-                            ))}
-                        </div>
-                        )}
+                    ))}
+                </div>
+                )}
+            </div>
+            <div className="autocomplete">
+                <input
+                    type="text"
+                    className="hero--large--input"
+                    placeholder="DESTINATION"
+                    name="destination"
+                    value={routeData.end_station}
+                    onChange={(e) => onInputChange(e, 'end_station')}
+                    onBlur={onBlurHandler}
+                    autoComplete="off"
+                />
+                {endSuggestions.length > 0 && (
+                <div className="hero--suggestions--box">
+                    {endSuggestions.map((name, index) => (
+                    <div 
+                        className="hero--suggestion"
+                        key={index}
+                        onMouseDown={() => onSuggestionClicked(name, 'end_station')} >
+                        {name}
                     </div>
-                    <input type="date" id="date" className="hero--large--input" name="date" placeholder="DD/MM/yyyy" pattern="\d{2}/\d{2}/\d{4}" value={routeData.date}
-                     onChange={(e)=> setRouteData({...routeData, date: e.target.value})}/>
-                    <button className="blue--btn" onClick={searchRoute}>SEARCH</button>
+                    ))}
+                </div>
+                )}
+            </div>
+            <input type="date" id="date" className="hero--large--input" name="date" placeholder="DD/MM/yyyy" pattern="\d{2}/\d{2}/\d{4}" value={routeData.date}
+                onChange={(e)=> setRouteData({...routeData, date: e.target.value})}/>
+            <button className="blue--btn" onClick={searchRoute}>SEARCH</button>
         </div>
     )
 }

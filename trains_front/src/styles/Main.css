@@ -5,6 +5,10 @@
     font-family: "Lato", sans-serif;
 }
 
+body {
+    overflow-x: hidden;
+}
+
 a {
     all: unset !important;
 }
