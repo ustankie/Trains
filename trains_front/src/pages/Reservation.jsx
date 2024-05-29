@@ -114,6 +114,11 @@ export default function Reservation() {
             toast.error("Your session expired");
             return;
         }
+        if(currentSeat[0]==null){
+            toast.error("Choose seat");
+            return;
+        }
+
         request("POST", 'api/reservations/add', {
             userId: getUserId(),
             discountId: discountId,
