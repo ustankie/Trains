@@ -23,7 +23,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**",  "/api/getOccupiedSeats","/api/find_route", "/", "/api/stations").permitAll() // Define public endpoints here
+                        .requestMatchers("/api/auth/**","/api/getOccupiedSeats","/api/find_route", "/", "/api/stations").permitAll() // Define public endpoints here
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
