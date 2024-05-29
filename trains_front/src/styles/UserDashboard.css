@@ -27,10 +27,15 @@
 
 .tickets--box {
     margin-top: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 .tabs {
     display: flex;
+    width: 800px;
 }
 
 .tab {
