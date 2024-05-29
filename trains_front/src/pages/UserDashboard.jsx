@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import "../styles/UserDashboard.css"
 import { Card } from 'react-bootstrap';
-import data from '../data.js'
 import { request, getUserId } from '../util/Authentication.jsx';
 
 export default function UserDashboard() {
