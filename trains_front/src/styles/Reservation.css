@@ -1,0 +1,114 @@
+.reservation--container {
+    margin: 0;
+    max-width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.reservation--box {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+}
+
+.reservation--inner--box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0px 20px;
+}
+
+.reservation--inner--box > p {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.reservation--inner--box > select {
+    margin-top: 20px;
+    width: 250px;
+}
+
+.reservation--input {
+    margin-top: 20px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    height: 50px;
+    padding: 5px;
+}
+
+
+.reservation--seats--container {
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.reservation--seats--container > p {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.seats--grid {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    display: grid;
+    grid-template-columns: repeat(15, 40px);
+    grid-template-rows: 40px 60px 40px 40px;
+    grid-gap: 18px 20px;
+}
+
+.seat--below {
+    width: 28px;
+    height: 51px;
+    border: 2px solid #000;
+    border-radius: 5px;
+    position: relative;
+    z-index: 5;
+    background-color: white;
+}
+
+.seat {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    outline: 2px solid #000;
+    border-radius: 4px;
+    right: 5px;
+    top: 4px;
+    z-index: 1;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.reservation--summary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.reservation--summary > p {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.picked {
+    background: rgb(3, 205, 3);
+}
+
+.taken {
+    background: rgb(212, 212, 212);
+}

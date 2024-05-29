@@ -1,0 +1,58 @@
+.user--dashboard--container {
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding-bottom: 50px;
+}
+
+.user--greeting {
+    margin-top: 50px;
+    max-width: 900px;
+    text-align: center;
+    user-select: none;
+}
+
+.greeting--text {
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.greeting--text--bottom {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 20px;
+}
+
+.tickets--box {
+    margin-top: 50px;
+}
+
+.tabs {
+    display: flex;
+}
+
+.tab {
+    width: 50%;
+    text-align: center;
+    user-select: none;
+    font-size: 26px;
+    font-weight: 500;
+    margin: 0 20px;
+}
+
+.tab:hover {
+    cursor: pointer;
+    background: rgb(243, 243, 243)
+}
+.active {
+    border-bottom: 1px solid black;
+    transition: all 2s ease;
+}
+
+
+.arrow--small {
+    font-size: 16px;
+    padding: 0 5px;
+}
