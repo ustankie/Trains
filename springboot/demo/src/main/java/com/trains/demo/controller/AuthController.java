@@ -1,5 +1,6 @@
 package com.trains.demo.controller;
 
+import com.trains.demo.model.User;
 import com.trains.demo.model.auth.AuthenticationRequest;
 import com.trains.demo.model.auth.AuthenticationResponse;
 import com.trains.demo.model.auth.RegisterRequest;
@@ -9,19 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthenticationService service;
 
-    @PostMapping("/register")
+
+    @PostMapping("/auth/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         logger.info("register");
         try {
@@ -31,12 +30,18 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody AuthenticationRequest request) {
+    @PostMapping("/auth/authenticate")
+    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         logger.info("register");
 
         return ResponseEntity.ok(service.authenticate(request));
 
     }
+    @GetMapping("/get_user")
+    public ResponseEntity<User> getUser(){
+        logger.info(String.valueOf(service.getCurrentUser()));
+        return ResponseEntity.ok(service.getCurrentUser());
+    }
+
 
 }

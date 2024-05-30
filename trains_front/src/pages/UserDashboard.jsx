@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import "../styles/UserDashboard.css"
 import { Card } from 'react-bootstrap';
-import { request, getUserId } from '../util/Authentication.jsx';
+import { request } from '../util/Authentication.jsx';
 
 export default function UserDashboard() {
     const [future, setFuture] = useState([]);
     const [past, setPast] = useState([]);
     const [activeTab, setActiveTab] = useState('future');
     const [currentData, setCurrentData] = useState([]);
+    const [user, setUser]=useState([]);
 
     useEffect(() => {
-        request("GET", "/api/future_trips", {}, { user_id: getUserId() })
+        request("GET", "/api/get_user",{},{})
+        .then(response1=>{
+            setUser(response1.data)
+            request("GET", "/api/future_trips", {}, { user_id: response1.data.userId })
             .then(response => {
                 setFuture(response.data);
                 if (activeTab === 'future') {
@@ -19,7 +23,7 @@ export default function UserDashboard() {
                 }
 
 
-                request("GET", "/api/past_trips", {}, { user_id: getUserId() })
+                request("GET", "/api/past_trips", {}, { user_id: response1.data.userId })
                     .then(response => {
                         setPast(response.data);
                         if (activeTab === 'past') {
@@ -27,6 +31,8 @@ export default function UserDashboard() {
                         }
                     })
             })
+        })
+        
 
 
     }, []);
@@ -46,7 +52,7 @@ export default function UserDashboard() {
             <div className="home--link"><Link to="/"><span className="black">TRAIN</span><span className="blue">SERVICE</span></Link></div>
             <div className="user--greeting">
                 <p className="greeting--text">
-                    Welcome aboard <span className="blue">name!</span>
+                    Welcome aboard <span className="blue">{user.login}!</span>
                 </p>
                 <p className="greeting--text--bottom">Life, much like a <span className="blue">train journey,</span> <br /> is best enjoyed
                     with good company by our side.</p>

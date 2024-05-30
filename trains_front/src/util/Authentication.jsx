@@ -5,19 +5,15 @@ export const getAuthToken = () => {
     return window.localStorage.getItem("auth_token");
 };
 
-export const getUserId = () => {
-    return window.localStorage.getItem("user_id");
-};
 
 
 
-export const setAuthToken = (token, userId) => {
+export const setAuthToken = (token) => {
     window.localStorage.setItem("auth_token", token);
-    window.localStorage.setItem("user_id", userId);
 
 };
 
-export const request = (method, url, data, params) => {
+export const request = async (method, url, data, params) => {
     let headers = {};
     try {
         let token = getAuthToken();
@@ -29,16 +25,18 @@ export const request = (method, url, data, params) => {
     }
     console.log(getAuthToken());
 
-    return axios({
-        method: method,
-        headers: headers,
-        url: url,
-        data: data,
-        params: params
-    }).catch((error) => {
+    try {
+        return await axios({
+            method: method,
+            headers: headers,
+            url: url,
+            data: data,
+            params: params
+        });
+    } catch (error_1) {
         console.log("authError");
-        throw error;
-    })
+        throw error_1;
+    }
 }
 
 export const isTokenExpired = () => {

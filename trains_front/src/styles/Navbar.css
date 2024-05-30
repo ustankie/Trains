@@ -1,0 +1,11 @@
+.navbar--logged-in-wrapper{
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 30px;
+    width: fit-content;
+    height: fit-content;
+}
+
