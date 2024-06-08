@@ -296,7 +296,7 @@ FROM route
 
 Przykładowy widok:
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 ## Widok all_stations
 
