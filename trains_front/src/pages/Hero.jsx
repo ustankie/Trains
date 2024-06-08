@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from "react-router-dom";
 import "../styles/Hero.css";
 import "../styles/App.css";
 import "../styles/Main.css";
+import "../styles/Navbar.css";
 import Form from '../components/Form';
+import Navbar from '../components/Navbar';
+
+
+
 
 export default function Hero() {
+    
     return (
         <>      
-        <div className="login--link"><Link to="/login">SIGN <span className="blue">IN</span></Link></div>
+        {/* <div style={{backgroundColor: "red", width: "30px"}}> */}
+        <Navbar/>
+
+        {/* </div> */}
         <div className="hero--wrapper">
             <div className="background"></div>
             <div className="content">

@@ -1,30 +1,42 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import "../styles/UserDashboard.css"
 import { Card } from 'react-bootstrap';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import data from '../data.js'
+import { request } from '../util/Authentication.jsx';
 
 export default function UserDashboard() {
     const [future, setFuture] = useState([]);
     const [past, setPast] = useState([]);
     const [activeTab, setActiveTab] = useState('future');
     const [currentData, setCurrentData] = useState([]);
-    
+    const [user, setUser]=useState([]);
+
     useEffect(() => {
-        const today = new Date();
-        const futureTickets = data.filter(ticket => new Date(ticket.departure) >= today);
-        const pastTickets = data.filter(ticket => new Date(ticket.departure) < today);
+        request("GET", "/api/get_user",{},{})
+        .then(response1=>{
+            setUser(response1.data)
+            request("GET", "/api/future_trips", {}, { user_id: response1.data.userId })
+            .then(response => {
+                setFuture(response.data);
+                if (activeTab === 'future') {
+                    setCurrentData(response.data);
+                }
 
-        setFuture(futureTickets);
-        setPast(pastTickets);
 
-        if (activeTab === 'future') {
-            setCurrentData(futureTickets);
-        } else {
-            setCurrentData(pastTickets);
-        }
-    }, [data]);
+                request("GET", "/api/past_trips", {}, { user_id: response1.data.userId })
+                    .then(response => {
+                        setPast(response.data);
+                        if (activeTab === 'past') {
+                            setCurrentData(response.data);
+                        }
+                    })
+            })
+        })
+        
+
+
+    }, []);
+
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
@@ -40,7 +52,7 @@ export default function UserDashboard() {
             <div className="home--link"><Link to="/"><span className="black">TRAIN</span><span className="blue">SERVICE</span></Link></div>
             <div className="user--greeting">
                 <p className="greeting--text">
-                    Welcome aboard <span className="blue">name!</span>
+                    Welcome aboard <span className="blue">{user.login}!</span>
                 </p>
                 <p className="greeting--text--bottom">Life, much like a <span className="blue">train journey,</span> <br /> is best enjoyed
                     with good company by our side.</p>
@@ -63,7 +75,7 @@ export default function UserDashboard() {
                 </div>
                 <div className="cards">
                     {currentData.map((route) => (
-                        <Card key={route.id} className="routeCard">
+                        <Card key={route.routeId} className="routeCard">
                             <Card.Body className="routeCardBody">
                                 <div className="routeCardBodyContent">
                                     <div className="routeDetails">
@@ -76,7 +88,7 @@ export default function UserDashboard() {
                                     </div>
                                     <div className="routeDetails">
                                         <p className="routeCardHeaders">Time</p>
-                                        <p className="routeCardDetails">13:15:22 <span className="material-symbols-outlined arrow--small">arrow_forward</span> 13:51:34</p>
+                                        <p className="routeCardDetails">{route.departure}<span className="material-symbols-outlined arrow--small">arrow_forward</span> {route.arrival}</p>
                                     </div>
                                     <div className="routeDetails">
                                         <p className="routeCardHeaders">Departure Date</p>
@@ -84,7 +96,7 @@ export default function UserDashboard() {
                                     </div>
                                     <div className="routeDetails">
                                         <p className="routeCardHeaders">Seat</p>
-                                        <p className="routeCardDetails">{route.seat}</p>
+                                        <p className="routeCardDetails">{route.seatId}</p>
                                     </div>
                                 </div>
                             </Card.Body>
