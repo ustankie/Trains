@@ -1,12 +1,54 @@
-# Implementacja w Postgresql
+## Spis treści
+- [Tabele](#tabele)
+  - [Tabela discounts](#tabela-discounts)
+  - [Tabela log\_reservation](#tabela-log_reservation)
+  - [Tabela reservations](#tabela-reservations)
+  - [Tabela route](#tabela-route)
+  - [Tabela route\_sections](#tabela-route_sections)
+  - [Tabela seat\_reservations](#tabela-seat_reservations)
+  - [Tabela seats](#tabela-seats)
+  - [Tabela section\_details](#tabela-section_details)
+  - [Tabela stations](#tabela-stations)
+  - [Tabela trains](#tabela-trains)
+  - [Tabela users](#tabela-users)
+- [Widoki](#widoki)
+  - [Widok all\_routes](#widok-all_routes)
+  - [Widok all\_stations](#widok-all_stations)
+- [Procdeury](#procdeury)
+  - [add\_train](#add_train)
+  - [add\_station](#add_station)
+  - [add\_route](#add_route)
+  - [add\_user](#add_user)
+  - [add\_discount](#add_discount)
+  - [add\_seat](#add_seat)
+  - [station\_exists](#station_exists)
+  - [add\_section\_details](#add_section_details)
+  - [add\_section\_details\_both\_ways](#add_section_details_both_ways)
+  - [add\_route\_section](#add_route_section)
+  - [change\_route\_status](#change_route_status)
+  - [add\_reservation](#add_reservation)
+  - [update\_user\_password](#update_user_password)
+- [Funkcje](#funkcje)
+  - [find\_routes](#find_routes)
+  - [user\_reservations](#user_reservations)
+  - [route\_passengers](#route_passengers)
+  - [section\_exists](#section_exists)
+  - [section\_distance](#section_distance)
+  - [get\_station\_id](#get_station_id)
+  - [count\_sum\_price](#count_sum_price)
+  - [get\_departure\_time](#get_departure_time)
+  - [get\_route\_sections](#get_route_sections)
+  - [get\_occupied\_seats](#get_occupied_seats)
+- [Triggery](#triggery)
+  - [status\_insert\_trigger](#status_insert_trigger)
 
 ## Schemat bazy danych 
 
 ![Schemat bazy danych](images/schemat.png)
 
-## Tabele
+# Tabele
 
-### Tabela discounts
+## Tabela discounts
 
 Tabela zawiera wszystkie możliwe zniżki na bilety.
 
@@ -23,7 +65,7 @@ CREATE TABLE discounts (
     CONSTRAINT discounts_pk PRIMARY KEY (discount_ID)
 );
 ```
-### Tabela log_reservation
+## Tabela log_reservation
 
 Tabela zawiera logi zmiany statusu rezerwacji. 
 
@@ -42,7 +84,7 @@ CREATE TABLE log_reservation (
     CONSTRAINT log_reservation_pk PRIMARY KEY (log_id)
 );
 ```
-### Tabela reservations
+## Tabela reservations
 
 Tabela zawiera rezerwacje biletów na pociągi. 
 
@@ -73,7 +115,7 @@ CREATE TABLE reservations (
     CONSTRAINT reservations_pk PRIMARY KEY (reservation_ID)
 );
 ```
-### Tabela route
+## Tabela route
 
 Tabela zawiera ogólne trasy pociagów. 
 
@@ -96,7 +138,7 @@ CREATE TABLE route (
     CONSTRAINT route_pk PRIMARY KEY (route_ID)
 );
 ```
-### Tabela route_sections
+## Tabela route_sections
 
 Tabela zawiera dokładne dane dla danej trasy pociągu. 
 
@@ -119,7 +161,7 @@ CREATE TABLE route_sections (
     CONSTRAINT route_sections_pk PRIMARY KEY (route_section_ID)
 );
 ```
-### Tabela seat_reservations
+## Tabela seat_reservations
 
 Tabela zawiera rezerwacje miejsca dla konkretnego bileu. 
 
@@ -137,7 +179,7 @@ CREATE TABLE seat_reservations (
     section_id bigserial  NOT NULL
 );
 ```
-### Tabela seats
+## Tabela seats
 
 Tabela zawiera dostępne miejsca w pociągach.
 
@@ -153,7 +195,7 @@ CREATE TABLE seats (
 );
 ```
 
-### Tabela section_details
+## Tabela section_details
 
 Tabela zawiera odcinki po których jeżdzą pociagi. 
 
@@ -172,7 +214,7 @@ CREATE TABLE section_details (
     CONSTRAINT section_details_pk PRIMARY KEY (section_id)
 );
 ```
-### Tabela stations
+## Tabela stations
 
 Tabela słownikowa przechowująca wszystkie obsługiwane stacje. 
 
@@ -188,7 +230,7 @@ CREATE TABLE stations (
 );
 ```
 
-### Tabela trains
+## Tabela trains
 
 Tabela przechowuje wszystkie pociągi. 
 
@@ -205,7 +247,7 @@ CREATE TABLE trains (
     CONSTRAINT trains_pk PRIMARY KEY (train_ID)
 );
 ```
-### Tabela users
+## Tabela users
 
 Tabela przechowuje dane o użytkownikach. 
 
@@ -254,7 +296,7 @@ FROM route
 
 Przykładowy widok:
 
-<span style="color:red;">TODO jak bedzie wiecej tras xD</span>
+![alt text](image.png)
 
 ## Widok all_stations
 
@@ -554,7 +596,7 @@ Przykładowe użycie:
 CALL change_route_status(9);
 ```
 
-## add_reservation - TO BE IMPROVED, pracuję nad integracją tego z rezerwacją siedzeń -> chyba działa ale sprawdź pls czy wszystko ok, bo skomplikowane to
+## add_reservation
 Procedura dodaje rezerwację dla podanego użytkownika, trasy, zniżki oraz stacji początkowych i końcowych, a także dodaje do tabeli seat_reservations informację o wszystkich odcinkach, na które zarezerwowane jest dane miejsce.
 ```sql
 create procedure add_reservation(IN _user_id bigint, IN _discount_id bigint, IN _route_id bigint, IN _start_station_id bigint, IN _end_station_id bigint, IN _departure_date date, IN _seat_id bigint)
@@ -587,16 +629,17 @@ BEGIN
     RETURNING reservation_id INTO _reservation_id;
 
 
+
     FOR t_section IN  (select * from get_route_sections(_route_id, _start_station_id,
                                                   _end_station_id))
     LOOP
+            RAISE NOTICE 'Hello, world!';
             INSERT INTO seat_reservations(reservation_id, seat_id, section_id)
             values (_reservation_id,_seat_id,t_section);
     end loop;
 
 END;
 $$;
-
 ```
 
 ## update_user_password
@@ -631,21 +674,18 @@ CALL update_user_password('alicesmith', 'alamakota124');
 
 # Funkcje
 
-## find_routes -- ULA SPRAWDZ BO XD -> DODAŁAM DODATKOWO ZWRACANIE CZASU DOJAZDU NA STACJĘ DOCELOWĄ I SPRAWDZANIE CZY ARRIVAL>DEPARTURE, ŻEBY ZAPEWNIĆ DOBRY KIERUNEK TRASY
-
-Nie robie error checkingu czy stacja początkowa < stacja koncowa, bo nie wiem jak, ale chyba jakos tam dziala. 
-
-Dla podanej daty oraz nazw stacji poczatkowej i końcowej funkcja zwraca wszystkie połączenia. 
+## find_routes
 
 Implementacja: 
 ```sql
 create function find_routes(_departure_date date, _start_station_id bigint, _end_station_id bigint)
-    returns TABLE(route_id bigint, departure_day character varying, departure_date date, departure_time time without time zone, arrival_time time without time zone)
+    returns TABLE(route_id bigint, departure_day character varying, departure_date date, departure_time time without time zone, arrival_time time without time zone, price double precision)
     language plpgsql
 as
 $$
 DECLARE
     _day varchar(10);
+    _discount BIGINT;
 BEGIN
 
 
@@ -667,22 +707,23 @@ BEGIN
         WHERE section_details.next_station_id = _end_station_id AND trim(day_of_week) = trim(_day)
     );
 
+    select discount_id into _discount
+    from discounts where percent=0;
+
     RETURN QUERY (
-        SELECT starts.route_id, starts.day_of_week, _departure_date, route_sections.departure,ends.arrival
+        SELECT starts.route_id, starts.day_of_week, _departure_date, route_sections.departure, ends.arrival,
+               count_sum_price(_discount, starts.route_id, _start_station_id, _end_station_id)
         FROM starts
         INNER JOIN ends ON starts.route_id = ends.route_id
         INNER JOIN route_sections ON route_sections.route_id = starts.route_id
         INNER JOIN section_details ON route_sections.section_id = section_details.section_id
         WHERE trim(starts.day_of_week) = trim(ends.day_of_week) AND section_details.start_station_id = _start_station_id 
           AND route_sections.departure<=ends.arrival
+        order by route_sections.departure
     );
 
 END;
 $$;
-
-alter function find_routes(date, bigint, bigint) owner to kamil;
-
-
 ```
 
 Przykładowe użycie: 
@@ -699,15 +740,33 @@ Funkcja zwraca wszystkie rezerwacje użytkownika
 
 Implementacja: 
 ```sql
-create or replace function user_reservations(_user_id int)
-returns table(reservation_id bigint, route_id bigint, payment_status varchar(10), departure_date date)
-language plpgsql
+create function user_reservations(_user_id integer)
+    returns TABLE(reservation_id bigint, route_id bigint, departure time without time zone, arrival time without time zone, start_station character varying, end_station character varying, seat_id integer, departure_date date, price double precision)
+    language plpgsql
 as
 $$
-BEGIN
-    return query(SELECT r.reservation_id, r.route_id, r.payment_status, r.departure_date
-                 FROM reservations r
-                 WHERE r.user_id = _user_id);
+begin
+    return query (SELECT distinct r.reservation_id,
+                                  r.route_id,
+                                  (select rs.departure
+                                   from section_details sd
+                                            inner join route_sections rs on rs.section_id = sd.section_id
+                                   where sd.start_station_id = r.start_station_id
+                                     and rs.route_id = r.route_id) as departure,
+                                  (select rs.arrival
+                                   from section_details sd
+                                            inner join route_sections rs on rs.section_id = sd.section_id
+                                   where sd.next_station_id = r.end_station_id
+                                     and rs.route_id = r.route_id) as arrival,
+                                  (select name from stations where station_id=r.start_station_id) as start_station,
+                                  (select name from stations where station_id=r.end_station_id) as end_station,
+                                    (select s.seat_number from seats s where s.seat_id = sr.seat_id) as seat_id,
+                                  r.departure_date,
+                                  count_sum_price(r.discount_id, r.route_id, r.start_station_id, r.end_station_id) as price
+                  FROM reservations r
+                           inner JOIN seat_reservations sr ON r.reservation_id = sr.reservation_id
+
+                  WHERE r.user_id = _user_id);
 end;
 $$;
 ```
