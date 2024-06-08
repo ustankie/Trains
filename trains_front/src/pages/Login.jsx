@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { request, setAuthToken,isTokenExpired } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import Navbar from '../components/Navbar';
 
 
 export default function Login() {
@@ -22,7 +23,7 @@ export default function Login() {
         const { login, password } = data;
         request("POST", "/api/auth/authenticate", { login: login, password: password },{})
             .then((response) => { 
-                setAuthToken(response.data.token,response.data.userId); 
+                setAuthToken(response.data.token); 
                 console.log(response.data.userId); 
                 toast.success('Login successful'); 
                 navigate("/") })
@@ -34,6 +35,7 @@ export default function Login() {
     }
     return (
         <>
+        
 
             <div className="login--container">
                 <div className="home--link"><Link to="/">TRAIN <span className="blue">SERVICE</span></Link></div>
@@ -56,10 +58,14 @@ export default function Login() {
                         </form>
                     </div>
                     :
-                    <div className="login--wrapper" id="logged-in">
-                        <p className="login--logged-in-text">Already logged in!</p>
-                        <button className="login--btn" onClick={() => { setAuthToken("null","null"); navigate("/login") }}>Log out</button>
-                    </div>
+                    <>
+                        <Navbar/>
+                        <div className="login--wrapper" id="logged-in">
+                            <p className="login--logged-in-text">Already logged in!</p>
+                            <button className="login--btn" onClick={() => { setAuthToken("null","null"); navigate("/login") }}>Log out</button>
+                        </div>
+                    </>
+     
                 }
             </div>
         </>

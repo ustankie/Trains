@@ -3,8 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import "../styles/Reservation.css"
 import Seat from "../components/Seat"
 import { toast } from 'react-hot-toast';
-import { getAuthToken, getUserId, isTokenExpired, request } from '../util/Authentication';
+import { getAuthToken, isTokenExpired, request } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 export default function Reservation() {
     const { state } = useLocation();
@@ -17,6 +18,7 @@ export default function Reservation() {
     const [seatsData, setSeatsData] = useState([]);
     const [taken, setTaken] = useState([]);
     const [newReservation, setNewReservation] = useState(false);
+    const [user, setUser]=useState([]);
 
     const navigate = useNavigate();
 
@@ -28,6 +30,7 @@ export default function Reservation() {
         }
     }
     useEffect(() => {
+
         request("GET", '/api/getOccupiedSeats', {}, {
 
             routeId: routeId,
@@ -45,6 +48,7 @@ export default function Reservation() {
             .catch(error => {
                 console.error('Error fetching occupied seats:', error);
             });
+
     }, [newReservation]);
 
     const seats = seatsData.map(seat => {
@@ -119,29 +123,34 @@ export default function Reservation() {
             return;
         }
 
-        request("POST", 'api/reservations/add', {
-            userId: getUserId(),
-            discountId: discountId,
-            routeId: routeId,
-            startStation: startStation,
-            endStation: endStation,
-            departureDate: departureDate,
-            seatId: currentSeat[0]
-        }, {})
-            .then(response => {
-                toast.success("Reservation added successfully!");
-                setCurrentSeat([]);
-                setNewReservation(true);
-            })
-            .catch(error => {
-                console.error(error);
-                toast.error("Failed to add reservation.");
-            });
+        request("GET", "/api/get_user",{},{})
+        .then(response1=>{
+            setUser(response1.data);
+            request("POST", 'api/reservations/add', {
+                userId: response1.data.userId,
+                discountId: discountId,
+                routeId: routeId,
+                startStation: startStation,
+                endStation: endStation,
+                departureDate: departureDate,
+                seatId: currentSeat[0]
+            }, {})
+                .then(response => {
+                    toast.success("Reservation added successfully!");
+                    setCurrentSeat([]);
+                    setNewReservation(true);
+                })
+                .catch(error => {
+                    console.error(error);
+                    toast.error("Failed to add reservation.");
+                })
+        });
         setNewReservation(false);
     }
 
     return (
         <>
+            <Navbar color_mode="login--dark"/>
             <div className="reservation--container">
                 <div className="home--link"><Link to="/"><span className="black">TRAIN</span><span className="blue">SERVICE</span></Link></div>
                 <div className="route--info">
