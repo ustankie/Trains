@@ -46,6 +46,7 @@ export default function UserDashboard() {
             setCurrentData(past);
         }
     };
+    console.log(future);
 
     return (
         <div className="user--dashboard--container">
@@ -75,7 +76,7 @@ export default function UserDashboard() {
                 </div>
                 <div className="cards">
                     {currentData.map((route) => (
-                        <Card key={route.routeId} className="routeCard">
+                        <Card key={route.reservationId} className="routeCard">
                             <Card.Body className="routeCardBody">
                                 <div className="routeCardBodyContent">
                                     <div className="routeDetails">
@@ -92,7 +93,7 @@ export default function UserDashboard() {
                                     </div>
                                     <div className="routeDetails">
                                         <p className="routeCardHeaders">Departure Date</p>
-                                        <p className="routeCardDetails">{route.departure}</p>
+                                        <p className="routeCardDetails">{route.departureDate}</p>
                                     </div>
                                     <div className="routeDetails">
                                         <p className="routeCardHeaders">Seat</p>

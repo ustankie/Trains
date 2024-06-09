@@ -1,6 +1,7 @@
 package com.trains.demo.repository;
 
 import com.trains.demo.model.Reservation;
+import com.trains.demo.model.ReservationHistory;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     @Modifying
@@ -25,5 +27,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query(nativeQuery = true, value = "SELECT get_station_id(:_name)")
     Long getStationId(@Param("_name") String stationName);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from user_reservations(:_user_id) as all_trips")
+    List<ReservationHistory> getAllTrips(@Param("_user_id") Integer user_id);
 }
 
