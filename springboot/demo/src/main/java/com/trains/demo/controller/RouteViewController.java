@@ -1,7 +1,7 @@
 package com.trains.demo.controller;
 
 import com.trains.demo.model.Route;
-import com.trains.demo.model.SpecifiedRouteView;
+import com.trains.demo.model.nonpersistent.SpecifiedRouteView;
 import com.trains.demo.repository.RouteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
