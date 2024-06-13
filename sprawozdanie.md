@@ -37,6 +37,7 @@
   - [section\_distance](#section_distance)
   - [get\_station\_id](#get_station_id)
   - [count\_sum\_price](#count_sum_price)
+  - [reservation\_sum\_price](#reservation_sum_price)
   - [get\_departure\_time](#get_departure_time)
   - [get\_route\_sections](#get_route_sections)
   - [get\_occupied\_seats](#get_occupied_seats)
@@ -780,11 +781,13 @@ Funkcja zwraca wszystkie rezerwacje użytkownika
 Implementacja: 
 ```sql
 create function user_reservations(_user_id integer)
-    returns TABLE(reservation_id bigint, route_id bigint, departure time without time zone, arrival time without time zone, start_station character varying, end_station character varying, seat_id integer, departure_date date, price double precision)
+    returns TABLE(reservationid bigint, routeid bigint, departure time without time zone, arrival time without time zone, startstation character varying, endstation character varying, seatid integer, departuredate date, status character varying)
     language plpgsql
 as
 $$
 begin
+
+
     return query (SELECT distinct r.reservation_id,
                                   r.route_id,
                                   (select rs.departure
@@ -799,9 +802,9 @@ begin
                                      and rs.route_id = r.route_id) as arrival,
                                   (select name from stations where station_id=r.start_station_id) as start_station,
                                   (select name from stations where station_id=r.end_station_id) as end_station,
-                                    (select s.seat_number from seats s where s.seat_id = sr.seat_id) as seat_id,
+                                  (select s.seat_number from seats s where s.seat_id = sr.seat_id) as seat_id,
                                   r.departure_date,
-                                  count_sum_price(r.discount_id, r.route_id, r.start_station_id, r.end_station_id) as price
+                                  r.payment_status as status
                   FROM reservations r
                            inner JOIN seat_reservations sr ON r.reservation_id = sr.reservation_id
 
@@ -990,6 +993,26 @@ $$;
 
 
 
+```
+
+## reservation_sum_price
+Zwraca sumaryczną cenę dla danej rezerwacji
+```sql
+create or replace function reservation_sum_price(_reservation_id bigint) returns double precision
+    language plpgsql
+as
+$$
+declare
+    _discount_id bigint;
+    _route_id bigint;
+    _start_station_id bigint;
+    _end_station_id bigint;
+begin
+    select discount_id, route_id, start_station_id, end_station_id into _discount_id, _route_id, _start_station_id
+        ,_end_station_id from reservations where reservation_id=_reservation_id;
+    return count_sum_price(_discount_id,_route_id,_start_station_id,_end_station_id);
+end;
+$$;
 ```
 
 ## get_departure_time

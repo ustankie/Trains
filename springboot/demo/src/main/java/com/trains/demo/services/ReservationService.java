@@ -27,4 +27,8 @@ public class ReservationService {
         reservationRepository.changeStatus(reservationId,status);
 
     }
+
+    public Double getReservationPrice(Long reservationId){
+        return reservationRepository.getSumPrice(reservationId);
+    }
 }

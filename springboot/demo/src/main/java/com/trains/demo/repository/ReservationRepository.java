@@ -24,5 +24,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Procedure("change_reservation_status")
     void changeStatus(@Param("_reservation_id") Long reservation_id, @Param("_status") String status);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from reservation_sum_price(:_reservation_id)")
+    Double getSumPrice(@Param("_reservation_id") Long reservation_id);
 }
 

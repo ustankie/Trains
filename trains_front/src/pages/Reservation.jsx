@@ -28,6 +28,8 @@ export default function Reservation() {
     const navigate = useNavigate();
     function handleClose(){
         setShow(false);
+        change_status("C");
+        setNewReservation(true); 
     }
 
 
@@ -55,9 +57,10 @@ export default function Reservation() {
             })
             .catch(error => {
                 console.error('Error fetching occupied seats:', error);
+
             });
 
-    }, [newReservation]);
+    }, [newReservation,currentSeat]);
 
     const seats = seatsData.map(seat => {
         const isTaken = taken.includes(seat.seatId);
@@ -109,7 +112,7 @@ export default function Reservation() {
                 }
             })
             .catch(error =>console.error("Failed to load discounts", error));
-    }, []);
+    }, [newReservation]);
 
     useEffect(() => {
         const selectedDiscount = discounts.find(discount => discount.discountId.toString() === discountId);
@@ -158,23 +161,36 @@ export default function Reservation() {
         setNewReservation(false);
     }
 
-    function pay(){
+    function change_status(status){
         request("GET", "/api/get_user",{},{})
         .then(response1=>{
             setUser(response1.data);
             request("POST", 'api/reservations/change_status', {
                 reservationId: reservationId,
-                status: "P"
+                status: status
             }, {})
                 .then(response => {
-                    toast.success("Payed successfully!");
                     setCurrentSeat([]);
                     setNewReservation(true);
-                    navigate("/");
+                    if(status=="P"){
+                        toast.success("Payed successfully!");
+                        navigate("/");
+
+                    }else{
+                        toast.success("Your reservation has been cancelled");
+
+                        
+                    }
+                    
+
                 })
                 .catch(error => {
                     console.error(error);
-                    toast.error("Failed to pay.");
+                    if(status=="P"){
+                        toast.error("Failed to pay");
+                    }else{
+                        toast.error("Failed to cancel the reservation");
+                    }
                 })
         });
     }
@@ -231,7 +247,7 @@ export default function Reservation() {
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={pay}>Pay</Button>
+          <Button variant="primary" onClick={()=>change_status("P")}>Pay</Button>
         </Modal.Footer>
       </Modal>
         </>

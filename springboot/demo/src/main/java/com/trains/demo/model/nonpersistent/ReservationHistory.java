@@ -5,9 +5,10 @@ import java.time.LocalTime;
 
 public interface ReservationHistory {
 
-    Long getReservation_id();
+    Long getReservationId();
+    String getStatus();
 
-    Long getRoute_id();
+    Long getRouteId();
 
     LocalTime getDeparture();
 
@@ -21,5 +22,4 @@ public interface ReservationHistory {
 
     LocalDate getDepartureDate();
 
-    Double getPrice();
 }
