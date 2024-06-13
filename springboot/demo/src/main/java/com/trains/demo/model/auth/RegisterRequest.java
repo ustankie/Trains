@@ -1,6 +1,6 @@
 package com.trains.demo.model.auth;
 
-import com.trains.demo.model.Role;
+import com.trains.demo.model.nonpersistent.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

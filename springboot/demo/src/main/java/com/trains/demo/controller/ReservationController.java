@@ -2,9 +2,12 @@ package com.trains.demo.controller;
 
 
 import com.trains.demo.model.Reservation;
+import com.trains.demo.model.nonpersistent.ChangeReservationStatus;
 import com.trains.demo.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,8 +19,8 @@ public class ReservationController {
     private ReservationService reservationService;
 
     @PostMapping("/add")
-    public void addReservation(@RequestBody Reservation request) {
-         reservationService.addReservation(
+    public ResponseEntity<Integer> addReservation(@RequestBody Reservation request) {
+         Integer reservationId=reservationService.addReservation(
                 request.getUserId(),
                 request.getDiscountId(),
                 request.getRouteId(),
@@ -26,6 +29,11 @@ public class ReservationController {
                 request.getDepartureDate(),
                 request.getSeatId()
         );
+        return new ResponseEntity<>(reservationId, HttpStatus.CREATED);
 
+    }
+    @PostMapping("/change_status")
+    public void changeReservationStatus(@RequestBody ChangeReservationStatus request){
+        reservationService.changeReservationStatus(request.getReservationId(), request.getStatus());
     }
 }

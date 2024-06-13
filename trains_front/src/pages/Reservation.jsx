@@ -6,6 +6,9 @@ import { toast } from 'react-hot-toast';
 import { getAuthToken, isTokenExpired, request } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+
 
 export default function Reservation() {
     const { state } = useLocation();
@@ -19,8 +22,13 @@ export default function Reservation() {
     const [taken, setTaken] = useState([]);
     const [newReservation, setNewReservation] = useState(false);
     const [user, setUser]=useState([]);
+    const [show, setShow] = useState(false);
+    const [reservationId,setReservationId]=useState([]);
 
     const navigate = useNavigate();
+    function handleClose(){
+        setShow(false);
+    }
 
 
     function pickSeat(seatId, seatNumber) {
@@ -139,6 +147,8 @@ export default function Reservation() {
                     toast.success("Reservation added successfully!");
                     setCurrentSeat([]);
                     setNewReservation(true);
+                    setReservationId(response.data);
+                    console.log(reservationId);
                 })
                 .catch(error => {
                     console.error(error);
@@ -146,6 +156,27 @@ export default function Reservation() {
                 })
         });
         setNewReservation(false);
+    }
+
+    function pay(){
+        request("GET", "/api/get_user",{},{})
+        .then(response1=>{
+            setUser(response1.data);
+            request("POST", 'api/reservations/change_status', {
+                reservationId: reservationId,
+                status: "P"
+            }, {})
+                .then(response => {
+                    toast.success("Payed successfully!");
+                    setCurrentSeat([]);
+                    setNewReservation(true);
+                    navigate("/");
+                })
+                .catch(error => {
+                    console.error(error);
+                    toast.error("Failed to pay.");
+                })
+        });
     }
 
     return (
@@ -180,9 +211,29 @@ export default function Reservation() {
                 <div className="reservation--summary">
                     {currentSeat[1] && <p>Chosen seat: {currentSeat[1]}</p>}
                     <p>Total Price: {finalPrice} zł</p>
-                    <button className="blue--btn" onClick={addReservation}>Book</button>
+                    <button className="blue--btn" onClick={()=>{addReservation();setShow(true);}}>Book</button>
                 </div>
             </div>
+        <Modal
+            show={show}
+            onHide={handleClose}
+            backdrop="static"
+            keyboard={false}
+            centered
+        >
+        <Modal.Header closeButton>
+          <Modal.Title>Payment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            Your reservation has beeen added. Pay within 15 minutes, after that your reservation will be cancelled
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={pay}>Pay</Button>
+        </Modal.Footer>
+      </Modal>
         </>
     );
 }

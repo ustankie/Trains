@@ -1,6 +1,6 @@
 package com.trains.demo.controller;
 
-import com.trains.demo.model.ReservationHistory;
+import com.trains.demo.model.nonpersistent.ReservationHistory;
 import com.trains.demo.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
