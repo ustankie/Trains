@@ -41,6 +41,12 @@
   - [get\_occupied\_seats](#get_occupied_seats)
 - [Triggery](#triggery)
   - [status\_insert\_trigger](#status_insert_trigger)
+- [Front](#front)
+  - [Hero component](#hero-component)
+  - [Login i register](#login-i-register)
+  - [User dashboard](#user-dashboard)
+  - [Routes display](#routes-display)
+  - [Add reservation](#add-reservation)
 
 ## Schemat bazy danych 
 
@@ -1086,3 +1092,39 @@ CREATE TRIGGER status_insert_trigger
     FOR EACH ROW
 EXECUTE FUNCTION log_status_insert();
 ```
+# Front 
+
+## Hero component
+
+`Hero component` to strona startowa naszej aplikacji, w której użytkownik może się zalogować, lub wyszukać trasę jaka go interesuje. 
+
+![alt text](images/image-0.png)
+
+
+## Login i register
+
+Aplikacja umożliwia zalogowanie się lub utworzenie nowego konta w serwisie. 
+
+![alt text](images/image-1.png)
+
+## User dashboard
+
+`User dashboard` zawiera informacje o przeszłych i przeszłych podróżach konkretnego użytkownika. 
+
+![alt text](images/image-2.png)
+
+## Routes display
+
+`Routes display` wyswietla wszystkie dostępne trasy zgodnie z kryteriami wyszukiwania. 
+
+![alt text](images/image-3.png)
+
+W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna informacja. 
+
+![alt text](images/image-4.png)
+
+## Add reservation 
+
+Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
+
+![alt text](images/image-5.png)
