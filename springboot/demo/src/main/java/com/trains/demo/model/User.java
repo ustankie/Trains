@@ -1,5 +1,6 @@
 package com.trains.demo.model;
 
+import com.trains.demo.model.nonpersistent.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Table(name="reservations")
 public class Reservation {
     @Id
+    private Long reservationId;
     private Long userId;
     private Long discountId;
     private Long routeId;
@@ -45,5 +46,13 @@ public class Reservation {
 
     public Long getSeatId() {
         return seatId;
+    }
+
+    public Long getReservationId() {
+        return reservationId;
+    }
+
+    public void setReservationId(Long reservationId) {
+        this.reservationId = reservationId;
     }
 }

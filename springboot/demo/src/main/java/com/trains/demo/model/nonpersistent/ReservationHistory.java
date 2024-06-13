@@ -1,4 +1,4 @@
-package com.trains.demo.model;
+package com.trains.demo.model.nonpersistent;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

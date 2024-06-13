@@ -2,7 +2,7 @@ package com.trains.demo.repository;
 
 
 import com.trains.demo.model.Route;
-import com.trains.demo.model.SpecifiedRouteView;
+import com.trains.demo.model.nonpersistent.SpecifiedRouteView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -28,6 +28,7 @@
   - [change\_route\_status](#change_route_status)
   - [add\_reservation](#add_reservation)
   - [update\_user\_password](#update_user_password)
+  - [change\_reservation\_status](#change_reservation_status)
 - [Funkcje](#funkcje)
   - [find\_routes](#find_routes)
   - [user\_reservations](#user_reservations)
@@ -39,6 +40,7 @@
   - [get\_departure\_time](#get_departure_time)
   - [get\_route\_sections](#get_route_sections)
   - [get\_occupied\_seats](#get_occupied_seats)
+  - [get\_last\_log](#get_last_log)
 - [Triggery](#triggery)
   - [status\_insert\_trigger](#status_insert_trigger)
 
@@ -669,7 +671,38 @@ Przykładowe użycie:
 ```sql
 CALL update_user_password('alicesmith', 'alamakota124');
 ```
+## change_reservation_status
+Procedura zmienia status rezerwacji - możliwe są wszystkie zmiany za wyjątkie C -> N oraz P -> N 
+```sql
+create procedure change_reservation_status(IN _reservation_id integer, IN _status character varying)
+    language plpgsql
+as
+$$
+declare
+      old_status varchar(10);
+begin
+    if not exists (select * from reservations where reservation_id=_reservation_id) then
+        RAISE EXCEPTION 'Reservation with ID %, does not exist!', _reservation_id;
+    end if;
 
+    select payment_status from reservations where reservation_id=_reservation_id into old_status;
+
+    if _status=old_status then
+        raise exception 'Statuses are the same!';
+    end if;
+
+    if _status='N' then
+        raise exception 'Change to not paid is not allowed!';
+    end if;
+
+    update reservations
+    set payment_status=_status
+    where _reservation_id=reservation_id;
+
+
+end;
+$$;
+```
 
 
 # Funkcje
@@ -1061,24 +1094,41 @@ begin
 end$$;
 ```
 
+## get_last_log
+Zwraca ostatni log z tabeli log_reservations dla rezerwacji o podanym id:
+```sql
+create function get_last_log(_reservation_id integer)
+    returns TABLE(log_id bigint, reservation_id bigint, new_status character varying, date timestamp without time zone)
+    language plpgsql
+as
+$$
+begin
+    return query(select * from log_reservation lr where lr.reservation_id=_reservation_id order by date desc limit 1);
+
+
+end;
+$$;
+```
+
 # Triggery
 
 ## status_insert_trigger
 
 Wprowadza wpis do tabeli reservation_logs, kiedy zostanie dodany rekord do tabeli reservations:
 ```sql
-CREATE OR REPLACE FUNCTION log_status_insert()
-    RETURNS TRIGGER
-    LANGUAGE plpgsql
-AS $$
+create function log_status_insert() returns trigger
+    language plpgsql
+as
+$$
 BEGIN
-    IF TG_OP = 'INSERT' THEN
+    IF TG_OP = 'INSERT' or TG_OP = 'UPDATE' THEN
         INSERT INTO log_reservation (reservation_id, new_status, date)
-        VALUES (NEW.reservation_id, NEW.payment_status, CURRENT_TIMESTAMP);
+        VALUES (NEW.reservation_id, NEW.payment_status, timezone('Europe/Warsaw', CURRENT_TIMESTAMP));
     END IF;
     RETURN NEW;
 END;
 $$;
+
 
 
 CREATE TRIGGER status_insert_trigger
