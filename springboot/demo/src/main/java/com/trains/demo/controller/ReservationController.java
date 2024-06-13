@@ -36,4 +36,9 @@ public class ReservationController {
     public void changeReservationStatus(@RequestBody ChangeReservationStatus request){
         reservationService.changeReservationStatus(request.getReservationId(), request.getStatus());
     }
+
+    @GetMapping("/price")
+    public Double getReservationPrice(@RequestParam Long reservationId){
+        return reservationService.getReservationPrice(reservationId);
+    }
 }

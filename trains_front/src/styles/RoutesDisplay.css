@@ -65,6 +65,9 @@
     align-items: center;
     
 }
+.routeCard--user_dashboard{
+    width:70rem
+}
 
 .routeCardBodyContent{
     display: flex;
