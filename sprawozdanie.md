@@ -50,6 +50,15 @@
   - [User dashboard](#user-dashboard)
   - [Routes display](#routes-display)
   - [Add reservation](#add-reservation)
+- [Backend](#backend)
+  - [Model](#model)
+    - [Discout](#discout)
+    - [Occupied Seats](#occupied-seats)
+    - [Reservations](#reservations)
+    - [Route](#route)
+    - [Seat](#seat)
+    - [Station](#station)
+    - [User](#user)
 
 ## Schemat bazy danych 
 
@@ -1201,3 +1210,169 @@ W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna inform
 Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
 
 ![alt text](images/image-5.png)
+
+# Backend 
+
+## Model 
+
+Aby reprezentować bazę w modelu obiektowym stworzyliśmy klasy z odpowiadającymi im atrybutami do kolumn w bazie.
+
+### Discout
+
+```java
+@Getter
+@Entity
+@Table(name="discounts")
+public class Discount {
+    @Id
+    private Long discountId;
+    private String discountName;
+    private Integer percent;
+}
+```
+
+### Occupied Seats 
+
+```java
+@Getter
+@Entity
+@Table(name="occupied_seats")
+public class OccupiedSeats {
+    @Id
+    private Long seatId;
+}
+```
+
+### Reservations
+
+```java
+@Getter
+@Entity
+@Table(name="reservations")
+public class Reservation {
+    @Id
+    private Long reservationId;
+    private Long userId;
+    private Long discountId;
+    private Long routeId;
+    private String startStation;
+    private String endStation;
+    private LocalDate departureDate;
+    private Long seatId;
+
+    public void setReservationId(Long reservationId) {
+        this.reservationId = reservationId;
+    }
+}
+```
+
+### Route
+
+```java
+@Getter
+@Setter
+@Entity
+@Table(name="route")
+public class Route {
+    @Id
+    private Long routeId;
+    private Long trainId;
+    private boolean active;
+    private String day_of_week;
+    private String start_station_name;
+    private String end_station_name;
+}
+```
+
+### Seat
+
+```java
+@Getter
+@Entity
+@Table(name="seats")
+public class Seat {
+    @Id
+    private Long seatId;
+    private Integer seatClass;
+    private Integer seatNumber;
+}
+```
+
+### Station
+
+```java
+@Entity
+@Table(name = "all_stations")
+@Getter
+@Setter
+public class Station {
+    @Id
+    private Long id;
+
+    @Column(name = "name")
+    private String name;
+}
+```
+
+### User
+
+```java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="users")
+public class User implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_user_id_seq")
+    @SequenceGenerator(name = "users_user_id_seq", sequenceName = "users_user_id_seq", allocationSize = 1)
+    private Long userId;
+    private String firstname;
+    private String lastname;
+    private String email;
+    private String phone;
+    private String login;
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return login;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+```
+
