@@ -59,6 +59,14 @@
     - [Seat](#seat)
     - [Station](#station)
     - [User](#user)
+  - [Repository](#repository)
+    - [Discount](#discount)
+    - [Occupied Seats](#occupied-seats-1)
+    - [Reservation](#reservation)
+    - [Route](#route-1)
+    - [Seat](#seat-1)
+    - [Station](#station-1)
+    - [User](#user-1)
 
 ## Schemat bazy danych 
 
@@ -1373,6 +1381,117 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+}
+```
+
+## Repository
+
+Warstwa repozytorium obłsuguje połączenie backendu z bazą danych. Z repozytorium są wykonywane zapytania oraz podstawowe operacje CRUD. 
+
+### Discount 
+
+```java
+@Repository
+public interface DiscountRepository extends JpaRepository<Discount, Long> {
+    @Query(value = "SELECT * FROM discounts", nativeQuery = true)
+    List<Discount> findAllDiscounts();
+}
+```
+
+### Occupied Seats
+
+```java
+@Repository
+public interface OccupiedSeatsRepository extends JpaRepository<OccupiedSeats, Long> {
+    @Query(value = "SELECT * FROM get_occupied_seats(:_route_id, :_start_station_id, :_end_station_id, :_date)", nativeQuery = true)
+    List<OccupiedSeats> getOccupiedSeats(
+            @Param("_route_id") Long routeId,
+            @Param("_start_station_id") Long startStationId,
+            @Param("_end_station_id") Long endStationId,
+            @Param("_date") LocalDate date
+    );
+}
+```
+
+### Reservation
+
+```java
+public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+    @Transactional
+    @Query(nativeQuery = true, value = "SELECT * from add_reservation(:_user_id, :_discount_id, :_route_id, :_start_station_id, :_end_station_id, :_departure_date, :_seat_id)")
+
+    Integer callAddReservation(@Param("_user_id") Long userId, @Param("_discount_id") Long discountId, @Param("_route_id") Long routeId, @Param("_start_station_id") Long startStationId, @Param("_end_station_id") Long endStationId, @Param("_departure_date") LocalDate departureDate, @Param("_seat_id") Long seatId);
+
+    @Query(nativeQuery = true, value = "SELECT get_station_id(:_name)")
+    Long getStationId(@Param("_name") String stationName);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from user_reservations(:_user_id) as all_trips")
+    List<ReservationHistory> getAllTrips(@Param("_user_id") Integer user_id);
+
+    @Procedure("change_reservation_status")
+    void changeStatus(@Param("_reservation_id") Long reservation_id, @Param("_status") String status);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from reservation_sum_price(:_reservation_id)")
+    Double getSumPrice(@Param("_reservation_id") Long reservation_id);
+}
+```
+
+### Route
+
+```java
+@Repository
+public interface RouteRepository extends JpaRepository<Route, Long> {
+
+    @Query(nativeQuery = true, value = "SELECT get_station_id(:name)")
+    Long getStationId(@Param("name") String name);
+
+    @Query(nativeQuery = true, value = """
+    SELECT 
+        route_id as routeId, 
+        departure_day as departureDay, 
+        departure_date as departureDate, 
+        departure_time as departureTime, 
+        arrival_time as arrivalTime, 
+        price
+    FROM 
+        find_routes(:_departure_date, :_start_station_id, :_end_station_id) AS route
+    """)  
+
+    List<SpecifiedRouteView> getSpecifiedRoute(@Param("_departure_date") LocalDate departure_date,
+                                               @Param("_start_station_id") Long start_station_id,
+                                               @Param("_end_station_id") Long end_station_id);
+
+}
+```
+
+### Seat
+
+```java
+@Repository
+public interface SeatRepository extends JpaRepository<Seat, Long> {
+    @Query(value = "SELECT * FROM seats", nativeQuery = true)
+    List<Seat> findAllSeats();
+}
+```
+
+### Station
+
+```java
+@Repository
+public interface StationRepository extends JpaRepository<Station, Long> {
+    @Query(value = "SELECT name FROM all_stations", nativeQuery = true)
+    List<String> findAllStationNames();
+
+    @Query(value = "SELECT get_station_id(:stationName)", nativeQuery = true)
+    Long getStationId(@Param("stationName") String stationName);
+}
+```
+
+### User
+
+```java
+public interface UserRepository extends JpaRepository <User, Integer>{
+    Optional<User> findByLogin(String login);
 }
 ```
 
