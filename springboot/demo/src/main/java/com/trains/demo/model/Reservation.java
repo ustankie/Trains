@@ -4,9 +4,11 @@ package com.trains.demo.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
 
 import java.time.LocalDate;
 
+@Getter
 @Entity
 @Table(name="reservations")
 public class Reservation {
@@ -19,38 +21,6 @@ public class Reservation {
     private String endStation;
     private LocalDate departureDate;
     private Long seatId;
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public Long getDiscountId() {
-        return discountId;
-    }
-
-    public Long getRouteId() {
-        return routeId;
-    }
-
-    public String getStartStation() {
-        return startStation;
-    }
-
-    public String getEndStation() {
-        return endStation;
-    }
-
-    public LocalDate getDepartureDate() {
-        return departureDate;
-    }
-
-    public Long getSeatId() {
-        return seatId;
-    }
-
-    public Long getReservationId() {
-        return reservationId;
-    }
 
     public void setReservationId(Long reservationId) {
         this.reservationId = reservationId;
