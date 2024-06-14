@@ -19,7 +19,4 @@ public class StationService {
     public Long getStationId(String stationName) {
         return stationRepository.getStationId(stationName);
     }
-
-
-
 }
