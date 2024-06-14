@@ -67,6 +67,23 @@
     - [Seat](#seat-1)
     - [Station](#station-1)
     - [User](#user-1)
+  - [Service](#service)
+    - [Authentication](#authentication)
+    - [Discount](#discount-1)
+    - [JWT](#jwt)
+    - [Occupied Seats](#occupied-seats-2)
+    - [Reservation](#reservation-1)
+    - [Seat](#seat-2)
+    - [Station](#station-2)
+  - [Controller](#controller)
+    - [Auth](#auth)
+    - [Discount](#discount-2)
+    - [Occupied Seats](#occupied-seats-3)
+    - [Reservation](#reservation-2)
+    - [Reservation History](#reservation-history)
+    - [Route View](#route-view)
+    - [Seat](#seat-3)
+    - [Station](#station-3)
 
 ## Schemat bazy danych 
 
@@ -1494,4 +1511,458 @@ public interface UserRepository extends JpaRepository <User, Integer>{
     Optional<User> findByLogin(String login);
 }
 ```
+
+
+## Service 
+
+### Authentication
+
+```java
+@Service
+@RequiredArgsConstructor
+public class AuthenticationService {
+
+    private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+    public AuthenticationResponse register(RegisterRequest request) {
+        var user= User.builder()
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .login(request.getLogin())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .role(Role.USER)
+                .build();
+
+        String jwtToken=jwtService.generateToken(user);
+        try{
+            repository.save(user);
+
+        }catch(DataAccessException e){
+            throw new RuntimeException("Database error occurred: " + e.getMessage());
+        }
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
+        var user=repository.findByLogin(request.getLogin()).orElseThrow();
+        System.out.println(user);
+
+        var jwtToken=jwtService.generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    public User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            String login = ((UserDetails) principal).getUsername();
+            return repository.findByLogin(login).orElse(null);
+        }
+        return null;
+    }
+
+}
+```
+
+### Discount
+
+```java
+@Service
+public class DiscountService {
+
+    @Autowired
+    private DiscountRepository discountRepository;
+
+    public List<Discount> getAllDiscounts() {
+        return discountRepository.findAllDiscounts();
+    }
+}
+```
+
+### JWT
+
+```java
+@Service
+public class JwtService {
+    @Value("${security.key}")
+    private String SECRET_KEY;
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+    public String extractUserLogin(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser().setSigningKey(getSignInKey()).build().parseSignedClaims(token).getPayload();
+
+
+    }
+    public String generateToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(),userDetails);
+    }
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails){
+
+        return Jwts
+                .builder()
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis()+1000*60*5))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    private Key getSignInKey() {
+        byte[] keyBytes= Decoders.BASE64.decode(SECRET_KEY);
+        return Keys.hmacShaKeyFor(keyBytes);
+
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails){
+        String username=extractUserLogin(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
+        final Claims claims=extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+}
+```
+
+### Occupied Seats
+
+```java
+@Service
+public class OccupiedSeatsService {
+
+    @Autowired
+    private OccupiedSeatsRepository occupiedSeatsRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+
+    public List<OccupiedSeats> getOccupiedSeats(Long routeId, String startStation, String endStation, LocalDate date) {
+
+        Long startStationId = reservationRepository.getStationId(startStation.trim());
+        Long endStationId = reservationRepository.getStationId(endStation.trim());
+
+        return occupiedSeatsRepository.getOccupiedSeats(routeId, startStationId, endStationId, date);
+    }
+}
+```
+
+### Reservation
+
+```java
+@Service
+public class ReservationService {
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+    public Integer addReservation(Long userId, Long discountId, Long routeId, String startStation,
+                                  String endStation, LocalDate departureDate, Long seatId) {
+
+        Long startStationId = reservationRepository.getStationId(startStation.trim());
+        Long endStationId = reservationRepository.getStationId(endStation.trim());
+
+        return reservationRepository.callAddReservation(userId, discountId, routeId, startStationId,
+                endStationId, departureDate, seatId);
+    }
+    public void changeReservationStatus(Long reservationId, String status){
+        reservationRepository.changeStatus(reservationId,status);
+
+    }
+
+    public Double getReservationPrice(Long reservationId){
+        return reservationRepository.getSumPrice(reservationId);
+    }
+}
+```
+
+### Seat
+
+```java
+@Service
+public class SeatService {
+
+    @Autowired
+    private SeatRepository seatRepository;
+
+    public List<Seat> getAllSeats() {
+        return seatRepository.findAllSeats();
+    }
+}
+```
+
+### Station
+
+```java
+@Service
+public class StationService {
+
+    @Autowired
+    private StationRepository stationRepository;
+
+    public List<String> getAllStationNames() {
+        return stationRepository.findAllStationNames();
+    }
+
+    public Long getStationId(String stationName) {
+        return stationRepository.getStationId(stationName);
+    }
+}
+```
+
+## Controller
+
+### Auth 
+
+```java
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private final AuthenticationService service;
+
+
+    @PostMapping("/auth/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        logger.info("register");
+        try {
+            return ResponseEntity.ok(service.register(request));
+        }         catch(RuntimeException e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/auth/authenticate")
+    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+        logger.info("register");
+
+        return ResponseEntity.ok(service.authenticate(request));
+
+    }
+    @GetMapping("/get_user")
+    public ResponseEntity<User> getUser(){
+        logger.info(String.valueOf(service.getCurrentUser()));
+        return ResponseEntity.ok(service.getCurrentUser());
+    }
+}
+```
+
+### Discount
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class DiscountController {
+
+    @Autowired
+    private DiscountService discountService;
+
+    @GetMapping("/api/getAllDiscounts")
+    public ResponseEntity<List<Discount>> getAllDiscounts() {
+        List<Discount> discounts = discountService.getAllDiscounts();
+        return ResponseEntity.ok(discounts);
+    }
+}
+```
+
+### Occupied Seats
+
+```java
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173")
+public class OccupiedSeatsController {
+
+    @Autowired
+    private OccupiedSeatsService occupiedSeatsService;
+
+    @GetMapping("/getOccupiedSeats")
+    public List<OccupiedSeats> getOccupiedSeats(
+            @RequestParam("routeId") Long routeId,
+            @RequestParam("startStation") String startStation,
+            @RequestParam("endStation") String endStation,
+            @RequestParam("date") LocalDate date
+    ) {
+        return occupiedSeatsService.getOccupiedSeats(routeId, startStation, endStation, date);
+    }
+}
+```
+
+### Reservation 
+
+```java
+@RestController
+@RequestMapping("/api/reservations")
+@CrossOrigin(origins = "http://localhost:5173")
+public class ReservationController {
+
+    @Autowired
+    private ReservationService reservationService;
+
+    @PostMapping("/add")
+    public ResponseEntity<Integer> addReservation(@RequestBody Reservation request) {
+         Integer reservationId=reservationService.addReservation(
+                request.getUserId(),
+                request.getDiscountId(),
+                request.getRouteId(),
+                request.getStartStation(),
+                request.getEndStation(),
+                request.getDepartureDate(),
+                request.getSeatId()
+        );
+        return new ResponseEntity<>(reservationId, HttpStatus.CREATED);
+
+    }
+    @PostMapping("/change_status")
+    public void changeReservationStatus(@RequestBody ChangeReservationStatus request){
+        reservationService.changeReservationStatus(request.getReservationId(), request.getStatus());
+    }
+
+    @GetMapping("/price")
+    public Double getReservationPrice(@RequestParam Long reservationId){
+        return reservationService.getReservationPrice(reservationId);
+    }
+}
+```
+
+### Reservation History
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class ReservationHistoryController {
+    private final ReservationRepository reservationRepository;
+
+    @Autowired
+    public ReservationHistoryController(ReservationRepository reservationRepository) {
+        this.reservationRepository = reservationRepository;
+    }
+
+    @GetMapping("/api/all_trips")
+    public List<ReservationHistory> getAllTrips(@RequestParam("user_id") Integer user_id) {
+        return reservationRepository.getAllTrips(user_id);
+    }
+
+    @GetMapping("/api/past_trips")
+    public List<ReservationHistory> getPastTrips(@RequestParam("user_id") Integer user_id) {
+        return reservationRepository.getAllTrips(user_id)
+                .stream()
+                .filter(history ->
+                        history.getDepartureDate().isBefore(LocalDate.now())
+                        || (history.getDepartureDate().isEqual(LocalDate.now())
+                                && history.getDeparture().isBefore(LocalTime.now())))
+                .toList();
+    }
+
+    @GetMapping("/api/future_trips")
+    public List<ReservationHistory> getFutureTrips(@RequestParam("user_id") Integer user_id) {
+        return reservationRepository.getAllTrips(user_id)
+                .stream()
+                .filter(history ->
+                        history.getDepartureDate().isAfter(LocalDate.now())
+                                || (history.getDepartureDate().isEqual(LocalDate.now())
+                                && history.getDeparture().isAfter(LocalTime.now())))
+                .toList();
+    }
+
+}
+```
+
+### Route View
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class RouteViewController {
+    private final RouteRepository routeViewRepository;
+
+    @Autowired
+    public RouteViewController(RouteRepository routeViewRepository) {
+        this.routeViewRepository = routeViewRepository;
+    }
+
+    @GetMapping("/api/all_routes")
+    public List<Route> getAllRoutes() {
+        return routeViewRepository.findAll();
+    }
+
+    @GetMapping("/api/find_route")
+    public List<SpecifiedRouteView> getSpecifiedRoute(@RequestParam LocalDate departure_date,
+                                                          @RequestParam String start_station,
+                                                          @RequestParam String end_station) {
+
+        Long start_station_id=routeViewRepository.getStationId(start_station.trim());
+        Long end_station_id=routeViewRepository.getStationId(end_station.trim());
+
+
+        return routeViewRepository.getSpecifiedRoute(departure_date, start_station_id, end_station_id);
+
+    }
+}
+```
+
+### Seat
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class SeatController {
+
+    @Autowired
+    private SeatService seatService;
+
+    @GetMapping("/api/getAllSeats")
+    public ResponseEntity<List<Seat>> getAllSeats() {
+        List<Seat> seats = seatService.getAllSeats();
+        return ResponseEntity.ok(seats);
+    }
+
+}
+```
+
+### Station
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class StationController {
+
+    @Autowired
+    private StationService stationService;
+
+    @GetMapping("/api/stations")
+    public ResponseEntity<List<String>> getAllStationNames() {
+        List<String> stationNames = stationService.getAllStationNames();
+        return ResponseEntity.ok(stationNames);
+    }
+
+    @GetMapping("/api/stations/getStationId")
+    public Long getStationId(@RequestParam String stationName) {
+        return stationService.getStationId(stationName);
+    }
+}
+```
+
+
+
 
