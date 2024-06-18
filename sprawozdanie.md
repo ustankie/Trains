@@ -59,6 +59,9 @@
     - [Seat](#seat)
     - [Station](#station)
     - [User](#user)
+  - [Elementy modelu, których nie przechowujemy w bazie danych](#elementy-modelu-których-nie-przechowujemy-w-bazie-danych)
+    - [ReservationHistory](#reservationhistory)
+    - [SpecifiedRouteController](#specifiedroutecontroller)
   - [Repository](#repository)
     - [Discount](#discount)
     - [Occupied Seats](#occupied-seats-1)
@@ -84,6 +87,7 @@
     - [Route View](#route-view)
     - [Seat](#seat-3)
     - [Station](#station-3)
+- [Podsumowanie i wnioski](#podsumowanie-i-wnioski)
 
 ## Schemat bazy danych 
 
@@ -1247,6 +1251,7 @@ Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór 
 Aby reprezentować bazę w modelu obiektowym stworzyliśmy klasy z odpowiadającymi im atrybutami do kolumn w bazie.
 
 ### Discout
+Odpowiada tabeli discounts w bazie (adnotacja @Table). Można tu też zaobserwować adnotację @Getter, która automatycznie dodaje gettery wszystkich atrybutów oraz @Entity - oznacza, że obiekt będzie miał swoje odwzorowanie w bazie danych. Ponadto, jeżeli klasa @Entity nie posiada atrybutu o nazwie id, należy dodać adnotację @Id nad atrybutem, który spełnia rolę klucza głównego w bazie danych.
 
 ```java
 @Getter
@@ -1261,7 +1266,7 @@ public class Discount {
 ```
 
 ### Occupied Seats 
-
+Odpowiada tabeli occupied_seats
 ```java
 @Getter
 @Entity
@@ -1273,7 +1278,7 @@ public class OccupiedSeats {
 ```
 
 ### Reservations
-
+Odpowiada tabeli Reservations
 ```java
 @Getter
 @Entity
@@ -1296,7 +1301,7 @@ public class Reservation {
 ```
 
 ### Route
-
+Odpowiada tabeli Route. Modyfikator `transient` oznacza, że start_station_name oraz end_station_name nie będą przechowywane w bazie (takie kolumny w tabeli route nie istnieją). Te atrybuty są nam potrzebne tylko w modelu obiektowym.
 ```java
 @Getter
 @Setter
@@ -1308,13 +1313,13 @@ public class Route {
     private Long trainId;
     private boolean active;
     private String day_of_week;
-    private String start_station_name;
-    private String end_station_name;
+    private transient String start_station_name;
+    private transient String end_station_name;
 }
 ```
 
 ### Seat
-
+Odpowiada tabeli seats
 ```java
 @Getter
 @Entity
@@ -1328,10 +1333,10 @@ public class Seat {
 ```
 
 ### Station
-
+Odpowiada tabeli stations.
 ```java
 @Entity
-@Table(name = "all_stations")
+@Table(name = "stations")
 @Getter
 @Setter
 public class Station {
@@ -1344,7 +1349,13 @@ public class Station {
 ```
 
 ### User
+Odpowiada tabeli users. Implementuje interfejs UserDetails, który jest częścią Spring Security. Warto zwrócić uwagę na adnotacje:
+- @Data - adnotacja z biblioteki Lombok, automatycznie generuje funkcje toString(), equals(), hashCode(), a także gettery i settery wszystkich atrybutów oraz konstruktor zawierający jako argumenty wszystkie atrybuty z modyfikatorem final. Tak naprawdę łączy w sobie adnotacje @Getter, @Setter, @ToString, @EqualsAndHashCode, @RequiredArgsConstructor
+- @NoArgsConstructor - generuje konstruktor bezargumentowy
+- @AllArgsConstructor - generuje konstruktor dla wszystkich atrybutów
+- @Builder - generuje implementację wzorca projektowego "Budowniczy" dla klasy - dostarcza metod pozwalających ustawić konkretne atrybuty na żądane wartości oraz metodę build(). Przyda się to później (klasa AuthenticationService), kiedy będziemy chcieli np. zarejestrować nowego użytkownika o podanych danych. 
 
+Wprowadzamy też role dla użytkownika w postaci klasy Enum Role - na razie nasza aplikacja korzysta tylko z roli USER, ale daje nam to możliwość rozwoju w przyszłości (np. role ADMIN, MODIFIER). Kontrolę nad możliwymi wartościami atrybutu role uzyskujemy poprzez adnotację @Enumerated.
 ```java
 @Data
 @Builder
@@ -1405,12 +1416,67 @@ public class User implements UserDetails {
 }
 ```
 
+Enum Role wygląda następująco:
+```java
+public enum Role {
+    ADMIN,
+    USER
+}
+```
+## Elementy modelu, których nie przechowujemy w bazie danych
+Poniżej prezentujemy klasy modelu, które służą jedynie projekcji (Projection) danych z bazy, ale nie znajdują odwzorowania w tabelach w PostgreSQL. Korzystamy z nich tylko jako typy zwracane z metod repozytorium.
+### ReservationHistory
+Interfejs, który zwraca dane o rezerwacji - użyjemy go w RepositoryReservation do zwracania listy wszystkich rezerwacji użytkownika. Tutaj nie wystarczyłoby użycie klasy Reservation, ponieważ dane zawarte w ReservationHistory pochodzą z wielu tabel bazy danych.
+```java
+public interface ReservationHistory {
+
+    Long getReservationId();
+    String getStatus();
+    LocalDateTime getReservationDate();
+    Long getRouteId();
+
+    LocalTime getDeparture();
+
+    LocalTime getArrival();
+
+    String getStartStation();
+
+    String getEndStation();
+
+    Long getSeatId();
+
+    LocalDate getDepartureDate();
+
+}
+```
+
+### SpecifiedRouteController
+Podobną sytuację mamy dla danych konkretnej trasy, które wyciągamy z kilku tabel
+```java
+public interface SpecifiedRouteView {
+    Long getRouteId();
+    void setRouteId(Long routeId);
+    String getDepartureDay();
+    void setDepartureDay(String departureDay);
+    LocalDate getDepartureDate();
+    void setDepartureDate(LocalDate departureDate);
+    LocalTime getDepartureTime();
+    void setDepartureTime(LocalTime departureTime);
+    LocalTime getArrivalTime();
+
+    void setArrivalTime(LocalTime arrivalTime);
+
+    Double getPrice();
+}
+```
+
 ## Repository
 
-Warstwa repozytorium obłsuguje połączenie backendu z bazą danych. Z repozytorium są wykonywane zapytania oraz podstawowe operacje CRUD. 
+Warstwa repozytorium obłsuguje połączenie backendu z bazą danych. Z repozytorium są wykonywane zapytania oraz podstawowe operacje CRUD. Nasze repozytoria implementują interfejs JpaRepository. Dostarcza nam to gotowych mechanizmów służących do pracy z operacjami CRUD (np. save(S entity) - zapisuje encję w bazie danych, findAll() - zwraca wszystkie encje, findById(Id id) - znajduje wynik po id). Natomiast adnotacja @Repository jest adnotacją Spring, która czyni klasę bean'em - umożliwia to automatyczne wstrzykiwanie zależności przez mechanizmy framework'a oraz tłumaczy wyjatki otrzymywane z bazy na wyjątki Springa. 
+Korzystaliśmy też z adnotacji @Query, która pozwala na zapisanie zapytania w czystym SQL (u nas PostgreSQL) nad konkretną metodą. Metoda ta będzie odpowiadać wykonaniu zapytania z @Query w bazie i będzie zwracać jego ewentualne wyniki w postaci obiektów modelu obiektowego.
 
 ### Discount 
-
+Repozytorium dla wszystkich zniżek, posiada jedną metodę, która zwraca wszystkie zniżki z bazy.
 ```java
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Long> {
@@ -1420,7 +1486,7 @@ public interface DiscountRepository extends JpaRepository<Discount, Long> {
 ```
 
 ### Occupied Seats
-
+Repozytorium dla OccupiedSeats, posiada metodę getOccupiedSeats, która dla przyjętych parametrów wywołuje funkcję PostgreSQL get_occupied_seats i zwraca jej wynik w postaci listy obiektów klasy OccupiedSeats.
 ```java
 @Repository
 public interface OccupiedSeatsRepository extends JpaRepository<OccupiedSeats, Long> {
@@ -1435,7 +1501,13 @@ public interface OccupiedSeatsRepository extends JpaRepository<OccupiedSeats, Lo
 ```
 
 ### Reservation
-
+Repozytorium dla wszystkich rezerwacji. Posiada metody:
+- callAddReservation - wywołuje funkcję add_reservation z bazy i zwraca jej wynik w postaci zmiennej typu Integer
+- getStationId - wywołuje funkcję get_station_id z bazy i zwraca wynik w postaci zmiennej typu Long
+- getAllTrips - wywołuje funkcję user_reservations z bazy i zwraca wynik w postaci listy obiektów klasy ReservationHistory 
+- changeStatus - dla podanych parametrów wywołuje procedurę change_reservation_status z bazy (adnotacja @Procedure skraca zapis z @Query)
+- getSumPrice - zwraca sumaryczną cenę rezerwacji o podanym id (wynik wywołania funkcji reservation_sum_price z bazy)
+- findAllByPaymentStatus - zwraca wszystkie rezerwacje o podanym statusie, które zostały dodane do bazy wcześniej niż przed pięcioma minutami
 ```java
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     @Transactional
@@ -1462,6 +1534,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 ```
 
 ### Route
+Repozytorium dla wszystkich tras. Metoda getStationId zwraca id stacji o podanej nazwie jako wynik wywołania funkcji get_station_id z bazy, a metoda getSpecifiedRoute zwraca wynik wykonania funkcji find_routes z bazy jako listę obiektów klasy SpecifiedRouteView.
 
 ```java
 @Repository
@@ -1490,7 +1563,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 ```
 
 ### Seat
-
+Repozytorium dla wszystkich miejsc w pociągu - posiada jedynie metodę zwracającą wszystkie miejsca.
 ```java
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, Long> {
@@ -1500,11 +1573,13 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 ```
 
 ### Station
-
+Repozytorium stacji, posiada dwie metody:
+- findAllStationNames - zwraca nazwy wszystkich stacji w bazie
+- getStationId - zwraca wynik funkcji get_station_id z bazy 
 ```java
 @Repository
 public interface StationRepository extends JpaRepository<Station, Long> {
-    @Query(value = "SELECT name FROM all_stations", nativeQuery = true)
+    @Query(value = "SELECT name FROM stations", nativeQuery = true)
     List<String> findAllStationNames();
 
     @Query(value = "SELECT get_station_id(:stationName)", nativeQuery = true)
@@ -1513,7 +1588,8 @@ public interface StationRepository extends JpaRepository<Station, Long> {
 ```
 
 ### User
-
+Repozytorium użytkowników, posiada jedną metodę: 
+- findByLogin - zwraca użytkownika o podanym loginie
 ```java
 public interface UserRepository extends JpaRepository <User, Integer>{
     Optional<User> findByLogin(String login);
@@ -1522,7 +1598,7 @@ public interface UserRepository extends JpaRepository <User, Integer>{
 
 
 ## Service 
-
+Warstwa serwisów w aplikacjach Spring ma za zadanie oddzielić logikę biznesową od operacji CRUD. Czasami dane pobrane z repozytorium wymagają jeszcze obróbki przed zwróceniem ich jako response. Właśnie tym powinny zająć się klasy @Service. Pozwala to też na hermetyzację dostępu do repozytoriów oraz pozwala na wielokrotne wykorzystanie tej samej logiki biznesowej.
 ### Authentication
 
 ```java
@@ -1583,7 +1659,7 @@ public class AuthenticationService {
 ```
 
 ### Discount
-
+Posiada jedną metodę: getAllDiscounts, która wywołuje metodę findAllDiscounts z repozytorium, które jest atrybutem @Autowired ( to znaczy, że Spring automatycznie stworzy instancję DiscountRepository i dokona wstrzykiwania zależności)
 ```java
 @Service
 public class DiscountService {
@@ -1654,6 +1730,8 @@ public class JwtService {
 
 ### Occupied Seats
 
+Service dla zajętych miejsc wymaga dostępu do aż dwóch repozytoriów: ReservationRepository pozwoli uzyskać id stacji o podanych nazwach, a OccupiedSeatsRepository posiada funkcję zwracającą listę zajętych miejsc dla podanych routeId oraz id stacji.
+
 ```java
 @Service
 public class OccupiedSeatsService {
@@ -1675,29 +1753,43 @@ public class OccupiedSeatsService {
 ```
 
 ### Reservation
-
+Posiada metody: addReservations, changeReservationStatus, getReservationPrice, cancelReservations, które wywołują odpowiednie metody z ReservationRepository. Warte uwagi są dwie metody:
+- cancelReservations - pobiera z repozytorium dane o wszystkich rezerwacjach starszych niż 5 min, a następnie zmienia status każdej z nich na "C" (cancelled)
+- addReservation - dodaje rezerwację do bazy oraz tworzy nowy wątek, który z opóźnieniem 5 min wykona metodę cancelReservations
 ```java
 @Service
 public class ReservationService {
 
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private ScheduledExecutorService scheduledExecutorService;
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public Integer addReservation(Long userId, Long discountId, Long routeId, String startStation,
-                                  String endStation, LocalDate departureDate, Long seatId) {
+    public Integer addReservation(Long userId, Long discountId, Long routeId, String startStation, String endStation, LocalDate departureDate, Long seatId) {
 
         Long startStationId = reservationRepository.getStationId(startStation.trim());
         Long endStationId = reservationRepository.getStationId(endStation.trim());
 
-        return reservationRepository.callAddReservation(userId, discountId, routeId, startStationId,
-                endStationId, departureDate, seatId);
+        logger.info("Scheduling reservation cancellation in 5 minutes.");
+        scheduledExecutorService.schedule(() -> {
+            try {
+                logger.info("Executing scheduled reservation cancellation.");
+                cancelReservations();
+            } catch (Exception e) {
+                logger.warn("Error during reservation cancellation: " + e.getMessage());
+            }
+        }, 5, TimeUnit.MINUTES);
+
+        return reservationRepository.callAddReservation(userId, discountId, routeId, startStationId, endStationId, departureDate, seatId);
     }
-    public void changeReservationStatus(Long reservationId, String status){
-        reservationRepository.changeStatus(reservationId,status);
+
+    public void changeReservationStatus(Long reservationId, String status) {
+        reservationRepository.changeStatus(reservationId, status);
 
     }
 
-    public Double getReservationPrice(Long reservationId){
+    public Double getReservationPrice(Long reservationId) {
         return reservationRepository.getSumPrice(reservationId);
     }
 
@@ -1714,7 +1806,7 @@ public class ReservationService {
 ```
 
 ### Seat
-
+Posiada jedną metodę, która wywołuje metodę findAllSeats z repozytorium
 ```java
 @Service
 public class SeatService {
@@ -1729,7 +1821,7 @@ public class SeatService {
 ```
 
 ### Station
-
+Posiada dwie metody, które korzystają z metod z repozytorium
 ```java
 @Service
 public class StationService {
@@ -1748,7 +1840,7 @@ public class StationService {
 ```
 
 ## Controller
-Wartwa kontrolerów dostarcza głównych funkcji zarządzania requestami HTTP. Annotacje @GetMapping, @PostMapping pozwalają na zmapowanie ścieżek URL do metod obsługujących żądania. Annotacja @RequestMapping nad całą klasą kontrolera pozwala określić bazową ścieżkę URL, na podstawie której metody będą tworzyć wyspecyfikowane ścieżki: np. w poniższym przykładzie dla AuthController bazową ścieżką jest "/api". Dlatego też metoda register będzie odpowiadała ścieżce "/api/auth/register". Metody kontrolera mogą też zwracać odpowiedzi (response), w którym można podać kod odpowiedzi serwera oraz "body" - dane, które zwracamy w odpowiedzi na żądanie.
+Wartwa kontrolerów dostarcza głównych funkcji zarządzania requestami HTTP. adnotacje @GetMapping, @PostMapping pozwalają na zmapowanie ścieżek URL do metod obsługujących żądania. adnotacja @RequestMapping nad całą klasą kontrolera pozwala określić bazową ścieżkę URL, na podstawie której metody będą tworzyć wyspecyfikowane ścieżki: np. w poniższym przykładzie dla AuthController bazową ścieżką jest "/api". Dlatego też metoda register będzie odpowiadała ścieżce "/api/auth/register". Metody kontrolera mogą też zwracać odpowiedzi (response), w którym można podać kod odpowiedzi serwera oraz "body" - dane, które zwracamy w odpowiedzi na żądanie.
 
 ### Auth 
 
@@ -1787,7 +1879,7 @@ public class AuthController {
 ```
 
 ### Discount
-Pozwala pobrać z bazy wszystkie dostępne zniżki z tabeli Discounts.
+Pozwala pobrać z bazy wszystkie dostępne zniżki z tabeli Discounts. Jako odpowiedź zwraca status HTTP 200 oraz wszystkie zniżki
 
 ```java
 @RestController
@@ -1806,7 +1898,7 @@ public class DiscountController {
 ```
 
 ### Occupied Seats
-Dostarcza
+Dostarcza operacji GET, która zwróci listę zajętych miejsc
 ```java
 @RestController
 @RequestMapping("/api")
@@ -1829,7 +1921,10 @@ public class OccupiedSeatsController {
 ```
 
 ### Reservation 
-
+Posiada trzy metody:
+- addReservation - operacja POST, dodaje do bazy rezerwację daną parametrami requesta, zwraca status HTTP 201 oraz id dodanej rezerwacji
+- changeReservationStatus - zmienia status rezerwacji dla podanych w requeście parametrów, zwraca id rezerwacji oraz status HTTP takie jak w żądaniu
+-  getReservationPrice - zwraca cenę danego zamówienia
 ```java
 @RestController
 @RequestMapping("/api/reservations")
@@ -1866,6 +1961,11 @@ public class ReservationController {
 ```
 
 ### Reservation History
+Posiada metody:
+- getAllTrips - operacja GET, zwróci wszystkie trasy danego użytkownika
+- getPastTrips - operacja GET, zwróci wszystkie przeszłe trasy danego użytkownika
+- getFutureTrips - operacja GET, zwróci wszystkie przyszłe trasy danego użytkownika    
+Warto też zwrócić uwagę na wstrzykiwanie zależności przez konstruktor.
 
 ```java
 @RestController
@@ -1909,7 +2009,9 @@ public class ReservationHistoryController {
 ```
 
 ### Route View
-
+Posiada metody:
+- getAllRoutes - operacja GET, zwraca wszystkie trasy
+- getSpecifiedRoute - operacja GET, zwraca trasę o podanej dacie odjazdu, stacji startowej oraz końcowej
 ```java
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -1942,7 +2044,7 @@ public class RouteViewController {
 ```
 
 ### Seat
-
+Zawiera metodę getAllSeats (operacja GET), która zwraca wszystkie miejsca oraz status HTTP 200.
 ```java
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -1961,7 +2063,9 @@ public class SeatController {
 ```
 
 ### Station
-
+Posiada metody:
+- getAllStationNames - operacja GET, zwraca nazwy wszystkicj stacji oraz status HTTP 200
+- getStationId - operacja GET, zwraca id stacji o podanej nazwie
 ```java
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -1982,6 +2086,24 @@ public class StationController {
     }
 }
 ```
+# Podsumowanie i wnioski
+Podsumowując, Spring oraz Hibernate dostarczają wielu wygodnych narzędzi do pracy z bazami danych. Poniżej prezentujemy kilka kluczowych funkcji framework'a, z których skorzystaliśmy:
+- adnotacje @Query umożliwiły nam szybki dostęp do funkcji, które stworzyliśmy w bazie danych
+- administrowanie przez Springa Bean'ami zaoszczędziło nam sporo czasu na pisanie kodu - Spring sam dokonywał wstrzykiwania zależności tam gdzie to było potrzebne (np. adnotacja Autowired)
+- Podział na trzy warstwy logiczne: @Repository, @Service oraz @Controller pozwoliło oddzielić dostęp do bazy, logikę biznesową oraz operacje CRUD, co zwiększyło czytelność kodu oraz zwiększyło bezpieczeństwo dostępu do poszczególnych części aplikacji (gdyby wszystkie operacje znalazłyby się w jednej klasie bez podziału na @Repository, @Service oraz @Controller moglibyśmy się narazić na błędy programisty, często mógłby się wykonywać niepotrzebnie kod, który nie powinien się wykonywać, a w strykturze aplikacji panowałby chaos).
+- Spring zapewnia wygodnych narzędzi do pracy z requestami HTTP - istnieją gotowe typy generyczne, np. ResponseEntity; w łatwy sposób możemy określać ścieżkę URL oraz żądania (np. @Get("/api/users"))
+- Minusem na pewno jest duża liczba klas, które powstały oraz fakt, że wiele rzeczy dzieje się automatycznie, co jest trudne do zrozumienia dla początkujących użytkowników Springa
+
+Poniżej prezentujemy też funkcje PostgreSQL, z których mieliśmy okazję skorzystać:
+- PostgreSQL jest językiem pozwalającym tworzyć relacyjne bazy danych, co umożliwiło nam stworzenie dość skomplikowanej struktury tabel, co może być nieco nieczytelne na pierwszy rzut oka, jednak pozwala na logiczne uporządkowanie powiązanych ze sobą danych i efektywne z nich korzystanie - unikamy też redundancji danych, co często ma miejsce w bazach dokumentowych.
+- PostrgreSQL różni się nieco składnią od innych języków SQL oraz kilkoma kluczowymi aspektami:
+  - Triggery: Nie da się napisać logiki triggera w samym triggerze, należy stworzyć procedurę, która zostanie wywołana dla każdego dodanego wiersza
+  - Język zapytań: Postgres posiada wiele języków zapytań, który to język należy określić na początku funkcji/procedury, np. PL/pgSQL, PL/Python, PL/Perl (my korzystaliśmy z PL/pgSQL)
+  - PostgreSQL wspiera też więcej typów danych niż np. Oracle SQL (np. XML, JSON)
+  - autonumeracja - odbywa się poprzez zdefiniowane sekwencje, a nie pola autoincrement jak np. MS SQL
+  - Zaletą Postgresa jest też to, że jest open-source, w przeciwieństwie np. do Oracle SQL
+
+Pisanie frontendu w React także okazało się dobrym wyborem: framework ten pozwala w szybki i łatwy sposób definiować reużywalne komponenty, a także wysyłać requesty HTTP.
 
 
 
