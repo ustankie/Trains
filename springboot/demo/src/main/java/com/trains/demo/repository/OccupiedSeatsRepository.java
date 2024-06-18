@@ -20,5 +20,4 @@ public interface OccupiedSeatsRepository extends JpaRepository<OccupiedSeats, Lo
             @Param("_end_station_id") Long endStationId,
             @Param("_date") LocalDate date
     );
-
 }

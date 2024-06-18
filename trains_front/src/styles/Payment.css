@@ -1,0 +1,19 @@
+.payment--background{
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-image: url('../images/payment_bg.jpg');
+    width: 100vw;
+    height: 100vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: brightness(45%);
+    z-index: -1;
+}
+
+.payment--pay_btn{
+    width: 180px;
+    height: 70px;
+    font-size: 20px;
+}

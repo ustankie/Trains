@@ -145,7 +145,7 @@ export default function Form() {
                 </div>
                 )}
             </div>
-            <input type="date" id="date" className="hero--large--input" name="date" placeholder="DD/MM/yyyy" pattern="\d{2}/\d{2}/\d{4}" value={routeData.date}
+            <input type="date" id="date" className="hero--date--input" name="date" placeholder="DD/MM/yyyy" pattern="\d{2}/\d{2}/\d{4}" value={routeData.date}
                 onChange={(e)=> setRouteData({...routeData, date: e.target.value})}/>
             <button className="blue--btn" onClick={searchRoute}>SEARCH</button>
         </div>

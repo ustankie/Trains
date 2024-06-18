@@ -1,9 +1,8 @@
 package com.trains.demo.controller;
 
-import com.trains.demo.model.RouteView;
-import com.trains.demo.model.SpecifiedRouteView;
-import com.trains.demo.repository.RouteViewRepository;
-import com.trains.demo.repository.SpecifiedRouteRepository;
+import com.trains.demo.model.Route;
+import com.trains.demo.model.nonpersistent.SpecifiedRouteView;
+import com.trains.demo.repository.RouteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,17 +15,15 @@ import java.util.List;
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 public class RouteViewController {
-    private final RouteViewRepository routeViewRepository;
-    private final SpecifiedRouteRepository specifiedRouteRepository;
+    private final RouteRepository routeViewRepository;
 
     @Autowired
-    public RouteViewController(RouteViewRepository routeViewRepository, SpecifiedRouteRepository specifiedRouteRepository) {
+    public RouteViewController(RouteRepository routeViewRepository) {
         this.routeViewRepository = routeViewRepository;
-        this.specifiedRouteRepository = specifiedRouteRepository;
     }
 
     @GetMapping("/api/all_routes")
-    public List<RouteView> getAllRoutes() {
+    public List<Route> getAllRoutes() {
         return routeViewRepository.findAll();
     }
 
@@ -39,7 +36,7 @@ public class RouteViewController {
         Long end_station_id=routeViewRepository.getStationId(end_station.trim());
 
 
-        return specifiedRouteRepository.getSpecifiedRoute(departure_date, start_station_id, end_station_id);
+        return routeViewRepository.getSpecifiedRoute(departure_date, start_station_id, end_station_id);
 
     }
 }

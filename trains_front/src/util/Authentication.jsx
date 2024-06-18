@@ -35,7 +35,7 @@ export const request = async (method, url, data, params) => {
         });
     } catch (error_1) {
         console.log("authError");
-        throw error_1;
+        throw "authError";
     }
 }
 
