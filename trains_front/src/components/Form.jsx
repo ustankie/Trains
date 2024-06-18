@@ -43,7 +43,6 @@ export default function Form() {
         
         axios.get('/api/find_route', { params: { departure_date: date, start_station: start_station, end_station: end_station }})
             .then(response => {
-                console.log(response.data);
                 setFetchedData(response.data); 
                 localStorage.setItem('fetchedData', JSON.stringify({ data: response.data, routeData }));
                 navigate('/routes-display', { state: { 
