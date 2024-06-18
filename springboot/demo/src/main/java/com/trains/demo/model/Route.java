@@ -16,6 +16,6 @@ public class Route {
     private Long trainId;
     private boolean active;
     private String day_of_week;
-    private String start_station_name;
-    private String end_station_name;
+    private transient String start_station_name;
+    private transient String end_station_name;
 }

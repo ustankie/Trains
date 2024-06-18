@@ -1454,6 +1454,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query(nativeQuery = true, value = "SELECT *" + "from reservation_sum_price(:_reservation_id)")
     Double getSumPrice(@Param("_reservation_id") Long reservation_id);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from reservations where payment_status=?1 and EXTRACT(EPOCH FROM (CAST(?2 AS timestamp) - res_date))/60  > 5")
+    List<Reservation> findAllByPaymentStatus(String paymentStatus, LocalDateTime time);
+
 }
 ```
 
@@ -1696,6 +1700,16 @@ public class ReservationService {
     public Double getReservationPrice(Long reservationId){
         return reservationRepository.getSumPrice(reservationId);
     }
+
+    public List<Reservation> cancelReservations() {
+        List<Reservation> reservations = reservationRepository.findAllByPaymentStatus("N", LocalDateTime.now());
+        for (Reservation reservation : reservations) {
+            changeReservationStatus(reservation.getReservationId(), "C");
+        }
+        logger.info(String.valueOf(LocalDateTime.now()));
+
+        return reservations;
+    }
 }
 ```
 
@@ -1734,6 +1748,7 @@ public class StationService {
 ```
 
 ## Controller
+Wartwa kontrolerów dostarcza głównych funkcji zarządzania requestami HTTP. Annotacje @GetMapping, @PostMapping pozwalają na zmapowanie ścieżek URL do metod obsługujących żądania. Annotacja @RequestMapping nad całą klasą kontrolera pozwala określić bazową ścieżkę URL, na podstawie której metody będą tworzyć wyspecyfikowane ścieżki: np. w poniższym przykładzie dla AuthController bazową ścieżką jest "/api". Dlatego też metoda register będzie odpowiadała ścieżce "/api/auth/register". Metody kontrolera mogą też zwracać odpowiedzi (response), w którym można podać kod odpowiedzi serwera oraz "body" - dane, które zwracamy w odpowiedzi na żądanie.
 
 ### Auth 
 
@@ -1772,6 +1787,7 @@ public class AuthController {
 ```
 
 ### Discount
+Pozwala pobrać z bazy wszystkie dostępne zniżki z tabeli Discounts.
 
 ```java
 @RestController
@@ -1790,7 +1806,7 @@ public class DiscountController {
 ```
 
 ### Occupied Seats
-
+Dostarcza
 ```java
 @RestController
 @RequestMapping("/api")
