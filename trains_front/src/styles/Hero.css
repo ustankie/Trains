@@ -61,7 +61,7 @@
 
 .hero--search--box {
     margin-top: 130px;
-    width: 940px;
+    width: 1000px;
     height: 90px;
     background: white;
     border-radius: 13px;
@@ -70,8 +70,8 @@
     align-items: center;
 }
 
-.hero--large--input {
-    min-width: 150px;
+.hero--large--input, .hero--date--input {
+    min-width: 260px;
     height: 40px;
     border: 2px solid #000;
     border-radius: 7px;
@@ -82,11 +82,15 @@
     transition: all 0.2s linear;
     padding: 25px;
     user-select: none;
-    text-size-adjust: auto;
+    
 }
 
-.hero--large--input::placeholder {
+.hero--large--input::placeholder, .hero--date--input::placeholder {
     color: #000;
+}
+
+.hero--date--input {
+    min-width: 140px;
 }
 
 .hero--large--input:focus { 
