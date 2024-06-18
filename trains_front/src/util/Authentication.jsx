@@ -5,9 +5,6 @@ export const getAuthToken = () => {
     return window.localStorage.getItem("auth_token");
 };
 
-
-
-
 export const setAuthToken = (token) => {
     window.localStorage.setItem("auth_token", token);
 
@@ -23,7 +20,6 @@ export const request = async (method, url, data, params) => {
     } catch (error) {
         console.log("No auth_token");
     }
-    console.log(getAuthToken());
 
     try {
         return await axios({
@@ -53,4 +49,4 @@ export const isTokenExpired = () => {
         console.error("Error decoding token:", error);
         return true; 
     }
-  };
+};

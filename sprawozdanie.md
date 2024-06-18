@@ -14,7 +14,7 @@
 - [Widoki](#widoki)
   - [Widok all\_routes](#widok-all_routes)
   - [Widok all\_stations](#widok-all_stations)
-- [Procdeury](#procdeury)
+- [Procedury](#procedury)
   - [add\_train](#add_train)
   - [add\_station](#add_station)
   - [add\_route](#add_route)
@@ -46,6 +46,12 @@
   - [status\_insert\_trigger](#status_insert_trigger)
 - [Front](#front)
   - [Komunikacja frontu z backendem](#komunikacja-frontu-z-backendem)
+  - [Komunikacja aplikacji przy autentykacji użytkowników](#komunikacja-aplikacji-przy-autentykacji-użytkowników)
+    - [Zarządzanie tokenami uwierzytelniającymi](#zarządzanie-tokenami-uwierzytelniającymi)
+    - [JWT](#jwt)
+    - [Wysyłanie żądań HTTP](#wysyłanie-żądań-http)
+    - [Sprawdzanie ważności tokena](#sprawdzanie-ważności-tokena)
+    - [Implementacja](#implementacja)
   - [Hero component](#hero-component)
   - [Login i register](#login-i-register)
   - [User dashboard](#user-dashboard)
@@ -74,7 +80,7 @@
   - [Service](#service)
     - [Authentication](#authentication)
     - [Discount](#discount-1)
-    - [JWT](#jwt)
+    - [JWT](#jwt-1)
     - [Occupied Seats](#occupied-seats-2)
     - [Reservation](#reservation-1)
     - [Seat](#seat-2)
@@ -362,7 +368,7 @@ Przykładowy widok:
 
 ![all_stations](images/all_stations.png)
 
-# Procdeury
+# Procedury
 
 ## add_train
 
@@ -427,7 +433,6 @@ Procedura dodaje nową trasę.
 Procedura sprawdza 
 - czy stacja początkowa i końcowa istnieją
 - czy taka trasa już nie jest w bazie
-- <span style="color: red">sprawdzanie czy pociag jest dostepny TODOTODO</span> 
 
 Implementacja: 
 ```sql
@@ -1215,6 +1220,98 @@ EXECUTE FUNCTION log_status_insert();
 Do komunikacji aplikacji z backendem używamy biblioteki `axios` do `reacta`, która oferuje prostą obsługę żądań http GET I POST w aplikacjach webowych. Ta biblioteka jest lepszą alternatywą do wbudowanej funkcji `fetch` w języku javascript. 
 
 Dzięki podejsciu funkcyjnemu w javascripcie przekształcamy dane w postaci JSON z backendu na odpowiednie obiekty gotowe do użycia w naszej aplikacji. 
+
+Przykład użycia pobrania wszystkich dostępnych tras. Korzystamy z endpointu `/find_route` i wysyłamy żądanie POST z odpowiednimi parametrami. Następnie do przechowywania danych używamy hooka `useState` oraz zapisujemy odpowiedź w `localStorage`. Na końcu korzystamy z hooka `useNavigate` który przenosi użytkownika razem z danymi z endpointu do innego komponentu, gdzie dane są dalej procesowane, a użytkownik widzi efekt zapytania o konkretną trasę. 
+
+```js
+function searchRoute() {
+    const { date, start_station, end_station } = routeData;
+    
+    axios.get('/api/find_route', { params: { departure_date: date, start_station: start_station, end_station: end_station }})
+        .then(response => {
+            setFetchedData(response.data); 
+            localStorage.setItem('fetchedData', JSON.stringify({ data: response.data, routeData }));
+            navigate('/routes-display', { state: { 
+                data: response.data,
+                startStation: start_station, 
+                endStation: end_station, 
+                departureDate: date
+            } });
+        })
+        .catch(error => {
+            console.error('Error finding route:', error);
+        });
+}
+```
+
+## Komunikacja aplikacji przy autentykacji użytkowników
+
+### Zarządzanie tokenami uwierzytelniającymi
+Zaimplementowaliśmy funkcje `getAuthToken` i `setAuthToken` do obsługi tokenów JWT. Umożliwiają one odpowiednio odczyt i zapis tokena w `localStorage` przeglądarki. Jest to standardowe rozwiązanie umożliwiające łatwe zarządzanie stanem uwierzytelnienia użytkownika.
+
+### JWT
+
+JWT, czyli JSON Web Token, to otwarty standard  służący do bezpiecznej wymiany informacji między stronami za pomocą obiektów JSON. Po zalogowaniu się użytkownika serwer generuje token JWT, zawierający niezbędne informacje o użytkowniku, i przesyła go do aplikacji. Aplikacja przesyła ten token z powrotem do serwera przy każdym kolejnym żądaniu, co pozwala serwerowi na weryfikację tożsamości użytkownika i zapewnienie mu dostępu do zasobów.
+
+### Wysyłanie żądań HTTP
+Stworzyliśmy funkcję `request`, która wykorzystuje bibliotekę Axios do wykonania żądań HTTP. Funkcja ta automatycznie dodaje nagłówek autoryzacji typu Bearer, jeśli token jest dostępny. W przypadku błędów związanych z autoryzacją lub wysyłaniem żądań, są one rejestrowane w konsoli.
+
+### Sprawdzanie ważności tokena
+Funkcja `isTokenExpired` pozwala nam sprawdzić, czy aktualny token JWT jest jeszcze ważny. Wykorzystuje dekodowanie tokena za pomocą biblioteki `jwt-decode` do sprawdzenia daty wygaśnięcia. Jest to kluczowe dla zapewnienia bezpieczeństwa sesji użytkownika.
+
+### Implementacja
+
+```js
+export const getAuthToken = () => {
+    return window.localStorage.getItem("auth_token");
+};
+
+export const setAuthToken = (token) => {
+    window.localStorage.setItem("auth_token", token);
+
+};
+
+export const request = async (method, url, data, params) => {
+    let headers = {};
+    try {
+        let token = getAuthToken();
+        if (token !== null && token != "null") {
+            headers = { "Authorization": `Bearer ${token}` };
+        }
+    } catch (error) {
+        console.log("No auth_token");
+    }
+
+    try {
+        return await axios({
+            method: method,
+            headers: headers,
+            url: url,
+            data: data,
+            params: params
+        });
+    } catch (error_1) {
+        console.log("authError");
+        throw "authError";
+    }
+}
+
+export const isTokenExpired = () => {
+    const token = getAuthToken();
+    if (!token || token=="null" || token==null) {
+        return true; 
+    }
+
+    try {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000; 
+        return decodedToken.exp < currentTime;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return true; 
+    }
+};
+```
 
 ## Hero component
 
