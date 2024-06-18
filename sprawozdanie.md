@@ -735,6 +735,10 @@ begin
     if _status='N' then
         raise exception 'Change to not paid is not allowed!';
     end if;
+    
+    if old_status='C' then
+        raise exception 'Change from cancelled is not allowed!';
+    end if;
 
     update reservations
     set payment_status=_status
@@ -815,14 +819,14 @@ Funkcja zwraca wszystkie rezerwacje użytkownika
 Implementacja: 
 ```sql
 create function user_reservations(_user_id integer)
-    returns TABLE(reservationid bigint, routeid bigint, departure time without time zone, arrival time without time zone, startstation character varying, endstation character varying, seatid integer, departuredate date, status character varying)
-    language plpgsql
+    returns TABLE(reservationid bigint, reservationdate timestamp, routeid bigint, departure time without time zone, arrival time without time zone, startstation character varying, endstation character varying, seatid integer, departuredate date, status character varying)
+        language plpgsql
 as
 $$
 begin
 
 
-    return query (SELECT distinct r.reservation_id,
+    return query (SELECT distinct r.reservation_id,r.res_date,
                                   r.route_id,
                                   (select rs.departure
                                    from section_details sd

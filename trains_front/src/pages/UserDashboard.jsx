@@ -17,6 +17,7 @@ export default function UserDashboard() {
     const [log_type, setLogType] = useState([]);
     const [loading, setLoading] = useState(true);
     const [price, setPrice] = useState(0);
+    const [showCancelled, setShowCancelled]=useState(false);
 
     const navigate = useNavigate();
 
@@ -172,7 +173,16 @@ export default function UserDashboard() {
                     </div>
                 </div>
                 <div className="cards">
-                    {currentData.map((route) => (
+                    <label>
+                        <input type="checkbox" checked={showCancelled} onChange={()=>setShowCancelled(!showCancelled) }/>
+                        Show cancelled
+                    </label>
+                </div>
+
+                <div className="cards">
+                    {currentData
+                    .filter((route)=>{if(showCancelled) return true; return route.status!="C";} )
+                    .map((route) => (
                         <Card key={route.reservationId} className="routeCard routeCard--user_dashboard">
                             <Card.Body className="routeCardBody">
                                 <div className="routeCardBodyContent">
@@ -205,7 +215,16 @@ export default function UserDashboard() {
                                         <p className="routeCardDetails">{route.status === "N" ? "Not payed" : route.status === "C" ? "Cancelled" : "Payed"}</p>
                                     </div>
                                     {activeTab === 'future' && route.status === "P" ? <button className="blue--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("C"); setShow(true) }}>Cancel</button>
-                                        : activeTab === 'future' && route.status === "N" ? <button className="blue--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("P"); setShow(true) }}>Pay</button> : null}
+                                        : activeTab === 'future' && route.status === "N" ?
+                                        <> 
+                                            <button className="blue--btn" onClick={() => { 
+                                                reservationPrice(); 
+                                                setReservationId(route.reservationId); 
+                                                setLogType("P"); 
+                                                setShow(true); }}>Pay</button> 
+                                            {/* <p className='routeCardHeaders'>Pay within {route.reservationDate}</p> */}
+                                        </>
+                                    : null}
                                 </div>
                             </Card.Body>
                         </Card>
