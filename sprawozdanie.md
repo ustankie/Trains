@@ -45,6 +45,7 @@
 - [Triggery](#triggery)
   - [status\_insert\_trigger](#status_insert_trigger)
 - [Front](#front)
+  - [Komunikacja frontu z backendem](#komunikacja-frontu-z-backendem)
   - [Hero component](#hero-component)
   - [Login i register](#login-i-register)
   - [User dashboard](#user-dashboard)
@@ -1208,6 +1209,12 @@ CREATE TRIGGER status_insert_trigger
 EXECUTE FUNCTION log_status_insert();
 ```
 # Front 
+
+## Komunikacja frontu z backendem
+
+Do komunikacji aplikacji z backendem używamy biblioteki `axios` do `reacta`, która oferuje prostą obsługę żądań http GET I POST w aplikacjach webowych. Ta biblioteka jest lepszą alternatywą do wbudowanej funkcji `fetch` w języku javascript. 
+
+Dzięki podejsciu funkcyjnemu w javascripcie przekształcamy dane w postaci JSON z backendu na odpowiednie obiekty gotowe do użycia w naszej aplikacji. 
 
 ## Hero component
 
