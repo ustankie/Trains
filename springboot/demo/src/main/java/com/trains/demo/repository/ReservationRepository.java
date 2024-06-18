@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
@@ -19,7 +20,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query(nativeQuery = true, value = "SELECT get_station_id(:_name)")
     Long getStationId(@Param("_name") String stationName);
 
-    @Query(nativeQuery = true, value = "SELECT *" + "from user_reservations(:_user_id) as all_trips")
+    @Query(nativeQuery = true, value = "SELECT *" + "from user_reservations(:_user_id) as all_trips order by departuredate desc")
     List<ReservationHistory> getAllTrips(@Param("_user_id") Integer user_id);
 
     @Procedure("change_reservation_status")
@@ -27,5 +28,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query(nativeQuery = true, value = "SELECT *" + "from reservation_sum_price(:_reservation_id)")
     Double getSumPrice(@Param("_reservation_id") Long reservation_id);
+    @Query(nativeQuery = true, value = "SELECT *" + "from reservations where payment_status=?1 and EXTRACT(EPOCH FROM (CAST(?2 AS timestamp) - res_date))/60  > 5")
+    List<Reservation> findAllByPaymentStatus(String paymentStatus, LocalDateTime time);
+
 }
 

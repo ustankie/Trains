@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/reservations")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -35,6 +37,11 @@ public class ReservationController {
     @PostMapping("/change_status")
     public void changeReservationStatus(@RequestBody ChangeReservationStatus request){
         reservationService.changeReservationStatus(request.getReservationId(), request.getStatus());
+    }
+
+    @PostMapping("/cancel")
+    public List<Reservation> cancelNotPayedReservations(){
+        return reservationService.cancelReservations();
     }
 
     @GetMapping("/price")
