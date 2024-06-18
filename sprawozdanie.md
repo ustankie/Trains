@@ -2094,23 +2094,25 @@ public class StationController {
 }
 ```
 # Podsumowanie i wnioski
-Podsumowując, Spring oraz Hibernate dostarczają wielu wygodnych narzędzi do pracy z bazami danych. Poniżej prezentujemy kilka kluczowych funkcji framework'a, z których skorzystaliśmy:
+Podsumowując, SpringBoot oraz Hibernate dostarczają wielu wygodnych narzędzi do pracy z bazami danych. Poniżej prezentujemy kilka kluczowych funkcji framework'a, z których skorzystaliśmy:
 - adnotacje @Query umożliwiły nam szybki dostęp do funkcji, które stworzyliśmy w bazie danych
-- administrowanie przez Springa Bean'ami zaoszczędziło nam sporo czasu na pisanie kodu - Spring sam dokonywał wstrzykiwania zależności tam gdzie to było potrzebne (np. adnotacja Autowired)
-- Podział na trzy warstwy logiczne: @Repository, @Service oraz @Controller pozwoliło oddzielić dostęp do bazy, logikę biznesową oraz operacje CRUD, co zwiększyło czytelność kodu oraz zwiększyło bezpieczeństwo dostępu do poszczególnych części aplikacji (gdyby wszystkie operacje znalazłyby się w jednej klasie bez podziału na @Repository, @Service oraz @Controller moglibyśmy się narazić na błędy programisty, często mógłby się wykonywać niepotrzebnie kod, który nie powinien się wykonywać, a w strykturze aplikacji panowałby chaos).
+- adnotacje @Entity pozwoliły w łatwy sposób stworzyć mapowanie między modelem relacyjnym a obiektowym
+- administrowanie przez Springa Bean'ami zaoszczędziło nam sporo czasu na pisanie kodu - Spring sam dokonywał wstrzykiwania zależności tam gdzie to było potrzebne (np. adnotacja @Autowired)
+- Podział na cztery warstwy logiczne: model, @Repository, @Service oraz @Controller pozwoliło oddzielić dostęp do bazy, logikę biznesową oraz operacje CRUD, co zwiększyło czytelność kodu oraz zwiększyło bezpieczeństwo dostępu do poszczególnych części aplikacji (gdyby wszystkie operacje znalazłyby się w jednej klasie bez podziału na @Repository, @Service oraz @Controller moglibyśmy się narazić na błędy programisty, często mógłby się wykonywać niepotrzebnie kod, który nie powinien się wykonywać, a w strykturze aplikacji panowałby chaos).
 - Spring zapewnia wygodnych narzędzi do pracy z requestami HTTP - istnieją gotowe typy generyczne, np. ResponseEntity; w łatwy sposób możemy określać ścieżkę URL oraz żądania (np. @Get("/api/users"))
 - Minusem na pewno jest duża liczba klas, które powstały oraz fakt, że wiele rzeczy dzieje się automatycznie, co jest trudne do zrozumienia dla początkujących użytkowników Springa
+- Tworzenie tego projektu zaczęliśmy od bazy w PostgreSQL, a dopiero później łączyliśmy wszystko ze Springiem. Teraz nasze doświadczenie w Springu jest już większe, więc w przyszłości rozważylibyśmy tworzenie bazy z poziomy Springa, by lepiej wykorzystać jego funkcje.
 
 Poniżej prezentujemy też funkcje PostgreSQL, z których mieliśmy okazję skorzystać:
-- PostgreSQL jest językiem pozwalającym tworzyć relacyjne bazy danych, co umożliwiło nam stworzenie dość skomplikowanej struktury tabel, co może być nieco nieczytelne na pierwszy rzut oka, jednak pozwala na logiczne uporządkowanie powiązanych ze sobą danych i efektywne z nich korzystanie - unikamy też redundancji danych, co często ma miejsce w bazach dokumentowych.
+- PostgreSQL jest językiem pozwalającym tworzyć relacyjne bazy danych, co umożliwiło nam stworzenie dość skomplikowanej struktury tabel, co może być nieco nieczytelne na pierwszy rzut oka, jednak pozwala na logiczne uporządkowanie powiązanych ze sobą danych i efektywne z nich korzystanie - unikamy też redundancji danych, co często ma miejsce w bazach dokumentowych. Minusem zastosowania relacyjnej bazy danych na pewno był stopień skomplikowania zapytań, które często musiały sięgać do kilku tabel jednocześnie, czego pewnie dałoby się uniknąć gdyby zastosować bazę dokumentową     
 - PostrgreSQL różni się nieco składnią od innych języków SQL oraz kilkoma kluczowymi aspektami:
   - Triggery: Nie da się napisać logiki triggera w samym triggerze, należy stworzyć procedurę, która zostanie wywołana dla każdego dodanego wiersza
-  - Język zapytań: Postgres posiada wiele języków zapytań, który to język należy określić na początku funkcji/procedury, np. PL/pgSQL, PL/Python, PL/Perl (my korzystaliśmy z PL/pgSQL)
+  - Język zapytań: PostgreSQL posiada wiele języków zapytań, który to język należy określić na początku funkcji/procedury, np. PL/pgSQL, PL/Python, PL/Perl (my korzystaliśmy z PL/pgSQL)
   - PostgreSQL wspiera też więcej typów danych niż np. Oracle SQL (np. XML, JSON)
   - autonumeracja - odbywa się poprzez zdefiniowane sekwencje, a nie pola autoincrement jak np. MS SQL
   - Zaletą Postgresa jest też to, że jest open-source, w przeciwieństwie np. do Oracle SQL
 
-Pisanie frontendu w React także okazało się dobrym wyborem: framework ten pozwala w szybki i łatwy sposób definiować reużywalne komponenty, a także wysyłać requesty HTTP.
+Pisanie frontendu w React także okazało się dobrym wyborem: framework ten pozwala w szybki i łatwy sposób definiować reużywalne komponenty, a także wysyłać requesty HTTP. Zaoszczędziliśmy też czas korzystając z biblioteki react-hot-toast do wysyłania powiadomień do klienta, a także użyliśmy react-bootstrap w celu implementacji okienek płacenia (Modal), czy danych kolejnych tras (Card). Było to szybkie i wygodne rozwiązanie - dzięki temu mogliśmy się skupić na backendzie oraz samej bazie danych, co było głównym przedmiotem projektu.
 
 
 
