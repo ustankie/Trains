@@ -9,7 +9,6 @@ public interface ReservationHistory {
     Long getReservationId();
     String getStatus();
     LocalDateTime getReservationDate();
-
     Long getRouteId();
 
     LocalTime getDeparture();

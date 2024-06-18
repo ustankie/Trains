@@ -15,16 +15,19 @@ export default function UserDashboard() {
     const [show, setShow] = useState(false);
     const [reservationId, setReservationId] = useState(0);
     const [log_type, setLogType] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [price, setPrice] = useState(0);
     const [showCancelled, setShowCancelled]=useState(false);
 
     const navigate = useNavigate();
+    const sleep = (ms) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
 
     useEffect(() => {
         request("GET", "/api/get_user", {}, {})
             .then(response1 => {
-                setLoading(true);
+                // setLoading(true);
                 console.log(loading);
                 setUser(response1.data)
                 request("GET", "/api/future_trips", {}, { user_id: response1.data.userId })
@@ -49,7 +52,8 @@ export default function UserDashboard() {
                         }
                     })
                     .finally(() => {
-                        setLoading(false);
+                        // sleep(1000);
+                        // setLoading(false);
                     });
             })
             .catch(error => {
@@ -66,7 +70,7 @@ export default function UserDashboard() {
     function reservationPrice() {
         request("GET", "/api/get_user", {}, {})
             .then(response1 => {
-                setLoading(true);
+                // setLoading(true);
                 console.log(loading);
                 setUser(response1.data)
                 request("GET", "/api/reservations/price", {}, { reservationId: reservationId })
@@ -79,7 +83,8 @@ export default function UserDashboard() {
 
                     })
                     .finally(() => {
-                        setLoading(false);
+                        // sleep(1000);
+                        // setLoading(false);
                         console.log("Price2:", price, reservationId);
                     });
             })
@@ -87,7 +92,7 @@ export default function UserDashboard() {
                 console.error('Error fetching user:', error);
                 toast.error("Your session expired!"); 
                 navigate("/"); 
-                setLoading(false);
+                // setLoading(false);
             });
 
     }
@@ -134,7 +139,7 @@ export default function UserDashboard() {
                 console.error('Error fetching user:', error);
                 toast.error("Your session expired!"); 
                 navigate("/"); 
-                setLoading(false);
+                // setLoading(false);
             });
     }
     function handleClose() {
@@ -217,11 +222,7 @@ export default function UserDashboard() {
                                     {activeTab === 'future' && route.status === "P" ? <button className="blue--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("C"); setShow(true) }}>Cancel</button>
                                         : activeTab === 'future' && route.status === "N" ?
                                         <> 
-                                            <button className="blue--btn" onClick={() => { 
-                                                reservationPrice(); 
-                                                setReservationId(route.reservationId); 
-                                                setLogType("P"); 
-                                                setShow(true); }}>Pay</button> 
+                                            <button className="blue--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("P"); setShow(true) }}>Pay</button> 
                                             {/* <p className='routeCardHeaders'>Pay within {route.reservationDate}</p> */}
                                         </>
                                     : null}
