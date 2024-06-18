@@ -6,6 +6,7 @@ import axios from 'axios';
 import RoutesDisplay from './pages/RoutesDisplay';
 import "./styles/App.css";
 import UserDashboard from './pages/UserDashboard';
+import Payment from './pages/Payment';
 import { Toaster } from 'react-hot-toast'
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/routes-display" element={<RoutesDisplay />} />
                 <Route path="/add-reservation" element={<Reservation />} />
                 <Route path="/user-dashboard" element={<UserDashboard /> } />
+                <Route path="/payment" element={<Payment /> } />
             </Routes>
         </BrowserRouter>
     );

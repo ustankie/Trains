@@ -3,45 +3,39 @@ package com.trains.demo.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+@Getter
 @Entity
+@Table(name="reservations")
 public class Reservation {
+    @Getter
     @Id
+    private Long reservationId;
+    @Getter
     private Long userId;
+    @Getter
+    private String paymentStatus;
+    @Getter
+    private LocalDateTime res_date;
+    @Getter
     private Long discountId;
+    @Getter
     private Long routeId;
+    @Getter
     private String startStation;
+    @Getter
     private String endStation;
+    @Getter
     private LocalDate departureDate;
+    @Getter
     private Long seatId;
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public Long getDiscountId() {
-        return discountId;
-    }
-
-    public Long getRouteId() {
-        return routeId;
-    }
-
-    public String getStartStation() {
-        return startStation;
-    }
-
-    public String getEndStation() {
-        return endStation;
-    }
-
-    public LocalDate getDepartureDate() {
-        return departureDate;
-    }
-
-    public Long getSeatId() {
-        return seatId;
+    public void setReservationId(Long reservationId) {
+        this.reservationId = reservationId;
     }
 }

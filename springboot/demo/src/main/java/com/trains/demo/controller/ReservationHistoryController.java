@@ -1,7 +1,7 @@
 package com.trains.demo.controller;
 
-import com.trains.demo.model.ReservationHistory;
-import com.trains.demo.repository.ReservationHistoryRepository;
+import com.trains.demo.model.nonpersistent.ReservationHistory;
+import com.trains.demo.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,21 +15,21 @@ import java.util.List;
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 public class ReservationHistoryController {
-    private final ReservationHistoryRepository reservationHistoryRepository;
+    private final ReservationRepository reservationRepository;
 
     @Autowired
-    public ReservationHistoryController(ReservationHistoryRepository reservationHistoryRepository) {
-        this.reservationHistoryRepository = reservationHistoryRepository;
+    public ReservationHistoryController(ReservationRepository reservationRepository) {
+        this.reservationRepository = reservationRepository;
     }
 
     @GetMapping("/api/all_trips")
     public List<ReservationHistory> getAllTrips(@RequestParam("user_id") Integer user_id) {
-        return reservationHistoryRepository.getAllTrips(user_id);
+        return reservationRepository.getAllTrips(user_id);
     }
 
     @GetMapping("/api/past_trips")
     public List<ReservationHistory> getPastTrips(@RequestParam("user_id") Integer user_id) {
-        return reservationHistoryRepository.getAllTrips(user_id)
+        return reservationRepository.getAllTrips(user_id)
                 .stream()
                 .filter(history ->
                         history.getDepartureDate().isBefore(LocalDate.now())
@@ -40,7 +40,7 @@ public class ReservationHistoryController {
 
     @GetMapping("/api/future_trips")
     public List<ReservationHistory> getFutureTrips(@RequestParam("user_id") Integer user_id) {
-        return reservationHistoryRepository.getAllTrips(user_id)
+        return reservationRepository.getAllTrips(user_id)
                 .stream()
                 .filter(history ->
                         history.getDepartureDate().isAfter(LocalDate.now())

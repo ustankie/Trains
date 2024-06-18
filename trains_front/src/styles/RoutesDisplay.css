@@ -6,7 +6,7 @@
 }
 
 .cards {
-    margin-top: 50px;
+    margin-top: 30px;
 }
 
 .route--info {
@@ -20,6 +20,7 @@
     font-size: 26px;
     font-weight: 700;
     gap: 20px;
+    text-transform: uppercase;
 }
 
 
@@ -64,6 +65,9 @@
     justify-content: center;
     align-items: center;
     
+}
+.routeCard--user_dashboard{
+    width:70rem
 }
 
 .routeCardBodyContent{

@@ -6,6 +6,9 @@ import { toast } from 'react-hot-toast';
 import { getAuthToken, isTokenExpired, request } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+
 
 export default function Reservation() {
     const { state } = useLocation();
@@ -19,8 +22,21 @@ export default function Reservation() {
     const [taken, setTaken] = useState([]);
     const [newReservation, setNewReservation] = useState(false);
     const [user, setUser]=useState([]);
+    const [show, setShow] = useState(false);
+    const [showPay, setShowPay] = useState(false);
+    const [reservationId,setReservationId]=useState([]);
 
     const navigate = useNavigate();
+    function handleClose(){
+        setShow(false);
+        // change_status("C");
+    }
+
+    function handlePayClose(){
+        setShowPay(false);
+        // change_status("C");
+        setNewReservation(true); 
+    }
 
 
     function pickSeat(seatId, seatNumber) {
@@ -47,9 +63,10 @@ export default function Reservation() {
             })
             .catch(error => {
                 console.error('Error fetching occupied seats:', error);
+
             });
 
-    }, [newReservation]);
+    }, [newReservation,currentSeat]);
 
     const seats = seatsData.map(seat => {
         const isTaken = taken.includes(seat.seatId);
@@ -101,7 +118,7 @@ export default function Reservation() {
                 }
             })
             .catch(error =>console.error("Failed to load discounts", error));
-    }, []);
+    }, [newReservation]);
 
     useEffect(() => {
         const selectedDiscount = discounts.find(discount => discount.discountId.toString() === discountId);
@@ -137,8 +154,11 @@ export default function Reservation() {
             }, {})
                 .then(response => {
                     toast.success("Reservation added successfully!");
+                    setShowPay(true);
                     setCurrentSeat([]);
                     setNewReservation(true);
+                    setReservationId(response.data);
+                    console.log(reservationId);
                 })
                 .catch(error => {
                     console.error(error);
@@ -147,6 +167,7 @@ export default function Reservation() {
         });
         setNewReservation(false);
     }
+
 
     return (
         <>
@@ -180,9 +201,61 @@ export default function Reservation() {
                 <div className="reservation--summary">
                     {currentSeat[1] && <p>Chosen seat: {currentSeat[1]}</p>}
                     <p>Total Price: {finalPrice} zł</p>
-                    <button className="blue--btn" onClick={addReservation}>Book</button>
+                    {currentSeat[0] ? <button className="blue--btn" onClick={()=>{setShow(true);}}>Book</button>:
+                    <button className="inactive--btn" onClick={()=>toast.error("Choose seat")}>Book</button>}
+                    
                 </div>
             </div>
-        </>
+        <Modal
+            show={show}
+            onHide={handleClose}
+            backdrop="static"
+            keyboard={false}
+            centered
+        >
+        <Modal.Header closeButton>
+          <Modal.Title>Reservation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+
+            Your reservation: <br/>From: {startStation}<br/> To: {endStation}
+            <br/>Date: {departureDate}<br/> Departure: {departureTime}<br/> Arrival:{arrivalTime}
+            <br/>Price: {price}PLN. 
+            <br/>
+            Are you sure you want to book?
+
+
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={()=>{addReservation();setShow(false); }}>Book</Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
+            show={showPay}
+            onHide={handlePayClose}
+            backdrop="static"
+            keyboard={false}
+            centered
+        >
+        <Modal.Header closeButton>
+            <Modal.Title>Payment</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                Your reservation has been added. Pay within 5 minutes, 
+                after that time your reservation will be cancelled in order to allow other passengers use this seat
+            </Modal.Body>
+            <Modal.Footer>
+            <Button variant="secondary" onClick={handlePayClose}>
+                Later
+            </Button>
+            <Button variant="primary" onClick={()=>navigate('/payment', { state: { 
+                        reservationId, price
+                    } })}>Pay</Button>
+            </Modal.Footer>
+        </Modal>
+    </>
     );
 }

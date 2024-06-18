@@ -28,6 +28,7 @@
   - [change\_route\_status](#change_route_status)
   - [add\_reservation](#add_reservation)
   - [update\_user\_password](#update_user_password)
+  - [change\_reservation\_status](#change_reservation_status)
 - [Funkcje](#funkcje)
   - [find\_routes](#find_routes)
   - [user\_reservations](#user_reservations)
@@ -36,11 +37,53 @@
   - [section\_distance](#section_distance)
   - [get\_station\_id](#get_station_id)
   - [count\_sum\_price](#count_sum_price)
+  - [reservation\_sum\_price](#reservation_sum_price)
   - [get\_departure\_time](#get_departure_time)
   - [get\_route\_sections](#get_route_sections)
   - [get\_occupied\_seats](#get_occupied_seats)
+  - [get\_last\_log](#get_last_log)
 - [Triggery](#triggery)
   - [status\_insert\_trigger](#status_insert_trigger)
+- [Front](#front)
+  - [Hero component](#hero-component)
+  - [Login i register](#login-i-register)
+  - [User dashboard](#user-dashboard)
+  - [Routes display](#routes-display)
+  - [Add reservation](#add-reservation)
+- [Backend](#backend)
+  - [Model](#model)
+    - [Discout](#discout)
+    - [Occupied Seats](#occupied-seats)
+    - [Reservations](#reservations)
+    - [Route](#route)
+    - [Seat](#seat)
+    - [Station](#station)
+    - [User](#user)
+  - [Repository](#repository)
+    - [Discount](#discount)
+    - [Occupied Seats](#occupied-seats-1)
+    - [Reservation](#reservation)
+    - [Route](#route-1)
+    - [Seat](#seat-1)
+    - [Station](#station-1)
+    - [User](#user-1)
+  - [Service](#service)
+    - [Authentication](#authentication)
+    - [Discount](#discount-1)
+    - [JWT](#jwt)
+    - [Occupied Seats](#occupied-seats-2)
+    - [Reservation](#reservation-1)
+    - [Seat](#seat-2)
+    - [Station](#station-2)
+  - [Controller](#controller)
+    - [Auth](#auth)
+    - [Discount](#discount-2)
+    - [Occupied Seats](#occupied-seats-3)
+    - [Reservation](#reservation-2)
+    - [Reservation History](#reservation-history)
+    - [Route View](#route-view)
+    - [Seat](#seat-3)
+    - [Station](#station-3)
 
 ## Schemat bazy danych 
 
@@ -669,7 +712,42 @@ Przykładowe użycie:
 ```sql
 CALL update_user_password('alicesmith', 'alamakota124');
 ```
+## change_reservation_status
+Procedura zmienia status rezerwacji - możliwe są wszystkie zmiany za wyjątkie C -> N oraz P -> N 
+```sql
+create procedure change_reservation_status(IN _reservation_id integer, IN _status character varying)
+    language plpgsql
+as
+$$
+declare
+      old_status varchar(10);
+begin
+    if not exists (select * from reservations where reservation_id=_reservation_id) then
+        RAISE EXCEPTION 'Reservation with ID %, does not exist!', _reservation_id;
+    end if;
 
+    select payment_status from reservations where reservation_id=_reservation_id into old_status;
+
+    if _status=old_status then
+        raise exception 'Statuses are the same!';
+    end if;
+
+    if _status='N' then
+        raise exception 'Change to not paid is not allowed!';
+    end if;
+    
+    if old_status='C' then
+        raise exception 'Change from cancelled is not allowed!';
+    end if;
+
+    update reservations
+    set payment_status=_status
+    where _reservation_id=reservation_id;
+
+
+end;
+$$;
+```
 
 
 # Funkcje
@@ -741,12 +819,14 @@ Funkcja zwraca wszystkie rezerwacje użytkownika
 Implementacja: 
 ```sql
 create function user_reservations(_user_id integer)
-    returns TABLE(reservation_id bigint, route_id bigint, departure time without time zone, arrival time without time zone, start_station character varying, end_station character varying, seat_id integer, departure_date date, price double precision)
-    language plpgsql
+    returns TABLE(reservationid bigint, reservationdate timestamp, routeid bigint, departure time without time zone, arrival time without time zone, startstation character varying, endstation character varying, seatid integer, departuredate date, status character varying)
+        language plpgsql
 as
 $$
 begin
-    return query (SELECT distinct r.reservation_id,
+
+
+    return query (SELECT distinct r.reservation_id,r.res_date,
                                   r.route_id,
                                   (select rs.departure
                                    from section_details sd
@@ -760,9 +840,9 @@ begin
                                      and rs.route_id = r.route_id) as arrival,
                                   (select name from stations where station_id=r.start_station_id) as start_station,
                                   (select name from stations where station_id=r.end_station_id) as end_station,
-                                    (select s.seat_number from seats s where s.seat_id = sr.seat_id) as seat_id,
+                                  (select s.seat_number from seats s where s.seat_id = sr.seat_id) as seat_id,
                                   r.departure_date,
-                                  count_sum_price(r.discount_id, r.route_id, r.start_station_id, r.end_station_id) as price
+                                  r.payment_status as status
                   FROM reservations r
                            inner JOIN seat_reservations sr ON r.reservation_id = sr.reservation_id
 
@@ -953,6 +1033,26 @@ $$;
 
 ```
 
+## reservation_sum_price
+Zwraca sumaryczną cenę dla danej rezerwacji
+```sql
+create or replace function reservation_sum_price(_reservation_id bigint) returns double precision
+    language plpgsql
+as
+$$
+declare
+    _discount_id bigint;
+    _route_id bigint;
+    _start_station_id bigint;
+    _end_station_id bigint;
+begin
+    select discount_id, route_id, start_station_id, end_station_id into _discount_id, _route_id, _start_station_id
+        ,_end_station_id from reservations where reservation_id=_reservation_id;
+    return count_sum_price(_discount_id,_route_id,_start_station_id,_end_station_id);
+end;
+$$;
+```
+
 ## get_departure_time
 Zwraca czas odjazdu pociągu o danej trasie z danej stacji
 ```sql
@@ -1061,24 +1161,41 @@ begin
 end$$;
 ```
 
+## get_last_log
+Zwraca ostatni log z tabeli log_reservations dla rezerwacji o podanym id:
+```sql
+create function get_last_log(_reservation_id integer)
+    returns TABLE(log_id bigint, reservation_id bigint, new_status character varying, date timestamp without time zone)
+    language plpgsql
+as
+$$
+begin
+    return query(select * from log_reservation lr where lr.reservation_id=_reservation_id order by date desc limit 1);
+
+
+end;
+$$;
+```
+
 # Triggery
 
 ## status_insert_trigger
 
 Wprowadza wpis do tabeli reservation_logs, kiedy zostanie dodany rekord do tabeli reservations:
 ```sql
-CREATE OR REPLACE FUNCTION log_status_insert()
-    RETURNS TRIGGER
-    LANGUAGE plpgsql
-AS $$
+create function log_status_insert() returns trigger
+    language plpgsql
+as
+$$
 BEGIN
-    IF TG_OP = 'INSERT' THEN
+    IF TG_OP = 'INSERT' or TG_OP = 'UPDATE' THEN
         INSERT INTO log_reservation (reservation_id, new_status, date)
-        VALUES (NEW.reservation_id, NEW.payment_status, CURRENT_TIMESTAMP);
+        VALUES (NEW.reservation_id, NEW.payment_status, timezone('Europe/Warsaw', CURRENT_TIMESTAMP));
     END IF;
     RETURN NEW;
 END;
 $$;
+
 
 
 CREATE TRIGGER status_insert_trigger
@@ -1086,3 +1203,786 @@ CREATE TRIGGER status_insert_trigger
     FOR EACH ROW
 EXECUTE FUNCTION log_status_insert();
 ```
+# Front 
+
+## Hero component
+
+`Hero component` to strona startowa naszej aplikacji, w której użytkownik może się zalogować, lub wyszukać trasę jaka go interesuje. 
+
+![alt text](images/image-0.png)
+
+
+## Login i register
+
+Aplikacja umożliwia zalogowanie się lub utworzenie nowego konta w serwisie. 
+
+![alt text](images/image-1.png)
+
+## User dashboard
+
+`User dashboard` zawiera informacje o przeszłych i przeszłych podróżach konkretnego użytkownika. 
+
+![alt text](images/image-2.png)
+
+## Routes display
+
+`Routes display` wyswietla wszystkie dostępne trasy zgodnie z kryteriami wyszukiwania. 
+
+![alt text](images/image-3.png)
+
+W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna informacja. 
+
+![alt text](images/image-4.png)
+
+## Add reservation 
+
+Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
+
+![alt text](images/image-5.png)
+
+# Backend 
+
+## Model 
+
+Aby reprezentować bazę w modelu obiektowym stworzyliśmy klasy z odpowiadającymi im atrybutami do kolumn w bazie.
+
+### Discout
+
+```java
+@Getter
+@Entity
+@Table(name="discounts")
+public class Discount {
+    @Id
+    private Long discountId;
+    private String discountName;
+    private Integer percent;
+}
+```
+
+### Occupied Seats 
+
+```java
+@Getter
+@Entity
+@Table(name="occupied_seats")
+public class OccupiedSeats {
+    @Id
+    private Long seatId;
+}
+```
+
+### Reservations
+
+```java
+@Getter
+@Entity
+@Table(name="reservations")
+public class Reservation {
+    @Id
+    private Long reservationId;
+    private Long userId;
+    private Long discountId;
+    private Long routeId;
+    private String startStation;
+    private String endStation;
+    private LocalDate departureDate;
+    private Long seatId;
+
+    public void setReservationId(Long reservationId) {
+        this.reservationId = reservationId;
+    }
+}
+```
+
+### Route
+
+```java
+@Getter
+@Setter
+@Entity
+@Table(name="route")
+public class Route {
+    @Id
+    private Long routeId;
+    private Long trainId;
+    private boolean active;
+    private String day_of_week;
+    private String start_station_name;
+    private String end_station_name;
+}
+```
+
+### Seat
+
+```java
+@Getter
+@Entity
+@Table(name="seats")
+public class Seat {
+    @Id
+    private Long seatId;
+    private Integer seatClass;
+    private Integer seatNumber;
+}
+```
+
+### Station
+
+```java
+@Entity
+@Table(name = "all_stations")
+@Getter
+@Setter
+public class Station {
+    @Id
+    private Long id;
+
+    @Column(name = "name")
+    private String name;
+}
+```
+
+### User
+
+```java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name="users")
+public class User implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_user_id_seq")
+    @SequenceGenerator(name = "users_user_id_seq", sequenceName = "users_user_id_seq", allocationSize = 1)
+    private Long userId;
+    private String firstname;
+    private String lastname;
+    private String email;
+    private String phone;
+    private String login;
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return login;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+```
+
+## Repository
+
+Warstwa repozytorium obłsuguje połączenie backendu z bazą danych. Z repozytorium są wykonywane zapytania oraz podstawowe operacje CRUD. 
+
+### Discount 
+
+```java
+@Repository
+public interface DiscountRepository extends JpaRepository<Discount, Long> {
+    @Query(value = "SELECT * FROM discounts", nativeQuery = true)
+    List<Discount> findAllDiscounts();
+}
+```
+
+### Occupied Seats
+
+```java
+@Repository
+public interface OccupiedSeatsRepository extends JpaRepository<OccupiedSeats, Long> {
+    @Query(value = "SELECT * FROM get_occupied_seats(:_route_id, :_start_station_id, :_end_station_id, :_date)", nativeQuery = true)
+    List<OccupiedSeats> getOccupiedSeats(
+            @Param("_route_id") Long routeId,
+            @Param("_start_station_id") Long startStationId,
+            @Param("_end_station_id") Long endStationId,
+            @Param("_date") LocalDate date
+    );
+}
+```
+
+### Reservation
+
+```java
+public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+    @Transactional
+    @Query(nativeQuery = true, value = "SELECT * from add_reservation(:_user_id, :_discount_id, :_route_id, :_start_station_id, :_end_station_id, :_departure_date, :_seat_id)")
+
+    Integer callAddReservation(@Param("_user_id") Long userId, @Param("_discount_id") Long discountId, @Param("_route_id") Long routeId, @Param("_start_station_id") Long startStationId, @Param("_end_station_id") Long endStationId, @Param("_departure_date") LocalDate departureDate, @Param("_seat_id") Long seatId);
+
+    @Query(nativeQuery = true, value = "SELECT get_station_id(:_name)")
+    Long getStationId(@Param("_name") String stationName);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from user_reservations(:_user_id) as all_trips")
+    List<ReservationHistory> getAllTrips(@Param("_user_id") Integer user_id);
+
+    @Procedure("change_reservation_status")
+    void changeStatus(@Param("_reservation_id") Long reservation_id, @Param("_status") String status);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from reservation_sum_price(:_reservation_id)")
+    Double getSumPrice(@Param("_reservation_id") Long reservation_id);
+
+    @Query(nativeQuery = true, value = "SELECT *" + "from reservations where payment_status=?1 and EXTRACT(EPOCH FROM (CAST(?2 AS timestamp) - res_date))/60  > 5")
+    List<Reservation> findAllByPaymentStatus(String paymentStatus, LocalDateTime time);
+
+}
+```
+
+### Route
+
+```java
+@Repository
+public interface RouteRepository extends JpaRepository<Route, Long> {
+
+    @Query(nativeQuery = true, value = "SELECT get_station_id(:name)")
+    Long getStationId(@Param("name") String name);
+
+    @Query(nativeQuery = true, value = """
+    SELECT 
+        route_id as routeId, 
+        departure_day as departureDay, 
+        departure_date as departureDate, 
+        departure_time as departureTime, 
+        arrival_time as arrivalTime, 
+        price
+    FROM 
+        find_routes(:_departure_date, :_start_station_id, :_end_station_id) AS route
+    """)  
+
+    List<SpecifiedRouteView> getSpecifiedRoute(@Param("_departure_date") LocalDate departure_date,
+                                               @Param("_start_station_id") Long start_station_id,
+                                               @Param("_end_station_id") Long end_station_id);
+
+}
+```
+
+### Seat
+
+```java
+@Repository
+public interface SeatRepository extends JpaRepository<Seat, Long> {
+    @Query(value = "SELECT * FROM seats", nativeQuery = true)
+    List<Seat> findAllSeats();
+}
+```
+
+### Station
+
+```java
+@Repository
+public interface StationRepository extends JpaRepository<Station, Long> {
+    @Query(value = "SELECT name FROM all_stations", nativeQuery = true)
+    List<String> findAllStationNames();
+
+    @Query(value = "SELECT get_station_id(:stationName)", nativeQuery = true)
+    Long getStationId(@Param("stationName") String stationName);
+}
+```
+
+### User
+
+```java
+public interface UserRepository extends JpaRepository <User, Integer>{
+    Optional<User> findByLogin(String login);
+}
+```
+
+
+## Service 
+
+### Authentication
+
+```java
+@Service
+@RequiredArgsConstructor
+public class AuthenticationService {
+
+    private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+    public AuthenticationResponse register(RegisterRequest request) {
+        var user= User.builder()
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .login(request.getLogin())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .role(Role.USER)
+                .build();
+
+        String jwtToken=jwtService.generateToken(user);
+        try{
+            repository.save(user);
+
+        }catch(DataAccessException e){
+            throw new RuntimeException("Database error occurred: " + e.getMessage());
+        }
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
+        var user=repository.findByLogin(request.getLogin()).orElseThrow();
+        System.out.println(user);
+
+        var jwtToken=jwtService.generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    public User getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            String login = ((UserDetails) principal).getUsername();
+            return repository.findByLogin(login).orElse(null);
+        }
+        return null;
+    }
+
+}
+```
+
+### Discount
+
+```java
+@Service
+public class DiscountService {
+
+    @Autowired
+    private DiscountRepository discountRepository;
+
+    public List<Discount> getAllDiscounts() {
+        return discountRepository.findAllDiscounts();
+    }
+}
+```
+
+### JWT
+
+```java
+@Service
+public class JwtService {
+    @Value("${security.key}")
+    private String SECRET_KEY;
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+    public String extractUserLogin(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser().setSigningKey(getSignInKey()).build().parseSignedClaims(token).getPayload();
+
+
+    }
+    public String generateToken(UserDetails userDetails){
+        return generateToken(new HashMap<>(),userDetails);
+    }
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails){
+
+        return Jwts
+                .builder()
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis()+1000*60*5))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    private Key getSignInKey() {
+        byte[] keyBytes= Decoders.BASE64.decode(SECRET_KEY);
+        return Keys.hmacShaKeyFor(keyBytes);
+
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails){
+        String username=extractUserLogin(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
+        final Claims claims=extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+}
+```
+
+### Occupied Seats
+
+```java
+@Service
+public class OccupiedSeatsService {
+
+    @Autowired
+    private OccupiedSeatsRepository occupiedSeatsRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+
+    public List<OccupiedSeats> getOccupiedSeats(Long routeId, String startStation, String endStation, LocalDate date) {
+
+        Long startStationId = reservationRepository.getStationId(startStation.trim());
+        Long endStationId = reservationRepository.getStationId(endStation.trim());
+
+        return occupiedSeatsRepository.getOccupiedSeats(routeId, startStationId, endStationId, date);
+    }
+}
+```
+
+### Reservation
+
+```java
+@Service
+public class ReservationService {
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+    public Integer addReservation(Long userId, Long discountId, Long routeId, String startStation,
+                                  String endStation, LocalDate departureDate, Long seatId) {
+
+        Long startStationId = reservationRepository.getStationId(startStation.trim());
+        Long endStationId = reservationRepository.getStationId(endStation.trim());
+
+        return reservationRepository.callAddReservation(userId, discountId, routeId, startStationId,
+                endStationId, departureDate, seatId);
+    }
+    public void changeReservationStatus(Long reservationId, String status){
+        reservationRepository.changeStatus(reservationId,status);
+
+    }
+
+    public Double getReservationPrice(Long reservationId){
+        return reservationRepository.getSumPrice(reservationId);
+    }
+
+    public List<Reservation> cancelReservations() {
+        List<Reservation> reservations = reservationRepository.findAllByPaymentStatus("N", LocalDateTime.now());
+        for (Reservation reservation : reservations) {
+            changeReservationStatus(reservation.getReservationId(), "C");
+        }
+        logger.info(String.valueOf(LocalDateTime.now()));
+
+        return reservations;
+    }
+}
+```
+
+### Seat
+
+```java
+@Service
+public class SeatService {
+
+    @Autowired
+    private SeatRepository seatRepository;
+
+    public List<Seat> getAllSeats() {
+        return seatRepository.findAllSeats();
+    }
+}
+```
+
+### Station
+
+```java
+@Service
+public class StationService {
+
+    @Autowired
+    private StationRepository stationRepository;
+
+    public List<String> getAllStationNames() {
+        return stationRepository.findAllStationNames();
+    }
+
+    public Long getStationId(String stationName) {
+        return stationRepository.getStationId(stationName);
+    }
+}
+```
+
+## Controller
+Wartwa kontrolerów dostarcza głównych funkcji zarządzania requestami HTTP. Annotacje @GetMapping, @PostMapping pozwalają na zmapowanie ścieżek URL do metod obsługujących żądania. Annotacja @RequestMapping nad całą klasą kontrolera pozwala określić bazową ścieżkę URL, na podstawie której metody będą tworzyć wyspecyfikowane ścieżki: np. w poniższym przykładzie dla AuthController bazową ścieżką jest "/api". Dlatego też metoda register będzie odpowiadała ścieżce "/api/auth/register". Metody kontrolera mogą też zwracać odpowiedzi (response), w którym można podać kod odpowiedzi serwera oraz "body" - dane, które zwracamy w odpowiedzi na żądanie.
+
+### Auth 
+
+```java
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private final AuthenticationService service;
+
+
+    @PostMapping("/auth/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        logger.info("register");
+        try {
+            return ResponseEntity.ok(service.register(request));
+        }         catch(RuntimeException e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/auth/authenticate")
+    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+        logger.info("register");
+
+        return ResponseEntity.ok(service.authenticate(request));
+
+    }
+    @GetMapping("/get_user")
+    public ResponseEntity<User> getUser(){
+        logger.info(String.valueOf(service.getCurrentUser()));
+        return ResponseEntity.ok(service.getCurrentUser());
+    }
+}
+```
+
+### Discount
+Pozwala pobrać z bazy wszystkie dostępne zniżki z tabeli Discounts.
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class DiscountController {
+
+    @Autowired
+    private DiscountService discountService;
+
+    @GetMapping("/api/getAllDiscounts")
+    public ResponseEntity<List<Discount>> getAllDiscounts() {
+        List<Discount> discounts = discountService.getAllDiscounts();
+        return ResponseEntity.ok(discounts);
+    }
+}
+```
+
+### Occupied Seats
+Dostarcza
+```java
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:5173")
+public class OccupiedSeatsController {
+
+    @Autowired
+    private OccupiedSeatsService occupiedSeatsService;
+
+    @GetMapping("/getOccupiedSeats")
+    public List<OccupiedSeats> getOccupiedSeats(
+            @RequestParam("routeId") Long routeId,
+            @RequestParam("startStation") String startStation,
+            @RequestParam("endStation") String endStation,
+            @RequestParam("date") LocalDate date
+    ) {
+        return occupiedSeatsService.getOccupiedSeats(routeId, startStation, endStation, date);
+    }
+}
+```
+
+### Reservation 
+
+```java
+@RestController
+@RequestMapping("/api/reservations")
+@CrossOrigin(origins = "http://localhost:5173")
+public class ReservationController {
+
+    @Autowired
+    private ReservationService reservationService;
+
+    @PostMapping("/add")
+    public ResponseEntity<Integer> addReservation(@RequestBody Reservation request) {
+         Integer reservationId=reservationService.addReservation(
+                request.getUserId(),
+                request.getDiscountId(),
+                request.getRouteId(),
+                request.getStartStation(),
+                request.getEndStation(),
+                request.getDepartureDate(),
+                request.getSeatId()
+        );
+        return new ResponseEntity<>(reservationId, HttpStatus.CREATED);
+
+    }
+    @PostMapping("/change_status")
+    public void changeReservationStatus(@RequestBody ChangeReservationStatus request){
+        reservationService.changeReservationStatus(request.getReservationId(), request.getStatus());
+    }
+
+    @GetMapping("/price")
+    public Double getReservationPrice(@RequestParam Long reservationId){
+        return reservationService.getReservationPrice(reservationId);
+    }
+}
+```
+
+### Reservation History
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class ReservationHistoryController {
+    private final ReservationRepository reservationRepository;
+
+    @Autowired
+    public ReservationHistoryController(ReservationRepository reservationRepository) {
+        this.reservationRepository = reservationRepository;
+    }
+
+    @GetMapping("/api/all_trips")
+    public List<ReservationHistory> getAllTrips(@RequestParam("user_id") Integer user_id) {
+        return reservationRepository.getAllTrips(user_id);
+    }
+
+    @GetMapping("/api/past_trips")
+    public List<ReservationHistory> getPastTrips(@RequestParam("user_id") Integer user_id) {
+        return reservationRepository.getAllTrips(user_id)
+                .stream()
+                .filter(history ->
+                        history.getDepartureDate().isBefore(LocalDate.now())
+                        || (history.getDepartureDate().isEqual(LocalDate.now())
+                                && history.getDeparture().isBefore(LocalTime.now())))
+                .toList();
+    }
+
+    @GetMapping("/api/future_trips")
+    public List<ReservationHistory> getFutureTrips(@RequestParam("user_id") Integer user_id) {
+        return reservationRepository.getAllTrips(user_id)
+                .stream()
+                .filter(history ->
+                        history.getDepartureDate().isAfter(LocalDate.now())
+                                || (history.getDepartureDate().isEqual(LocalDate.now())
+                                && history.getDeparture().isAfter(LocalTime.now())))
+                .toList();
+    }
+
+}
+```
+
+### Route View
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class RouteViewController {
+    private final RouteRepository routeViewRepository;
+
+    @Autowired
+    public RouteViewController(RouteRepository routeViewRepository) {
+        this.routeViewRepository = routeViewRepository;
+    }
+
+    @GetMapping("/api/all_routes")
+    public List<Route> getAllRoutes() {
+        return routeViewRepository.findAll();
+    }
+
+    @GetMapping("/api/find_route")
+    public List<SpecifiedRouteView> getSpecifiedRoute(@RequestParam LocalDate departure_date,
+                                                          @RequestParam String start_station,
+                                                          @RequestParam String end_station) {
+
+        Long start_station_id=routeViewRepository.getStationId(start_station.trim());
+        Long end_station_id=routeViewRepository.getStationId(end_station.trim());
+
+
+        return routeViewRepository.getSpecifiedRoute(departure_date, start_station_id, end_station_id);
+
+    }
+}
+```
+
+### Seat
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class SeatController {
+
+    @Autowired
+    private SeatService seatService;
+
+    @GetMapping("/api/getAllSeats")
+    public ResponseEntity<List<Seat>> getAllSeats() {
+        List<Seat> seats = seatService.getAllSeats();
+        return ResponseEntity.ok(seats);
+    }
+
+}
+```
+
+### Station
+
+```java
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+public class StationController {
+
+    @Autowired
+    private StationService stationService;
+
+    @GetMapping("/api/stations")
+    public ResponseEntity<List<String>> getAllStationNames() {
+        List<String> stationNames = stationService.getAllStationNames();
+        return ResponseEntity.ok(stationNames);
+    }
+
+    @GetMapping("/api/stations/getStationId")
+    public Long getStationId(@RequestParam String stationName) {
+        return stationService.getStationId(stationName);
+    }
+}
+```
+
+
+
+

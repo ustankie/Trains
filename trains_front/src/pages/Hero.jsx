@@ -13,10 +13,7 @@ export default function Hero() {
     
     return (
         <>      
-        {/* <div style={{backgroundColor: "red", width: "30px"}}> */}
         <Navbar/>
-
-        {/* </div> */}
         <div className="hero--wrapper">
             <div className="background"></div>
             <div className="content">
