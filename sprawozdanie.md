@@ -44,20 +44,11 @@
   - [get\_last\_log](#get_last_log)
 - [Triggery](#triggery)
   - [status\_insert\_trigger](#status_insert_trigger)
-- [Front](#front)
-  - [Komunikacja frontu z backendem](#komunikacja-frontu-z-backendem)
-  - [Komunikacja aplikacji przy autentykacji użytkowników](#komunikacja-aplikacji-przy-autentykacji-użytkowników)
-    - [Zarządzanie tokenami uwierzytelniającymi](#zarządzanie-tokenami-uwierzytelniającymi)
-    - [JWT](#jwt)
-    - [Wysyłanie żądań HTTP](#wysyłanie-żądań-http)
-    - [Sprawdzanie ważności tokena](#sprawdzanie-ważności-tokena)
-    - [Implementacja](#implementacja)
-  - [Hero component](#hero-component)
-  - [Login i register](#login-i-register)
-  - [User dashboard](#user-dashboard)
-  - [Routes display](#routes-display)
-  - [Add reservation](#add-reservation)
 - [Backend](#backend)
+  - [Konfiguracja](#konfiguracja)
+    - [ApplicationConfig](#applicationconfig)
+    - [SecurityConfig](#securityconfig)
+    - [WebConfig](#webconfig)
   - [Model](#model)
     - [Discout](#discout)
     - [Occupied Seats](#occupied-seats)
@@ -80,7 +71,7 @@
   - [Service](#service)
     - [Authentication](#authentication)
     - [Discount](#discount-1)
-    - [JWT](#jwt-1)
+    - [JWT](#jwt)
     - [Occupied Seats](#occupied-seats-2)
     - [Reservation](#reservation-1)
     - [Seat](#seat-2)
@@ -94,6 +85,25 @@
     - [Route View](#route-view)
     - [Seat](#seat-3)
     - [Station](#station-3)
+  - [Inne klasy](#inne-klasy)
+    - [JwtAuthenticationFilter](#jwtauthenticationfilter)
+    - [AuthenticationRequest](#authenticationrequest)
+    - [AuthenticationResponse](#authenticationresponse)
+    - [RegisterRequest](#registerrequest)
+    - [ChangeReservationStatus](#changereservationstatus)
+- [Frontend](#frontend)
+  - [Komunikacja frontu z backendem](#komunikacja-frontu-z-backendem)
+  - [Komunikacja aplikacji przy autentykacji użytkowników](#komunikacja-aplikacji-przy-autentykacji-użytkowników)
+    - [Zarządzanie tokenami uwierzytelniającymi](#zarządzanie-tokenami-uwierzytelniającymi)
+    - [JWT](#jwt-1)
+    - [Wysyłanie żądań HTTP](#wysyłanie-żądań-http)
+    - [Sprawdzanie ważności tokena](#sprawdzanie-ważności-tokena)
+    - [Implementacja](#implementacja)
+  - [Hero component](#hero-component)
+  - [Login i register](#login-i-register)
+  - [User dashboard](#user-dashboard)
+  - [Routes display](#routes-display)
+  - [Add reservation](#add-reservation)
 - [Podsumowanie i wnioski](#podsumowanie-i-wnioski)
 
 ## Schemat bazy danych 
@@ -1213,142 +1223,96 @@ CREATE TRIGGER status_insert_trigger
     FOR EACH ROW
 EXECUTE FUNCTION log_status_insert();
 ```
-# Front 
-
-## Komunikacja frontu z backendem
-
-Do komunikacji aplikacji z backendem używamy biblioteki `axios` do `reacta`, która oferuje prostą obsługę żądań http GET I POST w aplikacjach webowych. Ta biblioteka jest lepszą alternatywą do wbudowanej funkcji `fetch` w języku javascript. 
-
-Dzięki podejsciu funkcyjnemu w javascripcie przekształcamy dane w postaci JSON z backendu na odpowiednie obiekty gotowe do użycia w naszej aplikacji. 
-
-Przykład użycia pobrania wszystkich dostępnych tras. Korzystamy z endpointu `/find_route` i wysyłamy żądanie POST z odpowiednimi parametrami. Następnie do przechowywania danych używamy hooka `useState` oraz zapisujemy odpowiedź w `localStorage`. Na końcu korzystamy z hooka `useNavigate` który przenosi użytkownika razem z danymi z endpointu do innego komponentu, gdzie dane są dalej procesowane, a użytkownik widzi efekt zapytania o konkretną trasę. 
-
-```js
-function searchRoute() {
-    const { date, start_station, end_station } = routeData;
-    
-    axios.get('/api/find_route', { params: { departure_date: date, start_station: start_station, end_station: end_station }})
-        .then(response => {
-            setFetchedData(response.data); 
-            localStorage.setItem('fetchedData', JSON.stringify({ data: response.data, routeData }));
-            navigate('/routes-display', { state: { 
-                data: response.data,
-                startStation: start_station, 
-                endStation: end_station, 
-                departureDate: date
-            } });
-        })
-        .catch(error => {
-            console.error('Error finding route:', error);
-        });
-}
-```
-
-## Komunikacja aplikacji przy autentykacji użytkowników
-
-### Zarządzanie tokenami uwierzytelniającymi
-Zaimplementowaliśmy funkcje `getAuthToken` i `setAuthToken` do obsługi tokenów JWT. Umożliwiają one odpowiednio odczyt i zapis tokena w `localStorage` przeglądarki. Jest to standardowe rozwiązanie umożliwiające łatwe zarządzanie stanem uwierzytelnienia użytkownika.
-
-### JWT
-
-JWT, czyli JSON Web Token, to otwarty standard  służący do bezpiecznej wymiany informacji między stronami za pomocą obiektów JSON. Po zalogowaniu się użytkownika serwer generuje token JWT, zawierający niezbędne informacje o użytkowniku, i przesyła go do aplikacji. Aplikacja przesyła ten token z powrotem do serwera przy każdym kolejnym żądaniu, co pozwala serwerowi na weryfikację tożsamości użytkownika i zapewnienie mu dostępu do zasobów.
-
-### Wysyłanie żądań HTTP
-Stworzyliśmy funkcję `request`, która wykorzystuje bibliotekę Axios do wykonania żądań HTTP. Funkcja ta automatycznie dodaje nagłówek autoryzacji typu Bearer, jeśli token jest dostępny. W przypadku błędów związanych z autoryzacją lub wysyłaniem żądań, są one rejestrowane w konsoli.
-
-### Sprawdzanie ważności tokena
-Funkcja `isTokenExpired` pozwala nam sprawdzić, czy aktualny token JWT jest jeszcze ważny. Wykorzystuje dekodowanie tokena za pomocą biblioteki `jwt-decode` do sprawdzenia daty wygaśnięcia. Jest to kluczowe dla zapewnienia bezpieczeństwa sesji użytkownika.
-
-### Implementacja
-
-```js
-export const getAuthToken = () => {
-    return window.localStorage.getItem("auth_token");
-};
-
-export const setAuthToken = (token) => {
-    window.localStorage.setItem("auth_token", token);
-
-};
-
-export const request = async (method, url, data, params) => {
-    let headers = {};
-    try {
-        let token = getAuthToken();
-        if (token !== null && token != "null") {
-            headers = { "Authorization": `Bearer ${token}` };
-        }
-    } catch (error) {
-        console.log("No auth_token");
-    }
-
-    try {
-        return await axios({
-            method: method,
-            headers: headers,
-            url: url,
-            data: data,
-            params: params
-        });
-    } catch (error_1) {
-        console.log("authError");
-        throw "authError";
-    }
-}
-
-export const isTokenExpired = () => {
-    const token = getAuthToken();
-    if (!token || token=="null" || token==null) {
-        return true; 
-    }
-
-    try {
-        const decodedToken = jwtDecode(token);
-        const currentTime = Date.now() / 1000; 
-        return decodedToken.exp < currentTime;
-    } catch (error) {
-        console.error("Error decoding token:", error);
-        return true; 
-    }
-};
-```
-
-## Hero component
-
-`Hero component` to strona startowa naszej aplikacji, w której użytkownik może się zalogować, lub wyszukać trasę jaka go interesuje. 
-
-![alt text](images/image-0.png)
-
-
-## Login i register
-
-Aplikacja umożliwia zalogowanie się lub utworzenie nowego konta w serwisie. 
-
-![alt text](images/image-1.png)
-
-## User dashboard
-
-`User dashboard` zawiera informacje o przeszłych i przeszłych podróżach konkretnego użytkownika. 
-
-![alt text](images/image-2.png)
-
-## Routes display
-
-`Routes display` wyswietla wszystkie dostępne trasy zgodnie z kryteriami wyszukiwania. 
-
-![alt text](images/image-3.png)
-
-W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna informacja. 
-
-![alt text](images/image-4.png)
-
-## Add reservation 
-
-Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
-
-![alt text](images/image-5.png)
 
 # Backend 
+
+## Konfiguracja
+Spring wymaga określenia w konfiguracji m.in. tzw. Bean'ów, czyli klas, którymi będzie automatycznie administrował. Stworzyliśmy kilka klas, które odpowiadają za różne aspekty konfiguracji:
+### ApplicationConfig
+Klasa określa serwis administrujący użytkownikami, AuthenticationProvider, który jest częścią Spring Security i służy do uwierzytelniania użytkowników, AuthenticationManager, encoder haseł oraz pulę wątków, która pozwoli nam tworzyć nowy wątek, który będzie działał równolegle do aplikacji i pozwoli nam np. zaplanować zmianę statusu rezerwacji na "cancelled" po określonym czasie.
+
+```java
+@Configuration
+@RequiredArgsConstructor
+public class ApplicationConfig {
+
+    private final UserRepository repository;
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> repository.findByLogin(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider(){
+        DaoAuthenticationProvider authProvider=new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ScheduledExecutorService scheduledExecutorService() {
+        return Executors.newScheduledThreadPool(1);
+    }
+}
+```
+
+###  SecurityConfig
+Konfiguracja komponentów związanych z bezpieczeństwem systemu. W securityFilterChain określamy np. strony, które będą dostępne bez konieczności logowania się do systemu - wszystkie inne będą niedostępne dla niezalogowanych użytkowników.
+```java
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final AuthenticationProvider authenticationProvider;
+
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**","/api/getOccupiedSeats","/api/find_route", "/", "/api/stations").permitAll() // Define public endpoints here
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
+```
+### WebConfig
+Określa, jaka jest domyślna ścieżka mapowania requestów HTTP, z jakiego portu dozwolona jest komunikacja z backendem oraz jakie operacje CRUD dopuszczamy.
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+    }
+}
+```
 
 ## Model 
 
@@ -1704,7 +1668,10 @@ public interface UserRepository extends JpaRepository <User, Integer>{
 ## Service 
 Warstwa serwisów w aplikacjach Spring ma za zadanie oddzielić logikę biznesową od operacji CRUD. Czasami dane pobrane z repozytorium wymagają jeszcze obróbki przed zwróceniem ich jako response. Właśnie tym powinny zająć się klasy @Service. Pozwala to też na hermetyzację dostępu do repozytoriów oraz pozwala na wielokrotne wykorzystanie tej samej logiki biznesowej.
 ### Authentication
-
+Klasa odpowiada za zarządzanie rejestracją użytkowników oraz ich uwierzytelnianiem. Posiada metody:
+- register - tworzy danego parametrami zapytania użytkownika za pomocą dostarczonego w klasie User mechanizmu @Builder, następnie tworzy token JWT dla tego użytkownika, koduje jego hasło za pomocą obiektu klasy PasswordEncoder dostarczonego z biblioteką Spring Security i zapisuje go w bazie danych
+- authenticate - uwierzytelnia istniejącego użytkownika - znajduje go po loginie w bazie, sprawdza zgodność jego loginu i hasła, a następnie generuje token JWT dla niego
+- getCurrentUser - zwraca login aktualnie zalogowanego użytkownika lub null, gdy żaden użytkownik nie jest zalogowany
 ```java
 @Service
 @RequiredArgsConstructor
@@ -1778,7 +1745,14 @@ public class DiscountService {
 ```
 
 ### JWT
-
+Klasa zarządza tokenami JWT za pomocą metod:
+- extractAllClaims - parsuje token JWT i zwraca wszystkie roszczenia (claims) zawarte w tokenie, korzysta z biblioteki JJWT w  celu weryfikacji tokena przy użyciu klucza podpisującego
+- extractUserLogin - wyciąga nazwę użytkownika z tokenu JWT
+- generateToken - tworzy nowy token JWT o aktualnej dacie, podanych roszczeniach (claims) oraz nazwie użytkownika, a także określa czas ważności tokenu - wygaśnie on po 5 minutach od zalogowania.
+- getSignInKey - Konwertuje sekretny klucz z formatu Base64 na tablicę bajtów i tworzy klucz HMAC-SHA używany do podpisywania tokenów
+- isTokenValid - sprawdza ważność tokenu oraz zgodność podanego użytkownika z tym zapisanym w tokenie
+- isTokenExpired - sprawdza czy token stracił ważność
+- extractClaim - Ekstraktuje konkretne roszczenie z tokenu JWT, używając funkcji claimsResolver
 ```java
 @Service
 public class JwtService {
@@ -1947,7 +1921,10 @@ public class StationService {
 Wartwa kontrolerów dostarcza głównych funkcji zarządzania requestami HTTP. adnotacje @GetMapping, @PostMapping pozwalają na zmapowanie ścieżek URL do metod obsługujących żądania. adnotacja @RequestMapping nad całą klasą kontrolera pozwala określić bazową ścieżkę URL, na podstawie której metody będą tworzyć wyspecyfikowane ścieżki: np. w poniższym przykładzie dla AuthController bazową ścieżką jest "/api". Dlatego też metoda register będzie odpowiadała ścieżce "/api/auth/register". Metody kontrolera mogą też zwracać odpowiedzi (response), w którym można podać kod odpowiedzi serwera oraz "body" - dane, które zwracamy w odpowiedzi na żądanie.
 
 ### Auth 
-
+Kontroler odbiera requesty związane z rejestracją i uwierzytelnianiem użytkowników (register oraz login). Posiada metody:
+- register - rejestruje użytkownika w bazie. Jeśli nie wystąpiły żadne błędy, zwraca kod HTPP 200, w przeciwnym wypadku kod 500 oraz treść błędu
+- authenticate - uwierzytelnia użytkownika
+- getUser - zwraca dane użytkownika aktualnie zalogowanego użytkownika
 ```java
 @RestController
 @RequestMapping("/api")
@@ -2190,6 +2167,273 @@ public class StationController {
     }
 }
 ```
+
+## Inne klasy
+### JwtAuthenticationFilter
+Klasa jest filtrem zabezpieczeń, który przechwytuje żądania HTTP i sprawdza czy w nagłówku znajduje się JSON Web Token. Filtr wykona się raz na każde żądanie (OncePerRequestFilter). Filtr pomija uwierzytelnianie, jeżeli ścieżka URL zawiera "/api/auth", następnie sprawdza czy nagłówek jest pusty lub nie zaczyna się od `Bearer` (jeśli tak, kończy działanie). Następnie sprawdzana jest zgodność loginu użytkownika z tym w tokenie. Jeśli jest zgodność, ładowane są z bazy dane użytkownika i sprawdzana jest zgodność jego hasła z hasłem w bazie.
+
+```java
+@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        if (request.getServletPath().contains("/api/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userLogin;
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        jwt = authHeader.substring(7);
+        userLogin = jwtService.extractUserLogin(jwt);
+
+        if (userLogin != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userLogin);
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+
+        }
+        filterChain.doFilter(request,response);
+    }
+}
+```
+
+### AuthenticationRequest
+Określa postać requesta, jaki powinien otrzymać backend podczas logowania
+
+```java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthenticationRequest {
+    private String login;
+    String password;
+}
+```
+### AuthenticationResponse
+Określa postać odpowiedzi serwera na request logowania
+```java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthenticationResponse {
+    private String token;
+}
+```
+### RegisterRequest
+Określa postać requesta, jaki powinien otrzymać backend podczas rejestracji nowego użytkownika
+
+```java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class RegisterRequest {
+    private String firstname;
+    private String lastname;
+    private String email;
+    private String phone;
+    private String login;
+    private String password;
+    private Role role;
+
+}
+```
+### ChangeReservationStatus
+Określa postać requesta, który oczekuje zmiany statusu rezerwacji o podanym id.
+```java
+public class ChangeReservationStatus {
+    private Long reservationId;
+    private String status;
+
+    // Constructors, getters, and setters
+    public ChangeReservationStatus() {
+    }
+
+    public ChangeReservationStatus(Long resId, String status) {
+        this.reservationId = resId;
+        this.status = status;
+    }
+
+    public Long getReservationId() {
+        return reservationId;
+    }
+
+    public void setReservationId(Long reservationId) {
+        this.reservationId = reservationId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
+
+```
+
+# Frontend 
+
+## Komunikacja frontu z backendem
+
+Do komunikacji aplikacji z backendem używamy biblioteki `axios` do `reacta`, która oferuje prostą obsługę żądań http GET I POST w aplikacjach webowych. Ta biblioteka jest lepszą alternatywą do wbudowanej funkcji `fetch` w języku javascript. 
+
+Dzięki podejsciu funkcyjnemu w javascripcie przekształcamy dane w postaci JSON z backendu na odpowiednie obiekty gotowe do użycia w naszej aplikacji. 
+
+Przykład użycia pobrania wszystkich dostępnych tras. Korzystamy z endpointu `/find_route` i wysyłamy żądanie POST z odpowiednimi parametrami. Następnie do przechowywania danych używamy hooka `useState` oraz zapisujemy odpowiedź w `localStorage`. Na końcu korzystamy z hooka `useNavigate` który przenosi użytkownika razem z danymi z endpointu do innego komponentu, gdzie dane są dalej procesowane, a użytkownik widzi efekt zapytania o konkretną trasę. 
+
+```js
+function searchRoute() {
+    const { date, start_station, end_station } = routeData;
+    
+    axios.get('/api/find_route', { params: { departure_date: date, start_station: start_station, end_station: end_station }})
+        .then(response => {
+            setFetchedData(response.data); 
+            localStorage.setItem('fetchedData', JSON.stringify({ data: response.data, routeData }));
+            navigate('/routes-display', { state: { 
+                data: response.data,
+                startStation: start_station, 
+                endStation: end_station, 
+                departureDate: date
+            } });
+        })
+        .catch(error => {
+            console.error('Error finding route:', error);
+        });
+}
+```
+
+## Komunikacja aplikacji przy autentykacji użytkowników
+
+### Zarządzanie tokenami uwierzytelniającymi
+Zaimplementowaliśmy funkcje `getAuthToken` i `setAuthToken` do obsługi tokenów JWT. Umożliwiają one odpowiednio odczyt i zapis tokena w `localStorage` przeglądarki. Jest to standardowe rozwiązanie umożliwiające łatwe zarządzanie stanem uwierzytelnienia użytkownika.
+
+### JWT
+
+JWT, czyli JSON Web Token, to otwarty standard  służący do bezpiecznej wymiany informacji między stronami za pomocą obiektów JSON. Po zalogowaniu się użytkownika serwer generuje token JWT, zawierający niezbędne informacje o użytkowniku, i przesyła go do aplikacji. Aplikacja przesyła ten token z powrotem do serwera przy każdym kolejnym żądaniu, co pozwala serwerowi na weryfikację tożsamości użytkownika i zapewnienie mu dostępu do zasobów.
+
+### Wysyłanie żądań HTTP
+Stworzyliśmy funkcję `request`, która wykorzystuje bibliotekę Axios do wykonania żądań HTTP. Funkcja ta automatycznie dodaje nagłówek autoryzacji typu Bearer, jeśli token jest dostępny. W przypadku błędów związanych z autoryzacją lub wysyłaniem żądań, są one rejestrowane w konsoli.
+
+### Sprawdzanie ważności tokena
+Funkcja `isTokenExpired` pozwala nam sprawdzić, czy aktualny token JWT jest jeszcze ważny. Wykorzystuje dekodowanie tokena za pomocą biblioteki `jwt-decode` do sprawdzenia daty wygaśnięcia. Jest to kluczowe dla zapewnienia bezpieczeństwa sesji użytkownika.
+
+### Implementacja
+
+```js
+export const getAuthToken = () => {
+    return window.localStorage.getItem("auth_token");
+};
+
+export const setAuthToken = (token) => {
+    window.localStorage.setItem("auth_token", token);
+
+};
+
+export const request = async (method, url, data, params) => {
+    let headers = {};
+    try {
+        let token = getAuthToken();
+        if (token !== null && token != "null") {
+            headers = { "Authorization": `Bearer ${token}` };
+        }
+    } catch (error) {
+        console.log("No auth_token");
+    }
+
+    try {
+        return await axios({
+            method: method,
+            headers: headers,
+            url: url,
+            data: data,
+            params: params
+        });
+    } catch (error_1) {
+        console.log("authError");
+        throw "authError";
+    }
+}
+
+export const isTokenExpired = () => {
+    const token = getAuthToken();
+    if (!token || token=="null" || token==null) {
+        return true; 
+    }
+
+    try {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000; 
+        return decodedToken.exp < currentTime;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return true; 
+    }
+};
+```
+
+Na wszystkich podstronach, gdzie wymagane jest bycie zalogowanym używamy funkcji request zamiast korzystać wprost z axios - pozwala nam to w wygodny sposób za każdym razem ustawiać token użytkownika na aktualny, np.:
+```js
+        const url = 'http://localhost:8080/api/stations';
+        request("GET",url,{},{}).then(response => {
+            setStationNames(response.data);
+        }).catch(error => {
+            console.error('There was an error!', error);
+        });
+```
+
+## Hero component
+
+`Hero component` to strona startowa naszej aplikacji, w której użytkownik może się zalogować, lub wyszukać trasę jaka go interesuje. 
+
+![alt text](images/image-0.png)
+
+
+## Login i register
+
+Aplikacja umożliwia zalogowanie się lub utworzenie nowego konta w serwisie. 
+
+![alt text](images/image-1.png)
+
+## User dashboard
+
+`User dashboard` zawiera informacje o przeszłych i przeszłych podróżach konkretnego użytkownika. 
+
+![alt text](images/image-2.png)
+
+## Routes display
+
+`Routes display` wyswietla wszystkie dostępne trasy zgodnie z kryteriami wyszukiwania. 
+
+![alt text](images/image-3.png)
+
+W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna informacja. 
+
+![alt text](images/image-4.png)
+
+## Add reservation 
+
+Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
+
+![alt text](images/image-5.png)
+
 # Podsumowanie i wnioski
 Podsumowując, SpringBoot oraz Hibernate dostarczają wielu wygodnych narzędzi do pracy z bazami danych. Poniżej prezentujemy kilka kluczowych funkcji framework'a, z których skorzystaliśmy:
 - adnotacje @Query umożliwiły nam szybki dostęp do funkcji, które stworzyliśmy w bazie danych
