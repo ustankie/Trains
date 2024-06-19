@@ -2405,6 +2405,9 @@ Na wszystkich podstronach, gdzie wymagane jest bycie zalogowanym używamy funkcj
 
 ![alt text](images/image-0.png)
 
+Aplikacja daje też podpowiedzi co do stacji, które można wyszukać, co usprawnia wyszukanie żądnej trasy:   
+![alt text](images/prompt.png)
+
 
 ## Login i register
 
@@ -2433,6 +2436,15 @@ W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna inform
 Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
 
 ![alt text](images/image-5.png)
+
+Jeśli klikniemy 'Book' zostaniemy zapytani o potwierdzenie rezerwacji:     
+![alt text](images/book.png)
+
+Następnie jeśli potwierdzimy, zostaniemy poinformowani, że na płatność mamy 5 min - później rezerwacja zostanie anulowana:     
+![alt text](images/pay.png)
+
+Możemy zapłacić później z poziomu UserDashboard lub od razu. Wtedy zostaniemy przekierowani na stronę:    
+![alt text](images/pay_page.png)
 
 # Podsumowanie i wnioski
 Podsumowując, SpringBoot oraz Hibernate dostarczają wielu wygodnych narzędzi do pracy z bazami danych. Poniżej prezentujemy kilka kluczowych funkcji framework'a, z których skorzystaliśmy:
