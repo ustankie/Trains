@@ -1,4 +1,22 @@
+# Sprawozdanie z projektu z przedmiotu Bazy Danych II
+<strong>Autorzy</strong>: 
+
+[Kamil Rudny](https://github.com/krudny) <br>
+karudny@student.agh.edu.pl <br> 
+
+[Urszula Stankiewicz](https://github.com/ustankie) <br>
+ustankiewicz@student.agh.edu.pl <br>
+
+<strong>Temat</strong>: *Platforma obsługująca połączenia kolejowe*  
+<strong>Technologie</strong>: PostgreSQL, SpringBoot oraz React.  
+<strong>Project Github</strong>: https://github.com/ustankie/Trains
+
 ## Spis treści
+
+
+- [Sprawozdanie z projektu z przedmiotu Bazy Danych II](#sprawozdanie-z-projektu-z-przedmiotu-bazy-danych-ii)
+  - [Spis treści](#spis-treści)
+  - [Schemat bazy danych](#schemat-bazy-danych)
 - [Tabele](#tabele)
   - [Tabela discounts](#tabela-discounts)
   - [Tabela log\_reservation](#tabela-log_reservation)
