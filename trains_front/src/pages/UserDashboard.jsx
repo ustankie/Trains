@@ -65,6 +65,9 @@ export default function UserDashboard() {
 
 
     }, [reservationId,show]);
+    useEffect(()=>{
+        reservationPrice();
+    },[reservationId]);
 
 
     function reservationPrice() {

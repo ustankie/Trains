@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface StationRepository extends JpaRepository<Station, Long> {
-    @Query(value = "SELECT name FROM all_stations", nativeQuery = true)
+    @Query(value = "SELECT name FROM stations", nativeQuery = true)
     List<String> findAllStationNames();
 
     @Query(value = "SELECT get_station_id(:stationName)", nativeQuery = true)

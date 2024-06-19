@@ -14,7 +14,7 @@
 - [Widoki](#widoki)
   - [Widok all\_routes](#widok-all_routes)
   - [Widok all\_stations](#widok-all_stations)
-- [Procdeury](#procdeury)
+- [Procedury](#procedury)
   - [add\_train](#add_train)
   - [add\_station](#add_station)
   - [add\_route](#add_route)
@@ -44,13 +44,11 @@
   - [get\_last\_log](#get_last_log)
 - [Triggery](#triggery)
   - [status\_insert\_trigger](#status_insert_trigger)
-- [Front](#front)
-  - [Hero component](#hero-component)
-  - [Login i register](#login-i-register)
-  - [User dashboard](#user-dashboard)
-  - [Routes display](#routes-display)
-  - [Add reservation](#add-reservation)
 - [Backend](#backend)
+  - [Konfiguracja](#konfiguracja)
+    - [ApplicationConfig](#applicationconfig)
+    - [SecurityConfig](#securityconfig)
+    - [WebConfig](#webconfig)
   - [Model](#model)
     - [Discout](#discout)
     - [Occupied Seats](#occupied-seats)
@@ -59,6 +57,9 @@
     - [Seat](#seat)
     - [Station](#station)
     - [User](#user)
+  - [Elementy modelu, których nie przechowujemy w bazie danych](#elementy-modelu-których-nie-przechowujemy-w-bazie-danych)
+    - [ReservationHistory](#reservationhistory)
+    - [SpecifiedRouteController](#specifiedroutecontroller)
   - [Repository](#repository)
     - [Discount](#discount)
     - [Occupied Seats](#occupied-seats-1)
@@ -84,6 +85,26 @@
     - [Route View](#route-view)
     - [Seat](#seat-3)
     - [Station](#station-3)
+  - [Inne klasy](#inne-klasy)
+    - [JwtAuthenticationFilter](#jwtauthenticationfilter)
+    - [AuthenticationRequest](#authenticationrequest)
+    - [AuthenticationResponse](#authenticationresponse)
+    - [RegisterRequest](#registerrequest)
+    - [ChangeReservationStatus](#changereservationstatus)
+- [Frontend](#frontend)
+  - [Komunikacja frontu z backendem](#komunikacja-frontu-z-backendem)
+  - [Komunikacja aplikacji przy autentykacji użytkowników](#komunikacja-aplikacji-przy-autentykacji-użytkowników)
+    - [Zarządzanie tokenami uwierzytelniającymi](#zarządzanie-tokenami-uwierzytelniającymi)
+    - [JWT](#jwt-1)
+    - [Wysyłanie żądań HTTP](#wysyłanie-żądań-http)
+    - [Sprawdzanie ważności tokena](#sprawdzanie-ważności-tokena)
+    - [Implementacja](#implementacja)
+  - [Hero component](#hero-component)
+  - [Login i register](#login-i-register)
+  - [User dashboard](#user-dashboard)
+  - [Routes display](#routes-display)
+  - [Add reservation](#add-reservation)
+- [Podsumowanie i wnioski](#podsumowanie-i-wnioski)
 
 ## Schemat bazy danych 
 
@@ -357,7 +378,7 @@ Przykładowy widok:
 
 ![all_stations](images/all_stations.png)
 
-# Procdeury
+# Procedury
 
 ## add_train
 
@@ -422,7 +443,6 @@ Procedura dodaje nową trasę.
 Procedura sprawdza 
 - czy stacja początkowa i końcowa istnieją
 - czy taka trasa już nie jest w bazie
-- <span style="color: red">sprawdzanie czy pociag jest dostepny TODOTODO</span> 
 
 Implementacja: 
 ```sql
@@ -1203,50 +1223,103 @@ CREATE TRIGGER status_insert_trigger
     FOR EACH ROW
 EXECUTE FUNCTION log_status_insert();
 ```
-# Front 
-
-## Hero component
-
-`Hero component` to strona startowa naszej aplikacji, w której użytkownik może się zalogować, lub wyszukać trasę jaka go interesuje. 
-
-![alt text](images/image-0.png)
-
-
-## Login i register
-
-Aplikacja umożliwia zalogowanie się lub utworzenie nowego konta w serwisie. 
-
-![alt text](images/image-1.png)
-
-## User dashboard
-
-`User dashboard` zawiera informacje o przeszłych i przeszłych podróżach konkretnego użytkownika. 
-
-![alt text](images/image-2.png)
-
-## Routes display
-
-`Routes display` wyswietla wszystkie dostępne trasy zgodnie z kryteriami wyszukiwania. 
-
-![alt text](images/image-3.png)
-
-W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna informacja. 
-
-![alt text](images/image-4.png)
-
-## Add reservation 
-
-Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
-
-![alt text](images/image-5.png)
 
 # Backend 
+
+## Konfiguracja
+Spring wymaga określenia w konfiguracji m.in. tzw. Bean'ów, czyli klas, którymi będzie automatycznie administrował. Stworzyliśmy kilka klas, które odpowiadają za różne aspekty konfiguracji:
+### ApplicationConfig
+Klasa określa serwis administrujący użytkownikami, AuthenticationProvider, który jest częścią Spring Security i służy do uwierzytelniania użytkowników, AuthenticationManager, encoder haseł oraz pulę wątków, która pozwoli nam tworzyć nowy wątek, który będzie działał równolegle do aplikacji i pozwoli nam np. zaplanować zmianę statusu rezerwacji na "cancelled" po określonym czasie.
+
+```java
+@Configuration
+@RequiredArgsConstructor
+public class ApplicationConfig {
+
+    private final UserRepository repository;
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> repository.findByLogin(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider(){
+        DaoAuthenticationProvider authProvider=new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ScheduledExecutorService scheduledExecutorService() {
+        return Executors.newScheduledThreadPool(1);
+    }
+}
+```
+
+###  SecurityConfig
+Konfiguracja komponentów związanych z bezpieczeństwem systemu. W securityFilterChain określamy np. strony, które będą dostępne bez konieczności logowania się do systemu - wszystkie inne będą niedostępne dla niezalogowanych użytkowników.
+```java
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final AuthenticationProvider authenticationProvider;
+
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**","/api/getOccupiedSeats","/api/find_route", "/", "/api/stations").permitAll() // Define public endpoints here
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
+```
+### WebConfig
+Określa, jaka jest domyślna ścieżka mapowania requestów HTTP, z jakiego portu dozwolona jest komunikacja z backendem oraz jakie operacje CRUD dopuszczamy.
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+    }
+}
+```
 
 ## Model 
 
 Aby reprezentować bazę w modelu obiektowym stworzyliśmy klasy z odpowiadającymi im atrybutami do kolumn w bazie.
 
 ### Discout
+Odpowiada tabeli discounts w bazie (adnotacja @Table). Można tu też zaobserwować adnotację @Getter, która automatycznie dodaje gettery wszystkich atrybutów oraz @Entity - oznacza, że obiekt będzie miał swoje odwzorowanie w bazie danych. Ponadto, jeżeli klasa @Entity nie posiada atrybutu o nazwie id, należy dodać adnotację @Id nad atrybutem, który spełnia rolę klucza głównego w bazie danych.
 
 ```java
 @Getter
@@ -1261,7 +1334,7 @@ public class Discount {
 ```
 
 ### Occupied Seats 
-
+Odpowiada tabeli occupied_seats
 ```java
 @Getter
 @Entity
@@ -1273,7 +1346,7 @@ public class OccupiedSeats {
 ```
 
 ### Reservations
-
+Odpowiada tabeli Reservations
 ```java
 @Getter
 @Entity
@@ -1296,7 +1369,7 @@ public class Reservation {
 ```
 
 ### Route
-
+Odpowiada tabeli Route. Modyfikator `transient` oznacza, że start_station_name oraz end_station_name nie będą przechowywane w bazie (takie kolumny w tabeli route nie istnieją). Te atrybuty są nam potrzebne tylko w modelu obiektowym.
 ```java
 @Getter
 @Setter
@@ -1308,13 +1381,13 @@ public class Route {
     private Long trainId;
     private boolean active;
     private String day_of_week;
-    private String start_station_name;
-    private String end_station_name;
+    private transient String start_station_name;
+    private transient String end_station_name;
 }
 ```
 
 ### Seat
-
+Odpowiada tabeli seats
 ```java
 @Getter
 @Entity
@@ -1328,10 +1401,10 @@ public class Seat {
 ```
 
 ### Station
-
+Odpowiada tabeli stations.
 ```java
 @Entity
-@Table(name = "all_stations")
+@Table(name = "stations")
 @Getter
 @Setter
 public class Station {
@@ -1344,7 +1417,13 @@ public class Station {
 ```
 
 ### User
+Odpowiada tabeli users. Implementuje interfejs UserDetails, który jest częścią Spring Security. Warto zwrócić uwagę na adnotacje:
+- @Data - adnotacja z biblioteki Lombok, automatycznie generuje funkcje toString(), equals(), hashCode(), a także gettery i settery wszystkich atrybutów oraz konstruktor zawierający jako argumenty wszystkie atrybuty z modyfikatorem final. Tak naprawdę łączy w sobie adnotacje @Getter, @Setter, @ToString, @EqualsAndHashCode, @RequiredArgsConstructor
+- @NoArgsConstructor - generuje konstruktor bezargumentowy
+- @AllArgsConstructor - generuje konstruktor dla wszystkich atrybutów
+- @Builder - generuje implementację wzorca projektowego "Budowniczy" dla klasy - dostarcza metod pozwalających ustawić konkretne atrybuty na żądane wartości oraz metodę build(). Przyda się to później (klasa AuthenticationService), kiedy będziemy chcieli np. zarejestrować nowego użytkownika o podanych danych. 
 
+Wprowadzamy też role dla użytkownika w postaci klasy Enum Role - na razie nasza aplikacja korzysta tylko z roli USER, ale daje nam to możliwość rozwoju w przyszłości (np. role ADMIN, MODIFIER). Kontrolę nad możliwymi wartościami atrybutu role uzyskujemy poprzez adnotację @Enumerated.
 ```java
 @Data
 @Builder
@@ -1405,12 +1484,67 @@ public class User implements UserDetails {
 }
 ```
 
+Enum Role wygląda następująco:
+```java
+public enum Role {
+    ADMIN,
+    USER
+}
+```
+## Elementy modelu, których nie przechowujemy w bazie danych
+Poniżej prezentujemy klasy modelu, które służą jedynie projekcji (Projection) danych z bazy, ale nie znajdują odwzorowania w tabelach w PostgreSQL. Korzystamy z nich tylko jako typy zwracane z metod repozytorium.
+### ReservationHistory
+Interfejs, który zwraca dane o rezerwacji - użyjemy go w RepositoryReservation do zwracania listy wszystkich rezerwacji użytkownika. Tutaj nie wystarczyłoby użycie klasy Reservation, ponieważ dane zawarte w ReservationHistory pochodzą z wielu tabel bazy danych.
+```java
+public interface ReservationHistory {
+
+    Long getReservationId();
+    String getStatus();
+    LocalDateTime getReservationDate();
+    Long getRouteId();
+
+    LocalTime getDeparture();
+
+    LocalTime getArrival();
+
+    String getStartStation();
+
+    String getEndStation();
+
+    Long getSeatId();
+
+    LocalDate getDepartureDate();
+
+}
+```
+
+### SpecifiedRouteController
+Podobną sytuację mamy dla danych konkretnej trasy, które wyciągamy z kilku tabel
+```java
+public interface SpecifiedRouteView {
+    Long getRouteId();
+    void setRouteId(Long routeId);
+    String getDepartureDay();
+    void setDepartureDay(String departureDay);
+    LocalDate getDepartureDate();
+    void setDepartureDate(LocalDate departureDate);
+    LocalTime getDepartureTime();
+    void setDepartureTime(LocalTime departureTime);
+    LocalTime getArrivalTime();
+
+    void setArrivalTime(LocalTime arrivalTime);
+
+    Double getPrice();
+}
+```
+
 ## Repository
 
-Warstwa repozytorium obłsuguje połączenie backendu z bazą danych. Z repozytorium są wykonywane zapytania oraz podstawowe operacje CRUD. 
+Warstwa repozytorium obłsuguje połączenie backendu z bazą danych. Z repozytorium są wykonywane zapytania oraz podstawowe operacje CRUD. Nasze repozytoria implementują interfejs JpaRepository. Dostarcza nam to gotowych mechanizmów służących do pracy z operacjami CRUD (np. save(S entity) - zapisuje encję w bazie danych, findAll() - zwraca wszystkie encje, findById(Id id) - znajduje wynik po id). Natomiast adnotacja @Repository jest adnotacją Spring, która czyni klasę bean'em - umożliwia to automatyczne wstrzykiwanie zależności przez mechanizmy framework'a oraz tłumaczy wyjatki otrzymywane z bazy na wyjątki Springa. 
+Korzystaliśmy też z adnotacji @Query, która pozwala na zapisanie zapytania w czystym SQL (u nas PostgreSQL) nad konkretną metodą. Metoda ta będzie odpowiadać wykonaniu zapytania z @Query w bazie i będzie zwracać jego ewentualne wyniki w postaci obiektów modelu obiektowego.
 
 ### Discount 
-
+Repozytorium dla wszystkich zniżek, posiada jedną metodę, która zwraca wszystkie zniżki z bazy.
 ```java
 @Repository
 public interface DiscountRepository extends JpaRepository<Discount, Long> {
@@ -1420,7 +1554,7 @@ public interface DiscountRepository extends JpaRepository<Discount, Long> {
 ```
 
 ### Occupied Seats
-
+Repozytorium dla OccupiedSeats, posiada metodę getOccupiedSeats, która dla przyjętych parametrów wywołuje funkcję PostgreSQL get_occupied_seats i zwraca jej wynik w postaci listy obiektów klasy OccupiedSeats.
 ```java
 @Repository
 public interface OccupiedSeatsRepository extends JpaRepository<OccupiedSeats, Long> {
@@ -1435,7 +1569,13 @@ public interface OccupiedSeatsRepository extends JpaRepository<OccupiedSeats, Lo
 ```
 
 ### Reservation
-
+Repozytorium dla wszystkich rezerwacji. Posiada metody:
+- callAddReservation - wywołuje funkcję add_reservation z bazy i zwraca jej wynik w postaci zmiennej typu Integer
+- getStationId - wywołuje funkcję get_station_id z bazy i zwraca wynik w postaci zmiennej typu Long
+- getAllTrips - wywołuje funkcję user_reservations z bazy i zwraca wynik w postaci listy obiektów klasy ReservationHistory 
+- changeStatus - dla podanych parametrów wywołuje procedurę change_reservation_status z bazy (adnotacja @Procedure skraca zapis z @Query)
+- getSumPrice - zwraca sumaryczną cenę rezerwacji o podanym id (wynik wywołania funkcji reservation_sum_price z bazy)
+- findAllByPaymentStatus - zwraca wszystkie rezerwacje o podanym statusie, które zostały dodane do bazy wcześniej niż przed pięcioma minutami
 ```java
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     @Transactional
@@ -1462,6 +1602,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 ```
 
 ### Route
+Repozytorium dla wszystkich tras. Metoda getStationId zwraca id stacji o podanej nazwie jako wynik wywołania funkcji get_station_id z bazy, a metoda getSpecifiedRoute zwraca wynik wykonania funkcji find_routes z bazy jako listę obiektów klasy SpecifiedRouteView.
 
 ```java
 @Repository
@@ -1490,7 +1631,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 ```
 
 ### Seat
-
+Repozytorium dla wszystkich miejsc w pociągu - posiada jedynie metodę zwracającą wszystkie miejsca.
 ```java
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, Long> {
@@ -1500,11 +1641,13 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 ```
 
 ### Station
-
+Repozytorium stacji, posiada dwie metody:
+- findAllStationNames - zwraca nazwy wszystkich stacji w bazie
+- getStationId - zwraca wynik funkcji get_station_id z bazy 
 ```java
 @Repository
 public interface StationRepository extends JpaRepository<Station, Long> {
-    @Query(value = "SELECT name FROM all_stations", nativeQuery = true)
+    @Query(value = "SELECT name FROM stations", nativeQuery = true)
     List<String> findAllStationNames();
 
     @Query(value = "SELECT get_station_id(:stationName)", nativeQuery = true)
@@ -1513,7 +1656,8 @@ public interface StationRepository extends JpaRepository<Station, Long> {
 ```
 
 ### User
-
+Repozytorium użytkowników, posiada jedną metodę: 
+- findByLogin - zwraca użytkownika o podanym loginie
 ```java
 public interface UserRepository extends JpaRepository <User, Integer>{
     Optional<User> findByLogin(String login);
@@ -1522,9 +1666,12 @@ public interface UserRepository extends JpaRepository <User, Integer>{
 
 
 ## Service 
-
+Warstwa serwisów w aplikacjach Spring ma za zadanie oddzielić logikę biznesową od operacji CRUD. Czasami dane pobrane z repozytorium wymagają jeszcze obróbki przed zwróceniem ich jako response. Właśnie tym powinny zająć się klasy @Service. Pozwala to też na hermetyzację dostępu do repozytoriów oraz pozwala na wielokrotne wykorzystanie tej samej logiki biznesowej.
 ### Authentication
-
+Klasa odpowiada za zarządzanie rejestracją użytkowników oraz ich uwierzytelnianiem. Posiada metody:
+- register - tworzy danego parametrami zapytania użytkownika za pomocą dostarczonego w klasie User mechanizmu @Builder, następnie tworzy token JWT dla tego użytkownika, koduje jego hasło za pomocą obiektu klasy PasswordEncoder dostarczonego z biblioteką Spring Security i zapisuje go w bazie danych
+- authenticate - uwierzytelnia istniejącego użytkownika - znajduje go po loginie w bazie, sprawdza zgodność jego loginu i hasła, a następnie generuje token JWT dla niego
+- getCurrentUser - zwraca login aktualnie zalogowanego użytkownika lub null, gdy żaden użytkownik nie jest zalogowany
 ```java
 @Service
 @RequiredArgsConstructor
@@ -1583,7 +1730,7 @@ public class AuthenticationService {
 ```
 
 ### Discount
-
+Posiada jedną metodę: getAllDiscounts, która wywołuje metodę findAllDiscounts z repozytorium, które jest atrybutem @Autowired ( to znaczy, że Spring automatycznie stworzy instancję DiscountRepository i dokona wstrzykiwania zależności)
 ```java
 @Service
 public class DiscountService {
@@ -1598,7 +1745,14 @@ public class DiscountService {
 ```
 
 ### JWT
-
+Klasa zarządza tokenami JWT za pomocą metod:
+- extractAllClaims - parsuje token JWT i zwraca wszystkie roszczenia (claims) zawarte w tokenie, korzysta z biblioteki JJWT w  celu weryfikacji tokena przy użyciu klucza podpisującego
+- extractUserLogin - wyciąga nazwę użytkownika z tokenu JWT
+- generateToken - tworzy nowy token JWT o aktualnej dacie, podanych roszczeniach (claims) oraz nazwie użytkownika, a także określa czas ważności tokenu - wygaśnie on po 5 minutach od zalogowania.
+- getSignInKey - Konwertuje sekretny klucz z formatu Base64 na tablicę bajtów i tworzy klucz HMAC-SHA używany do podpisywania tokenów
+- isTokenValid - sprawdza ważność tokenu oraz zgodność podanego użytkownika z tym zapisanym w tokenie
+- isTokenExpired - sprawdza czy token stracił ważność
+- extractClaim - Ekstraktuje konkretne roszczenie z tokenu JWT, używając funkcji claimsResolver
 ```java
 @Service
 public class JwtService {
@@ -1654,6 +1808,8 @@ public class JwtService {
 
 ### Occupied Seats
 
+Service dla zajętych miejsc wymaga dostępu do aż dwóch repozytoriów: ReservationRepository pozwoli uzyskać id stacji o podanych nazwach, a OccupiedSeatsRepository posiada funkcję zwracającą listę zajętych miejsc dla podanych routeId oraz id stacji.
+
 ```java
 @Service
 public class OccupiedSeatsService {
@@ -1675,29 +1831,43 @@ public class OccupiedSeatsService {
 ```
 
 ### Reservation
-
+Posiada metody: addReservations, changeReservationStatus, getReservationPrice, cancelReservations, które wywołują odpowiednie metody z ReservationRepository. Warte uwagi są dwie metody:
+- cancelReservations - pobiera z repozytorium dane o wszystkich rezerwacjach starszych niż 5 min, a następnie zmienia status każdej z nich na "C" (cancelled)
+- addReservation - dodaje rezerwację do bazy oraz tworzy nowy wątek, który z opóźnieniem 5 min wykona metodę cancelReservations
 ```java
 @Service
 public class ReservationService {
 
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private ScheduledExecutorService scheduledExecutorService;
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public Integer addReservation(Long userId, Long discountId, Long routeId, String startStation,
-                                  String endStation, LocalDate departureDate, Long seatId) {
+    public Integer addReservation(Long userId, Long discountId, Long routeId, String startStation, String endStation, LocalDate departureDate, Long seatId) {
 
         Long startStationId = reservationRepository.getStationId(startStation.trim());
         Long endStationId = reservationRepository.getStationId(endStation.trim());
 
-        return reservationRepository.callAddReservation(userId, discountId, routeId, startStationId,
-                endStationId, departureDate, seatId);
+        logger.info("Scheduling reservation cancellation in 5 minutes.");
+        scheduledExecutorService.schedule(() -> {
+            try {
+                logger.info("Executing scheduled reservation cancellation.");
+                cancelReservations();
+            } catch (Exception e) {
+                logger.warn("Error during reservation cancellation: " + e.getMessage());
+            }
+        }, 5, TimeUnit.MINUTES);
+
+        return reservationRepository.callAddReservation(userId, discountId, routeId, startStationId, endStationId, departureDate, seatId);
     }
-    public void changeReservationStatus(Long reservationId, String status){
-        reservationRepository.changeStatus(reservationId,status);
+
+    public void changeReservationStatus(Long reservationId, String status) {
+        reservationRepository.changeStatus(reservationId, status);
 
     }
 
-    public Double getReservationPrice(Long reservationId){
+    public Double getReservationPrice(Long reservationId) {
         return reservationRepository.getSumPrice(reservationId);
     }
 
@@ -1714,7 +1884,7 @@ public class ReservationService {
 ```
 
 ### Seat
-
+Posiada jedną metodę, która wywołuje metodę findAllSeats z repozytorium
 ```java
 @Service
 public class SeatService {
@@ -1729,7 +1899,7 @@ public class SeatService {
 ```
 
 ### Station
-
+Posiada dwie metody, które korzystają z metod z repozytorium
 ```java
 @Service
 public class StationService {
@@ -1748,10 +1918,13 @@ public class StationService {
 ```
 
 ## Controller
-Wartwa kontrolerów dostarcza głównych funkcji zarządzania requestami HTTP. Annotacje @GetMapping, @PostMapping pozwalają na zmapowanie ścieżek URL do metod obsługujących żądania. Annotacja @RequestMapping nad całą klasą kontrolera pozwala określić bazową ścieżkę URL, na podstawie której metody będą tworzyć wyspecyfikowane ścieżki: np. w poniższym przykładzie dla AuthController bazową ścieżką jest "/api". Dlatego też metoda register będzie odpowiadała ścieżce "/api/auth/register". Metody kontrolera mogą też zwracać odpowiedzi (response), w którym można podać kod odpowiedzi serwera oraz "body" - dane, które zwracamy w odpowiedzi na żądanie.
+Wartwa kontrolerów dostarcza głównych funkcji zarządzania requestami HTTP. adnotacje @GetMapping, @PostMapping pozwalają na zmapowanie ścieżek URL do metod obsługujących żądania. adnotacja @RequestMapping nad całą klasą kontrolera pozwala określić bazową ścieżkę URL, na podstawie której metody będą tworzyć wyspecyfikowane ścieżki: np. w poniższym przykładzie dla AuthController bazową ścieżką jest "/api". Dlatego też metoda register będzie odpowiadała ścieżce "/api/auth/register". Metody kontrolera mogą też zwracać odpowiedzi (response), w którym można podać kod odpowiedzi serwera oraz "body" - dane, które zwracamy w odpowiedzi na żądanie.
 
 ### Auth 
-
+Kontroler odbiera requesty związane z rejestracją i uwierzytelnianiem użytkowników (register oraz login). Posiada metody:
+- register - rejestruje użytkownika w bazie. Jeśli nie wystąpiły żadne błędy, zwraca kod HTPP 200, w przeciwnym wypadku kod 500 oraz treść błędu
+- authenticate - uwierzytelnia użytkownika
+- getUser - zwraca dane użytkownika aktualnie zalogowanego użytkownika
 ```java
 @RestController
 @RequestMapping("/api")
@@ -1787,7 +1960,7 @@ public class AuthController {
 ```
 
 ### Discount
-Pozwala pobrać z bazy wszystkie dostępne zniżki z tabeli Discounts.
+Pozwala pobrać z bazy wszystkie dostępne zniżki z tabeli Discounts. Jako odpowiedź zwraca status HTTP 200 oraz wszystkie zniżki
 
 ```java
 @RestController
@@ -1806,7 +1979,7 @@ public class DiscountController {
 ```
 
 ### Occupied Seats
-Dostarcza
+Dostarcza operacji GET, która zwróci listę zajętych miejsc
 ```java
 @RestController
 @RequestMapping("/api")
@@ -1829,7 +2002,10 @@ public class OccupiedSeatsController {
 ```
 
 ### Reservation 
-
+Posiada trzy metody:
+- addReservation - operacja POST, dodaje do bazy rezerwację daną parametrami requesta, zwraca status HTTP 201 oraz id dodanej rezerwacji
+- changeReservationStatus - zmienia status rezerwacji dla podanych w requeście parametrów, zwraca id rezerwacji oraz status HTTP takie jak w żądaniu
+-  getReservationPrice - zwraca cenę danego zamówienia
 ```java
 @RestController
 @RequestMapping("/api/reservations")
@@ -1866,6 +2042,11 @@ public class ReservationController {
 ```
 
 ### Reservation History
+Posiada metody:
+- getAllTrips - operacja GET, zwróci wszystkie trasy danego użytkownika
+- getPastTrips - operacja GET, zwróci wszystkie przeszłe trasy danego użytkownika
+- getFutureTrips - operacja GET, zwróci wszystkie przyszłe trasy danego użytkownika    
+Warto też zwrócić uwagę na wstrzykiwanie zależności przez konstruktor.
 
 ```java
 @RestController
@@ -1909,7 +2090,9 @@ public class ReservationHistoryController {
 ```
 
 ### Route View
-
+Posiada metody:
+- getAllRoutes - operacja GET, zwraca wszystkie trasy
+- getSpecifiedRoute - operacja GET, zwraca trasę o podanej dacie odjazdu, stacji startowej oraz końcowej
 ```java
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -1942,7 +2125,7 @@ public class RouteViewController {
 ```
 
 ### Seat
-
+Zawiera metodę getAllSeats (operacja GET), która zwraca wszystkie miejsca oraz status HTTP 200.
 ```java
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -1961,7 +2144,9 @@ public class SeatController {
 ```
 
 ### Station
-
+Posiada metody:
+- getAllStationNames - operacja GET, zwraca nazwy wszystkicj stacji oraz status HTTP 200
+- getStationId - operacja GET, zwraca id stacji o podanej nazwie
 ```java
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -1982,6 +2167,305 @@ public class StationController {
     }
 }
 ```
+
+## Inne klasy
+### JwtAuthenticationFilter
+Klasa jest filtrem zabezpieczeń, który przechwytuje żądania HTTP i sprawdza czy w nagłówku znajduje się JSON Web Token. Filtr wykona się raz na każde żądanie (OncePerRequestFilter). Filtr pomija uwierzytelnianie, jeżeli ścieżka URL zawiera "/api/auth", następnie sprawdza czy nagłówek jest pusty lub nie zaczyna się od `Bearer` (jeśli tak, kończy działanie). Następnie sprawdzana jest zgodność loginu użytkownika z tym w tokenie. Jeśli jest zgodność, ładowane są z bazy dane użytkownika i sprawdzana jest zgodność jego hasła z hasłem w bazie.
+
+```java
+@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        if (request.getServletPath().contains("/api/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userLogin;
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        jwt = authHeader.substring(7);
+        userLogin = jwtService.extractUserLogin(jwt);
+
+        if (userLogin != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userLogin);
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+
+        }
+        filterChain.doFilter(request,response);
+    }
+}
+```
+
+### AuthenticationRequest
+Określa postać requesta, jaki powinien otrzymać backend podczas logowania
+
+```java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthenticationRequest {
+    private String login;
+    String password;
+}
+```
+### AuthenticationResponse
+Określa postać odpowiedzi serwera na request logowania
+```java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class AuthenticationResponse {
+    private String token;
+}
+```
+### RegisterRequest
+Określa postać requesta, jaki powinien otrzymać backend podczas rejestracji nowego użytkownika
+
+```java
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class RegisterRequest {
+    private String firstname;
+    private String lastname;
+    private String email;
+    private String phone;
+    private String login;
+    private String password;
+    private Role role;
+
+}
+```
+### ChangeReservationStatus
+Określa postać requesta, który oczekuje zmiany statusu rezerwacji o podanym id.
+```java
+public class ChangeReservationStatus {
+    private Long reservationId;
+    private String status;
+
+    // Constructors, getters, and setters
+    public ChangeReservationStatus() {
+    }
+
+    public ChangeReservationStatus(Long resId, String status) {
+        this.reservationId = resId;
+        this.status = status;
+    }
+
+    public Long getReservationId() {
+        return reservationId;
+    }
+
+    public void setReservationId(Long reservationId) {
+        this.reservationId = reservationId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
+
+```
+
+# Frontend 
+
+## Komunikacja frontu z backendem
+
+Do komunikacji aplikacji z backendem używamy biblioteki `axios` do `reacta`, która oferuje prostą obsługę żądań http GET I POST w aplikacjach webowych. Ta biblioteka jest lepszą alternatywą do wbudowanej funkcji `fetch` w języku javascript. 
+
+Dzięki podejsciu funkcyjnemu w javascripcie przekształcamy dane w postaci JSON z backendu na odpowiednie obiekty gotowe do użycia w naszej aplikacji. 
+
+Przykład użycia pobrania wszystkich dostępnych tras. Korzystamy z endpointu `/find_route` i wysyłamy żądanie POST z odpowiednimi parametrami. Następnie do przechowywania danych używamy hooka `useState` oraz zapisujemy odpowiedź w `localStorage`. Na końcu korzystamy z hooka `useNavigate` który przenosi użytkownika razem z danymi z endpointu do innego komponentu, gdzie dane są dalej procesowane, a użytkownik widzi efekt zapytania o konkretną trasę. 
+
+```js
+function searchRoute() {
+    const { date, start_station, end_station } = routeData;
+    
+    axios.get('/api/find_route', { params: { departure_date: date, start_station: start_station, end_station: end_station }})
+        .then(response => {
+            setFetchedData(response.data); 
+            localStorage.setItem('fetchedData', JSON.stringify({ data: response.data, routeData }));
+            navigate('/routes-display', { state: { 
+                data: response.data,
+                startStation: start_station, 
+                endStation: end_station, 
+                departureDate: date
+            } });
+        })
+        .catch(error => {
+            console.error('Error finding route:', error);
+        });
+}
+```
+
+## Komunikacja aplikacji przy autentykacji użytkowników
+
+### Zarządzanie tokenami uwierzytelniającymi
+Zaimplementowaliśmy funkcje `getAuthToken` i `setAuthToken` do obsługi tokenów JWT. Umożliwiają one odpowiednio odczyt i zapis tokena w `localStorage` przeglądarki. Jest to standardowe rozwiązanie umożliwiające łatwe zarządzanie stanem uwierzytelnienia użytkownika.
+
+### JWT
+
+JWT, czyli JSON Web Token, to otwarty standard  służący do bezpiecznej wymiany informacji między stronami za pomocą obiektów JSON. Po zalogowaniu się użytkownika serwer generuje token JWT, zawierający niezbędne informacje o użytkowniku, i przesyła go do aplikacji. Aplikacja przesyła ten token z powrotem do serwera przy każdym kolejnym żądaniu, co pozwala serwerowi na weryfikację tożsamości użytkownika i zapewnienie mu dostępu do zasobów.
+
+### Wysyłanie żądań HTTP
+Stworzyliśmy funkcję `request`, która wykorzystuje bibliotekę Axios do wykonania żądań HTTP. Funkcja ta automatycznie dodaje nagłówek autoryzacji typu Bearer, jeśli token jest dostępny. W przypadku błędów związanych z autoryzacją lub wysyłaniem żądań, są one rejestrowane w konsoli.
+
+### Sprawdzanie ważności tokena
+Funkcja `isTokenExpired` pozwala nam sprawdzić, czy aktualny token JWT jest jeszcze ważny. Wykorzystuje dekodowanie tokena za pomocą biblioteki `jwt-decode` do sprawdzenia daty wygaśnięcia. Jest to kluczowe dla zapewnienia bezpieczeństwa sesji użytkownika.
+
+### Implementacja
+
+```js
+export const getAuthToken = () => {
+    return window.localStorage.getItem("auth_token");
+};
+
+export const setAuthToken = (token) => {
+    window.localStorage.setItem("auth_token", token);
+
+};
+
+export const request = async (method, url, data, params) => {
+    let headers = {};
+    try {
+        let token = getAuthToken();
+        if (token !== null && token != "null") {
+            headers = { "Authorization": `Bearer ${token}` };
+        }
+    } catch (error) {
+        console.log("No auth_token");
+    }
+
+    try {
+        return await axios({
+            method: method,
+            headers: headers,
+            url: url,
+            data: data,
+            params: params
+        });
+    } catch (error_1) {
+        console.log("authError");
+        throw "authError";
+    }
+}
+
+export const isTokenExpired = () => {
+    const token = getAuthToken();
+    if (!token || token=="null" || token==null) {
+        return true; 
+    }
+
+    try {
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000; 
+        return decodedToken.exp < currentTime;
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        return true; 
+    }
+};
+```
+
+Na wszystkich podstronach, gdzie wymagane jest bycie zalogowanym używamy funkcji request zamiast korzystać wprost z axios - pozwala nam to w wygodny sposób za każdym razem ustawiać token użytkownika na aktualny, np.:
+```js
+        const url = 'http://localhost:8080/api/stations';
+        request("GET",url,{},{}).then(response => {
+            setStationNames(response.data);
+        }).catch(error => {
+            console.error('There was an error!', error);
+        });
+```
+
+## Hero component
+
+`Hero component` to strona startowa naszej aplikacji, w której użytkownik może się zalogować, lub wyszukać trasę jaka go interesuje. 
+
+![alt text](images/image-0.png)
+
+Aplikacja daje też podpowiedzi co do stacji, które można wyszukać, co usprawnia wyszukanie żądnej trasy:   
+![alt text](images/prompt.png)
+
+
+## Login i register
+
+Aplikacja umożliwia zalogowanie się lub utworzenie nowego konta w serwisie. 
+
+![alt text](images/image-1.png)
+
+## User dashboard
+
+`User dashboard` zawiera informacje o przeszłych i przeszłych podróżach konkretnego użytkownika. 
+
+![alt text](images/image-2.png)
+
+## Routes display
+
+`Routes display` wyswietla wszystkie dostępne trasy zgodnie z kryteriami wyszukiwania. 
+
+![alt text](images/image-3.png)
+
+W przypadku gdy nie odnaleziono żadnej trasy, wyświetlana jest stosowna informacja. 
+
+![alt text](images/image-4.png)
+
+## Add reservation 
+
+Aplikacja ma wbudowany graficzny system rezerwacji miejsc w wagonie oraz wybór zniżek. 
+
+![alt text](images/image-5.png)
+
+Jeśli klikniemy 'Book' zostaniemy zapytani o potwierdzenie rezerwacji:     
+![alt text](images/book.png)
+
+Następnie jeśli potwierdzimy, zostaniemy poinformowani, że na płatność mamy 5 min - później rezerwacja zostanie anulowana:     
+![alt text](images/pay.png)
+
+Możemy zapłacić później z poziomu UserDashboard lub od razu. Wtedy zostaniemy przekierowani na stronę:    
+![alt text](images/pay_page.png)
+
+# Podsumowanie i wnioski
+Podsumowując, SpringBoot oraz Hibernate dostarczają wielu wygodnych narzędzi do pracy z bazami danych. Poniżej prezentujemy kilka kluczowych funkcji framework'a, z których skorzystaliśmy:
+- adnotacje @Query umożliwiły nam szybki dostęp do funkcji, które stworzyliśmy w bazie danych
+- adnotacje @Entity pozwoliły w łatwy sposób stworzyć mapowanie między modelem relacyjnym a obiektowym
+- administrowanie przez Springa Bean'ami zaoszczędziło nam sporo czasu na pisanie kodu - Spring sam dokonywał wstrzykiwania zależności tam gdzie to było potrzebne (np. adnotacja @Autowired)
+- Podział na cztery warstwy logiczne: model, @Repository, @Service oraz @Controller pozwoliło oddzielić dostęp do bazy, logikę biznesową oraz operacje CRUD, co zwiększyło czytelność kodu oraz zwiększyło bezpieczeństwo dostępu do poszczególnych części aplikacji (gdyby wszystkie operacje znalazłyby się w jednej klasie bez podziału na @Repository, @Service oraz @Controller moglibyśmy się narazić na błędy programisty, często mógłby się wykonywać niepotrzebnie kod, który nie powinien się wykonywać, a w strykturze aplikacji panowałby chaos).
+- Spring zapewnia wygodnych narzędzi do pracy z requestami HTTP - istnieją gotowe typy generyczne, np. ResponseEntity; w łatwy sposób możemy określać ścieżkę URL oraz żądania (np. @Get("/api/users"))
+- Minusem na pewno jest duża liczba klas, które powstały oraz fakt, że wiele rzeczy dzieje się automatycznie, co jest trudne do zrozumienia dla początkujących użytkowników Springa
+- Tworzenie tego projektu zaczęliśmy od bazy w PostgreSQL, a dopiero później łączyliśmy wszystko ze Springiem. Teraz nasze doświadczenie w Springu jest już większe, więc w przyszłości rozważylibyśmy tworzenie bazy z poziomy Springa, by lepiej wykorzystać jego funkcje.
+
+Poniżej prezentujemy też funkcje PostgreSQL, z których mieliśmy okazję skorzystać:
+- PostgreSQL jest językiem pozwalającym tworzyć relacyjne bazy danych, co umożliwiło nam stworzenie dość skomplikowanej struktury tabel, co może być nieco nieczytelne na pierwszy rzut oka, jednak pozwala na logiczne uporządkowanie powiązanych ze sobą danych i efektywne z nich korzystanie - unikamy też redundancji danych, co często ma miejsce w bazach dokumentowych. Minusem zastosowania relacyjnej bazy danych na pewno był stopień skomplikowania zapytań, które często musiały sięgać do kilku tabel jednocześnie, czego pewnie dałoby się uniknąć gdyby zastosować bazę dokumentową     
+- PostrgreSQL różni się nieco składnią od innych języków SQL oraz kilkoma kluczowymi aspektami:
+  - Triggery: Nie da się napisać logiki triggera w samym triggerze, należy stworzyć procedurę, która zostanie wywołana dla każdego dodanego wiersza
+  - Język zapytań: PostgreSQL posiada wiele języków zapytań, który to język należy określić na początku funkcji/procedury, np. PL/pgSQL, PL/Python, PL/Perl (my korzystaliśmy z PL/pgSQL)
+  - PostgreSQL wspiera też więcej typów danych niż np. Oracle SQL (np. XML, JSON)
+  - autonumeracja - odbywa się poprzez zdefiniowane sekwencje, a nie pola autoincrement jak np. MS SQL
+  - Zaletą Postgresa jest też to, że jest open-source, w przeciwieństwie np. do Oracle SQL
+
+Pisanie frontendu w React także okazało się dobrym wyborem: framework ten pozwala w szybki i łatwy sposób definiować reużywalne komponenty, a także wysyłać requesty HTTP. Zaoszczędziliśmy też czas korzystając z biblioteki react-hot-toast do wysyłania powiadomień do klienta, a także użyliśmy react-bootstrap w celu implementacji okienek płacenia (Modal), czy danych kolejnych tras (Card). Było to szybkie i wygodne rozwiązanie - dzięki temu mogliśmy się skupić na backendzie oraz samej bazie danych, co było głównym przedmiotem projektu.
 
 
 
