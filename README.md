@@ -1,13 +1,59 @@
-## Projekt w ramach przedmiotu "Bazy Danych".  
-<strong>Autorzy</strong>: 
+# Trains 
 
-[Kamil Rudny](https://github.com/krudny) <br>
-karudny@student.agh.edu.pl <br> 
+## Overview
 
-[Urszula Stankiewicz](https://github.com/ustankie) <br>
-ustankiewicz@student.agh.edu.pl <br>
+**Trains** is a project developed for the Databases II course at AGH UST, covering the creation of a web application for train ticket booking. The application is designed to provide a seamless and efficient user experience for booking train tickets, reserving seats, and managing travel history.
 
-<strong>Temat</strong>: *Platforma obsługująca połączenia kolejowe*  
-<strong>Technologie</strong>: PostgreSQL, SpringBoot oraz React.  
-<strong>Project Github</strong>: https://github.com/ustankie/Trains
+## Key Features
+
+1. **Route Search**: Find train routes from A to B for specific date.
+2. **Graphical Seat Reservation**: Reserve seats using an interactive visual layout.
+3. **Travel History**: View details of your past trips.
+4. **User Authentication**: Secure login for personalized features and ticket history. 
+
+## Technologies
+
+- Backend - Java, SpringBoot, SpringSecurity, Hibernate
+- Database - PostreSQL
+- Frontend - React.js, CSS, Bootstrap, react-hot-toast
+- Development Enviroment - IntelliJ IDEA, DataGrip, Visual Studio Code
+
+## Setup
+
+Clone repository
+
+```
+git clone git@github.com:ustankie/Trains.git
+```
+
+Starting backend
+
+```
+cd Trains/springboot/demo
+```
+
+```
+gradlew run
+```
+
+Starting frontend
+
+```
+cd Trains/trains_front
+```
+
+```
+npm install
+```
+
+```
+npm run dev
+```
+
+Procced to `http://localhost:5173/` in browser. 
+
+
+## Authors
+- Kamil Rudny [GitHub](https://github.com/krudny)
+- Urszula Stankiewicz [GitHub](https://github.com/ustankie)
 
