@@ -15,7 +15,7 @@
 
 - Backend - Java, SpringBoot, SpringSecurity, Hibernate
 - Database - PostreSQL
-- Frontend - React.js, CSS, Bootstrap, react-hot-toast
+- Frontend - React.js, CSS
 - Development Enviroment - IntelliJ IDEA, DataGrip, Visual Studio Code
 
 ## Setup
