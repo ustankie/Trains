@@ -1,7 +1,10 @@
 .hero--wrapper {
     min-width: 100vw;
     min-height: 100vh;
-    
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
 }
 
 .background {
@@ -10,7 +13,7 @@
     left: 0;
     background-image: url('../images/background.jpg');
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -40,7 +43,7 @@
 
 .content {
     width: 1200px;
-    height: 100vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -89,9 +92,6 @@
     color: #000;
 }
 
-.hero--date--input {
-    min-width: 140px;
-}
 
 .hero--large--input:focus { 
     box-shadow: 0px 0px 25px -12px rgba(66, 68, 90, 1);
@@ -136,7 +136,6 @@
     .hero--text {
         font-size: 64px;
     }
-
 }
 
 
@@ -151,18 +150,27 @@
     }
     
     .hero--search--box {
-        width: 80%;
+        width: auto;
+        height: auto; 
         margin-top: 50px;
+        margin-bottom: 50px;
+        padding: 25px;
+        flex-direction: column;
     }
 
-    .hero--large--input {
-        font-size: 13px;
-        width: 170px;
-        height: 30px;
+    .hero--large--input, .hero--date--input {
+        font-size: 16px;
+        width: 350px;
+        height: 50px;
+        margin-bottom: 25px;
     }
 
     .hero--suggestions--box {
         width: 170px;
+    }
+
+    .hero--suggestions--box {
+        width: 100%;
     }
 }
 
@@ -170,47 +178,21 @@
     .hero--text {
         font-size: 50px;
     }
-
-    .hero--large--input {
-        font-size: 13px;
-        width: 250px;
-        height: 30px;
-    }
-
-    .hero--suggestions--box {
-        width: 250px;
-    }
-
-    .hero--search--box {
-        width: 50%;
-        height: 300px;
-        flex-direction: column;
-        margin-top: 20px;
-    }
-    
-    .hero--search--btn {
-        width: 250px;
-    }
 }
 
 @media only screen and (max-width: 640px) {
     .hero--text {
-        font-size: 28px;
+        font-size: 30px;
+    }
+}
+
+
+@media only screen and (max-width: 400px) {
+    .hero--text {
+        font-size: 24px;
     }
 
-    .hero--large--input {
-        font-size: 13px;
-        width: 170px;
-        height: 30px;
+    .hero--large--input, .hero--date--input{
+        width: auto;
     }
-
-    .hero--suggestions--box {
-        width: 170px;
-    }
-
-    .hero--search--btn {
-        width: 75%;
-        height: 44px;
-    }
-
 }

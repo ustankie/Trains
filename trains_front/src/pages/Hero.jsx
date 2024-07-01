@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import "../styles/Hero.css";
 import "../styles/App.css";
 import "../styles/Main.css";
@@ -7,14 +6,13 @@ import Form from '../components/Form';
 import Navbar from '../components/Navbar';
 
 
-
-
 export default function Hero() {
     
     return (
         <>      
-        <Navbar/>
+        
         <div className="hero--wrapper">
+            <Navbar/>
             <div className="background"></div>
             <div className="content">
                 <div className="hero--text">

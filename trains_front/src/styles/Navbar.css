@@ -4,8 +4,16 @@
     right: 50px;
     display: flex;
     flex-direction: row;
-    column-gap: 30px;
+    justify-content: center;
     width: fit-content;
     height: fit-content;
 }
 
+@media only screen and (max-width: 1200px) {
+    .navbar--logged-in-wrapper{
+        position: inherit;
+        width: 100%;
+        margin-top: 30px;
+
+    }
+}
