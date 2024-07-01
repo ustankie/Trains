@@ -21,6 +21,16 @@
     z-index: -1;
 }
 
+.drawer--content {
+    /* width: 230px; */
+    display: flex;
+    justify-content: center;
+}
+
+.horizontal {
+    display: flex;
+}
+
 .login--link {
     font-size: 24px;
     color: #FFF;

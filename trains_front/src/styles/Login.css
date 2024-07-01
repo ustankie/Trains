@@ -16,26 +16,6 @@
 }
 
 
-.home--link {
-    display: flex;
-    justify-content: center;
-    margin: 50px auto;
-    height: 50px;
-    font-size: 24px;
-    color: #FFF;
-    font-weight: 900;
-    letter-spacing: 2px;
-    transition: all 0.2s ease;
-    user-select: none;
-    z-index: 5;
-}
-
-.home--link:hover {
-    cursor: pointer;
-    filter: brightness(85%);
-    transition: all 0.2s ease;
-}
-
 .login--bg {
     position: absolute;
     top: 0;

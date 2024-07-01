@@ -3,15 +3,18 @@ import "../styles/App.css";
 import "../styles/Main.css";
 import "../styles/Navbar.css";
 import Form from '../components/Form';
-import Navbar from '../components/Navbar';
+import * as React from 'react';
+import CustomDrawer from "../components/CustomDrawer";
+import Navbar from "../components/Navbar";
+
 
 
 export default function Hero() {
     
     return (
         <>      
-        
         <div className="hero--wrapper">
+            {/* <CustomDrawer /> */}
             <Navbar/>
             <div className="background"></div>
             <div className="content">
