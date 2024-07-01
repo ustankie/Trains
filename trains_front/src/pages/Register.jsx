@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { request } from '../util/Authentication';
 import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
+import Navbar from '../components/Navbar'
 
 
 
@@ -47,31 +48,32 @@ export default function Register() {
 
     return (
         <div className="register--container">
-            <div className="home--link"><Link to="/">TRAIN <span className="blue">SERVICE</span></Link></div>
+            <Navbar />
             <div className="login--bg"></div>
             <div className="register--wrapper">
-                <div className="login--tabs">
-                    <Link to="/login"><p className="sign--btn login--not--active">Sign in</p></Link>
-                    <p className="sign--btn login--active">Sign up</p>
-
-                </div>
-
-                <form className="login--form" onSubmit={handleSubmit(registerUser)}>
+                <form className="register--form" onSubmit={handleSubmit(registerUser)}>
+                    <div>
                     <p className="login--text">First name</p>
                     <input type="text" className="login--input" id="firstname" placeholder="Your first name" autoComplete="off" name="firstname"
                         {...register("firstname", { required: "Firstname is required" })} />
                     {errors.firstname && <span className='register--error-message'>{errors.firstname.message}</span>}
+                    </div>
 
+                    <div>
                     <p className="login--text">Last name</p>
                     <input type="text" className="login--input" id="lastname" placeholder="Your last name" autoComplete="off" name="lastname"
                         {...register("lastname", { required: "Lastname is required" })} />
                     {errors.lastname && <span className='register--error-message'>{errors.lastname.message}</span>}
+                    </div>
 
+                    <div>
                     <p className="login--text">E-mail</p>
                     <input type="email" className="login--input" id="email" placeholder="Your email" autoComplete="off" name="email"
                         {...register("email", { required: "Email is required" })} />
                     {errors.email && <span className='register--error-message'>{errors.email.message}</span>}
+                    </div>
 
+                    <div>
                     <p className="login--text">Phone number</p>
                     <input type="text" className="login--input" id="phone" placeholder="Your phone number" autoComplete="off" name="phone"
                         {...register("phone", {
@@ -82,20 +84,25 @@ export default function Register() {
                             }
                         })} />
                     {errors.phone && <span className='register--error-message'>{errors.phone.message}</span>}
+                    </div>
 
+                    <div>
                     <p className="login--text">Username</p>
                     <input type="text" className="login--input" id="username" placeholder="Your username" autoComplete="off" name="username"
                         {...register("login", { required: "Username is required" })} />
 
                     {errors.login && <span className='register--error-message'>{errors.login.message}</span>}
+                    </div>
 
+                    <div>
                     <p className="login--text">Password</p>
                     <input type="password" className="login--input" id="password" placeholder="Your password" autoComplete="off" name="password"
                         {...register("password", { required: "Password required" })} />
                     {errors.password && <span className='register--error-message'>{errors.password.message}</span>}
-
-                    <button className="login--btn" id="register" type="submit" >Sign up</button>
+                    </div>
+                    <button className="register--btn" type="submit" >Sign up</button>
                 </form>
+                
             </div>
         </div>
     )

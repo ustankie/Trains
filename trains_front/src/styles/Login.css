@@ -1,20 +1,11 @@
-.login--container {
+.login--container, .register--container{
     width: 100vw;
     height: 100vh;
     display: flex;
-    align-items: center;
     justify-content: center;
     flex-direction: column;
+    /* background-color: red; */
 }
-
-.register--container {
-    width: 100vw;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-}
-
 
 .login--bg {
     position: absolute;
@@ -30,9 +21,9 @@
     z-index: -1;
 }
 
-.login--wrapper {
+.login--wrapper, .register--wrapper {
     width: 500px;
-    height: 550px;
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -42,25 +33,10 @@
 }
 
 .register--wrapper {
-    width: 500px;
-    height: fit-content;
-    padding-top: 70px;
-    padding-bottom: 70px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.9);
-    margin: auto;
-    margin-bottom: 20px;
+    width: 700px;
 }
 
-.login--tabs {
-    width: 350px;
-    height: 25px;
-    display: flex;
-    align-items: center;
-}
+
 
 .sign--btn {
     font-size: 22px;
@@ -79,11 +55,18 @@
 }
 
 .login--form {
-    margin-top: 15px;
+    margin: 50px 30px;
     width: 350px;
-    min-height: 370px;
     display: flex;
     flex-direction: column;
+}
+
+.register--form {
+    margin: 50px 30px;
+    width: 80%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
 
 
@@ -110,6 +93,7 @@
     transition: 0.3s;
     color: white;
     transition: all 0.2s ease;
+    width: 100%;
 }
 
 .login--input::placeholder {
@@ -123,7 +107,6 @@
     box-shadow: 0px 0px 49px -30px rgba(66, 68, 90, 1);
 }
 
-
 .login--active{
     color: #fff;
     border-bottom: 2px solid rgba(15, 169, 255, 0.7);
@@ -134,8 +117,7 @@
     font-weight: 400;
 }
 
-
-.login--btn {
+.login--btn, .register--btn {
     width: 350px;
     height: 50px;
     border: none;
@@ -150,10 +132,12 @@
     box-shadow: 0px 0px 49px -30px rgba(66, 68, 90, 0.8);
     transition: all 0.2s ease;
     user-select: none;
-    margin-top: auto;
-}
-.login--btn#register{
     margin-top: 40px;
+}
+
+.register--btn {
+    grid-column: span 2; 
+    margin: 40px auto 0px auto;
 }
 
 .login--btn:hover {
@@ -167,11 +151,6 @@
     font-size: 30px;
     color: rgba(255, 255, 255, 1);
     font-weight: 450;
-    margin: 25px 0 5px 0;
-}
-.login--wrapper#logged-in{
-    height: 300px;
-    padding: 40px;
 }
 
 
@@ -183,15 +162,32 @@
 
 }
 
-@media only screen and (max-width: 640px) {   
-    .login--wrapper {
+@media only screen and (max-width: 720px) {   
+    .register--wrapper {
         width: 100vw;
         height: 500px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background-color: rgba(0, 0, 0, 0.7);
-        margin: auto;
+    }
+
+    .register--form {
+        margin: 30px 15px;
+        width: 95%;
+        gap: 10px;
+    }
+
+    .login--btn {
+        width: 100%;
+    }
+
+    
+}
+
+@media only screen and (max-width: 500px) {   
+    .login--wrapper {
+        width: 100vw;
+    }
+
+    .login--form {
+        margin: 40px 15px;
+        width: 95%;
     }
 }
