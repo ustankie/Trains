@@ -10,6 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.21",
+    "@mui/material": "^5.15.21",
+    "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
     "jwt-decode": "^4.0.0",
@@ -20,7 +25,8 @@
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.22.3",
     "react-transition-group": "^4.4.5",
-    "reactjs-popup": "^2.0.6"
+    "reactjs-popup": "^2.0.6",
+    "styled-components": "^6.1.11"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
