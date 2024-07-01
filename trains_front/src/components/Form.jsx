@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from "react-router-dom";
 import "../styles/Hero.css";
 import "../styles/App.css";
 import "../styles/Main.css";
@@ -30,7 +29,7 @@ export default function Form() {
             }
         }
 
-        const url = 'http://localhost:8080/api/stations';
+        const url = `/api/stations`;
         request("GET",url,{},{}).then(response => {
             setStationNames(response.data);
         }).catch(error => {

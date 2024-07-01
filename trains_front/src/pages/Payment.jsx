@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import "../styles/Payment.css"
-import Seat from "../components/Seat"
 import { toast } from 'react-hot-toast';
 import { getAuthToken, isTokenExpired, request } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';

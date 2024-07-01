@@ -1,6 +1,5 @@
 import '../styles/Login.css'
 import { Link } from "react-router-dom"
-import Register from './Register'
 import React, { useEffect, useState } from 'react';
 import { request, setAuthToken,isTokenExpired } from '../util/Authentication';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +20,7 @@ export default function Login() {
     function login(e) {
         e.preventDefault()
         const { login, password } = data;
-        request("POST", "/api/auth/authenticate", { login: login, password: password },{})
+        request("POST", `/api/auth/authenticate`, { login: login, password: password },{})
             .then((response) => { 
                 setAuthToken(response.data.token); 
                 console.log(response.data.userId); 
