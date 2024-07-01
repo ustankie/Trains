@@ -11,11 +11,8 @@ export default function Login() {
     const [data, setData] = useState({
         login: '',
         password: '',
-
     });
     const navigate = useNavigate();
-
-
 
     function login(e) {
         e.preventDefault()
@@ -29,23 +26,15 @@ export default function Login() {
             .catch((error)=>{
                 toast.error('Wrong credentials!'); 
                 console.log(error.response.data);});
-
-
     }
+    
     return (
-        <>
-        
-
+        <>  
             <div className="login--container">
-                <div className="home--link"><Link to="/">TRAIN <span className="blue">SERVICE</span></Link></div>
+                <Navbar />
                 <div className="login--bg"></div>
                 {isTokenExpired() ?
                     <div className="login--wrapper">
-                        <div className="login--tabs">
-                            <p className="sign--btn login--active">Sign in</p>
-                            <Link to="/register"><p className="sign--btn login--not--active">Sign up</p></Link>
-                        </div>
-
                         <form className="login--form">
                             <p className="login--text">Username</p>
                             <input type="text" className="login--input" id="username" placeholder="Your username" autoComplete="off" name="username"
@@ -58,8 +47,7 @@ export default function Login() {
                     </div>
                     :
                     <>
-                        <Navbar/>
-                        <div className="login--wrapper" id="logged-in">
+                        <div className="login--wrapper">
                             <p className="login--logged-in-text">Already logged in!</p>
                             <button className="login--btn" onClick={() => { setAuthToken("null","null"); navigate("/login") }}>Log out</button>
                         </div>
