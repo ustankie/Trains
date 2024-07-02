@@ -53,7 +53,6 @@
 
 
 .routeCard{
-    
     width: 50rem;
     margin: 7px;
     background-color: rgba(0, 0, 0, 0.9);
@@ -64,8 +63,8 @@
     position: absolute;
     justify-content: center;
     align-items: center;
-    
 }
+
 .routeCard--user_dashboard{
     width:70rem
 }
@@ -88,7 +87,6 @@
     border-color: black;
     width: 50rem;
     border-width: 3px;
-    /* border-style:solid; */
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -116,4 +114,20 @@
     justify-content: center;
 }
 
-  
+@media only screen and (max-width: 860px) {
+    .routeCard{
+        width: 90vw;
+    }
+}
+
+@media only screen and (max-width: 550px) {
+    .routeCardBodyContent{
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .book--btn {
+        width: 100%;
+        grid-column: span 3;
+    }
+}

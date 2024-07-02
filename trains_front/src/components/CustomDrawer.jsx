@@ -19,9 +19,10 @@ import {isTokenExpired,setAuthToken} from '../util/Authentication';
 import { toast } from 'react-hot-toast';
 import { Link } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
-
+import { useTextColor } from "../util/TextColorContext";
 
 export default function CustomDrawer() {
+    const { color } = useTextColor();
     const [open, setOpen] = React.useState(false);
     const navigate = useNavigate();
 
@@ -83,7 +84,7 @@ export default function CustomDrawer() {
             <MenuIcon
                 sx={{
                 fontSize: '3rem', 
-                color: 'white',
+                color: { color },
                 }}
             />
             </Button>

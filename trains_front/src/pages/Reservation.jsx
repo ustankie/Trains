@@ -29,12 +29,10 @@ export default function Reservation() {
     const navigate = useNavigate();
     function handleClose(){
         setShow(false);
-        // change_status("C");
     }
 
     function handlePayClose(){
         setShowPay(false);
-        // change_status("C");
         setNewReservation(true); 
     }
 
@@ -46,7 +44,6 @@ export default function Reservation() {
         }
     }
     useEffect(() => {
-
         request("GET", '/api/getOccupiedSeats', {}, {
 
             routeId: routeId,
@@ -57,13 +54,11 @@ export default function Reservation() {
         })
             .then(response => {
                 const takenData = response.data;
-                console.log(takenData);
                 const takenSeats = takenData.map(item => item.seatId);
                 setTaken(takenSeats);
             })
             .catch(error => {
                 console.error('Error fetching occupied seats:', error);
-
             });
 
     }, [newReservation,currentSeat]);
@@ -171,7 +166,7 @@ export default function Reservation() {
 
     return (
         <>
-            <Navbar color_mode="login--dark"/>
+            <Navbar />
             <div className="reservation--container">
                 <div className="home--link"><Link to="/"><span className="black">TRAIN</span><span className="blue">SERVICE</span></Link></div>
                 <div className="route--info">
