@@ -83,7 +83,7 @@ export default function CustomDrawer() {
             <Button onClick={toggleDrawer(true)}>
             <MenuIcon
                 sx={{
-                fontSize: '3rem', 
+                fontSize: '3em', 
                 color: { color },
                 }}
             />
