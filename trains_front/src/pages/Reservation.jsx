@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 
 export default function Reservation() {
@@ -168,16 +169,18 @@ export default function Reservation() {
         <>
             <Navbar />
             <div className="reservation--container">
-                <div className="home--link"><Link to="/"><span className="black">TRAIN</span><span className="blue">SERVICE</span></Link></div>
-                <div className="route--info">
-                    <p>{startStation + " " + departureTime.slice(0, -3)}
-                        <span className="material-symbols-outlined">arrow_forward</span>
-                        {endStation + " " + arrivalTime.slice(0, -3)}</p>
-                    <p>Departure Date <span className="material-symbols-outlined">arrow_forward</span>  {departureDate}</p>
+                <div className="route--info reservation--route--info">
+                    <p>{startStation}</p>
+                    <p><ArrowForwardIcon /></p>
+                    <p>{endStation}</p>
+
+                    <p>{departureTime.slice(0, -3)}&nbsp;&nbsp;&nbsp;&nbsp;{departureDate} </p>
+                    <p><ArrowForwardIcon /></p>
+                    <p>{arrivalTime.slice(0, -3)}&nbsp;&nbsp;&nbsp;&nbsp;{departureDate}</p>
                 </div>
                 <div className="reservation--box">
                     <div className="reservation--inner--box">
-                        <p>Choose your discount</p>
+                        <p className="reservation--p">Choose your discount</p>
                         <select className="reservation--input" value={discountId} onChange={e => setDiscountId(e.target.value)}>
                             {discounts.map((discount) => (
                                 <option key={discount.discountId} value={discount.discountId}>{discount.discountName}</option>
@@ -186,7 +189,7 @@ export default function Reservation() {
                     </div>
                 </div>
                 <div className="reservation--seats--container">
-                    <p>Choose your seat</p>
+                    <p className="reservation--p">Choose your seat</p>
                     <div className="seats--grid">
                         {seats}
                     </div>
