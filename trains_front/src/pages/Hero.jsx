@@ -4,17 +4,20 @@ import "../styles/Main.css";
 import "../styles/Navbar.css";
 import Form from '../components/Form';
 import * as React from 'react';
-import CustomDrawer from "../components/CustomDrawer";
 import Navbar from "../components/Navbar";
-
-
+import { useTextColor } from "../util/TextColorContext";
+import { useEffect } from 'react'
 
 export default function Hero() {
-    
+    const { setColor } = useTextColor();
+
+    useEffect(() => {
+        setColor('white');
+    }, [setColor]);
+
     return (
         <>      
         <div className="hero--wrapper">
-            {/* <CustomDrawer /> */}
             <Navbar/>
             <div className="background"></div>
             <div className="content">
@@ -25,5 +28,5 @@ export default function Hero() {
             </div>
         </div>
     </>
-    )
+    );
 }

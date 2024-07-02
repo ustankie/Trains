@@ -170,7 +170,7 @@
 
     .register--form {
         margin: 30px 15px;
-        width: 95%;
+        width: 90%;
         gap: 10px;
     }
 
@@ -188,6 +188,6 @@
 
     .login--form {
         margin: 40px 15px;
-        width: 95%;
+        width: 90%;
     }
 }

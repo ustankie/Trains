@@ -6,6 +6,7 @@ import tom from '../images/sad_tom.png';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card } from 'react-bootstrap';
 import toast from "react-hot-toast";
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 export default function RoutesDisplay() {
     const location = useLocation();
@@ -14,8 +15,6 @@ export default function RoutesDisplay() {
     const endStation = location.state?.endStation;
     const departureDate = location.state?.departureDate;
     const navigate = useNavigate();
-
-
 
     function addReservation(routeId, departureTime, arrivalTime, price) {
         navigate("/add-reservation", { state: { routeId, startStation, endStation, departureDate, departureTime, arrivalTime, price } });
@@ -29,9 +28,7 @@ export default function RoutesDisplay() {
             {data && data.length > 0 ? (
                 <div>
                     <div className="route--info">
-                        <p>{startStation}
-                            <span className="material-symbols-outlined">arrow_forward</span>
-                            {endStation}</p>
+                        <p>{startStation}<ArrowForwardIcon />{endStation}</p>
                     </div>
                     <div className="cards">
                         {data.map((route) => (
@@ -53,9 +50,9 @@ export default function RoutesDisplay() {
                                         {new Date(route.departureDate) > new Date() ||
                                             (new Date(route.departureDate).toDateString() === new Date().toDateString() &&
                                                 route.departureTime < new Date().getHours()) ?
-                                            <button className="blue--btn" onClick={() => addReservation(route.routeId, route.departureTime, route.arrivalTime, route.price)}>Book</button>
+                                            <button className="blue--btn book--btn" onClick={() => addReservation(route.routeId, route.departureTime, route.arrivalTime, route.price)}>Book</button>
                                             :
-                                            <button className="inactive--btn" onClick={() => cannotBook()}>Cannot book</button>
+                                            <button className="inactive--btn book--btn" onClick={() => cannotBook()}>Cannot book</button>
                                         }
                                     </div>
                                 </Card.Body>
