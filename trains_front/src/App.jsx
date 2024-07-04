@@ -13,7 +13,7 @@ import { TextColorProvider } from '../src/util/TextColorContext'
 import "bootstrap/dist/css/bootstrap.min.css";
 import Reservation from './pages/Reservation';
 
-axios.defaults.baseURL = 'http://localhost:8080'
+axios.defaults.baseURL = 'https://trains-backend-demo-2gvfwmqjza-lm.a.run.app'
 
 function App() {
     return (

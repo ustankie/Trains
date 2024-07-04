@@ -5,6 +5,8 @@ import "../styles/Main.css";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { request } from '../util/Authentication';
+import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from '@mui/material/Backdrop';
 
 
 export default function Form() {
@@ -17,9 +19,11 @@ export default function Form() {
     const [startSuggestions, setStartSuggestions] = useState([]);
     const [endSuggestions, setEndSuggestions] = useState([]);
     const [fetchedData, setFetchedData] = useState(null);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
+        setLoading(true);
         const storedData = localStorage.getItem('fetchedData');
         if (storedData) {
             const parsedData = JSON.parse(storedData);
@@ -32,12 +36,15 @@ export default function Form() {
         const url = `/api/stations`;
         request("GET",url,{},{}).then(response => {
             setStationNames(response.data);
+            setLoading(false);
         }).catch(error => {
             console.error('There was an error!', error);
+            
         });
     }, []);
 
     function searchRoute() {
+        setLoading(true);
         const { date, start_station, end_station } = routeData;
         
         axios.get('/api/find_route', { params: { departure_date: date, start_station: start_station, end_station: end_station }})
@@ -50,9 +57,11 @@ export default function Form() {
                     endStation: end_station, 
                     departureDate: date
                 } });
+                setLoading(false);
             })
             .catch(error => {
                 console.error('Error finding route:', error);
+                
             });
     }
 
@@ -94,6 +103,14 @@ export default function Form() {
     };
 
     return (
+        <>
+        <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={loading}
+        >
+            <CircularProgress color="inherit" />
+        </Backdrop>
+        
         <div className="hero--search--box">
             <div className="autocomplete">
                 <input
@@ -147,5 +164,6 @@ export default function Form() {
                 onChange={(e)=> setRouteData({...routeData, date: e.target.value})}/>
             <button className="blue--btn" onClick={searchRoute}>SEARCH</button>
         </div>
+        </>
     )
 }

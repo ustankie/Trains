@@ -11,6 +11,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useTextColor } from "../util/TextColorContext";
 import { Pagination } from '@mui/material';
 
+
 export default function UserDashboard() {
     const { setColor } = useTextColor();
 
@@ -39,9 +40,10 @@ export default function UserDashboard() {
     }
 
     useEffect(() => {
+        // setLoading(true);
         request("GET", "/api/get_user", {}, {})
             .then(response1 => {
-                // setLoading(true);
+                
                 console.log(loading);
                 setUser(response1.data)
                 request("GET", "/api/future_trips", {}, { user_id: response1.data.userId })
@@ -95,7 +97,6 @@ export default function UserDashboard() {
                         console.error('Error fetching reservation price:', error);
                     })
                     .finally(() => {
-                        // sleep(1000);
                         // setLoading(false);
                         console.log("Price2:", price, reservationId);
                     });
@@ -123,6 +124,7 @@ export default function UserDashboard() {
     function change_status(status, reservationId) {
         request("GET", "/api/get_user", {}, {})
             .then(response1 => {
+                // setLoading(true);
                 setUser(response1.data);
                 request("POST", 'api/reservations/change_status', {
                     reservationId: reservationId,
@@ -173,7 +175,6 @@ export default function UserDashboard() {
         return `${formattedHours}:${formattedMinutes}`;
     }
 
-    console.log(currentData)
 
     return (
         <>
