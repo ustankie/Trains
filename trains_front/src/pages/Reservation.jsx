@@ -170,13 +170,13 @@ export default function Reservation() {
             <Navbar />
             <div className="reservation--container">
                 <div className="route--info reservation--route--info">
-                    <p>{startStation}</p>
-                    <p><ArrowForwardIcon /></p>
-                    <p>{endStation}</p>
+                    <div>{startStation}</div>
+                    <div><ArrowForwardIcon /></div>
+                    <div>{endStation}</div>
 
-                    <p>{departureTime.slice(0, -3)}&nbsp;&nbsp;&nbsp;&nbsp;{departureDate} </p>
-                    <p><ArrowForwardIcon /></p>
-                    <p>{arrivalTime.slice(0, -3)}&nbsp;&nbsp;&nbsp;&nbsp;{departureDate}</p>
+                    <div>{departureTime.slice(0, -3)}&nbsp;&nbsp;&nbsp;&nbsp;{departureDate} </div>
+                    <div><ArrowForwardIcon /></div>
+                    <div>{arrivalTime.slice(0, -3)}&nbsp;&nbsp;&nbsp;&nbsp;{departureDate}</div>
                 </div>
                 <div className="reservation--box">
                     <div className="reservation--inner--box">

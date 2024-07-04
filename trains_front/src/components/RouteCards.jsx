@@ -28,7 +28,7 @@ export default function RoutesDisplay() {
             {data && data.length > 0 ? (
                 <div>
                     <div className="route--info">
-                        <p>{startStation}<ArrowForwardIcon />{endStation}</p>
+                        <div>{startStation}</div><ArrowForwardIcon /><div>{endStation}</div>
                     </div>
                     <div className="cards">
                         {data.map((route) => (

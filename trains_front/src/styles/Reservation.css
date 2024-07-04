@@ -142,7 +142,17 @@
 }
 
 @media only screen and (max-width: 510px) {
-    .reservation--route--info > p {
+    .reservation--route--info > div {
         font-size: 0.9rem;
+        padding: 0;
+    }
+
+    .reservation--route--info {
+        display: grid;
+        grid-template-columns: 1fr 10px 1fr;
+        grid-template-rows: 1fr 1fr;
+        justify-items: center;
+        align-items: center;
+        margin-top: 50px;
     }
 }
