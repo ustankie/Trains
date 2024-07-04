@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Trains** is a project developed for the Databases II course at AGH UST, covering the creation of a web application for train ticket booking. The application is designed to provide a seamless and efficient user experience for booking train tickets, reserving seats, and managing travel history.
+**Trains** is a project in which we have developed an comprehensive application for train ticket booking. The application is designed to provide a seamless and efficient user experience for booking train tickets, reserving seats, and managing travel history.
 
 ## Key Features
 
@@ -15,7 +15,7 @@
 
 - Backend - Java, SpringBoot, SpringSecurity, Hibernate
 - Database - PostreSQL
-- Frontend - React.js, CSS, Bootstrap, react-hot-toast
+- Frontend - React.js, CSS
 - Development Enviroment - IntelliJ IDEA, DataGrip, Visual Studio Code
 
 ## Setup
