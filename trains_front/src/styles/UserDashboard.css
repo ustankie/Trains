@@ -213,6 +213,10 @@
         margin-bottom: 0px;
     }
 
+    .tab:hover{
+        background-color: #fff;
+    }
+
     .tab {
         font-size: 14px;
     }
