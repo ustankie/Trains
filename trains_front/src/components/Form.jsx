@@ -104,12 +104,12 @@ export default function Form() {
 
     return (
         <>
-        <Backdrop
+        {/* <Backdrop
             sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
             open={loading}
         >
             <CircularProgress color="inherit" />
-        </Backdrop>
+        </Backdrop> */}
         
         <div className="hero--search--box">
             <div className="autocomplete">
