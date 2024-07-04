@@ -5,8 +5,19 @@ import { Card } from 'react-bootstrap';
 import { request } from '../util/Authentication.jsx';
 import toast from 'react-hot-toast';
 import { Modal, Button } from 'react-bootstrap';
+import Navbar from '../components/Navbar.jsx';
+import TrainIcon from '@mui/icons-material/Train';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { useTextColor } from "../util/TextColorContext";
+import { Pagination } from '@mui/material';
 
 export default function UserDashboard() {
+    const { setColor } = useTextColor();
+
+    useEffect(() => {
+        setColor('black');
+    }, [setColor]);
+
     const [future, setFuture] = useState([]);
     const [past, setPast] = useState([]);
     const [activeTab, setActiveTab] = useState('future');
@@ -17,12 +28,15 @@ export default function UserDashboard() {
     const [log_type, setLogType] = useState([]);
     const [loading, setLoading] = useState(false);
     const [price, setPrice] = useState(0);
-    const [showCancelled, setShowCancelled]=useState(false);
+    const [showCancelled, setShowCancelled] = useState(false);
+
+    const [page, setPage] = useState(1);
+    const ITEMS_PER_PAGE = 2; // Liczba elementów na stronę
 
     const navigate = useNavigate();
     const sleep = (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms));
-      }
+    }
 
     useEffect(() => {
         request("GET", "/api/get_user", {}, {})
@@ -36,7 +50,6 @@ export default function UserDashboard() {
                         if (activeTab === 'future') {
                             setCurrentData(response.data);
                         }
-
 
                         request("GET", "/api/past_trips", {}, { user_id: response1.data.userId })
                             .then(response => {
@@ -59,16 +72,14 @@ export default function UserDashboard() {
             .catch(error => {
                 if (error === "authError") { 
                     toast.error("Your session expired!"); 
-                    navigate("/"); }
+                    navigate("/"); 
+                }
             })
+    }, [reservationId, show]);
 
-
-
-    }, [reservationId,show]);
-    useEffect(()=>{
+    useEffect(() => {
         reservationPrice();
-    },[reservationId]);
-
+    }, [reservationId]);
 
     function reservationPrice() {
         request("GET", "/api/get_user", {}, {})
@@ -79,11 +90,9 @@ export default function UserDashboard() {
                 request("GET", "/api/reservations/price", {}, { reservationId: reservationId })
                     .then(response => {
                         setPrice(response.data);
-
                     })
                     .catch(error => {
                         console.error('Error fetching reservation price:', error);
-
                     })
                     .finally(() => {
                         // sleep(1000);
@@ -97,20 +106,20 @@ export default function UserDashboard() {
                 navigate("/"); 
                 // setLoading(false);
             });
-
     }
-
-
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
+        setPage(1); // Resetuje stronę do 1 przy zmianie zakładki
         if (tab === 'future') {
             setCurrentData(future);
         } else if (tab === 'past') {
             setCurrentData(past);
         }
     };
-    console.log(future);
+
+    const paginatedData = currentData.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
     function change_status(status, reservationId) {
         request("GET", "/api/get_user", {}, {})
             .then(response1 => {
@@ -126,7 +135,6 @@ export default function UserDashboard() {
                             toast.success("Your reservation has been cancelled");
                         }
                         setShow(false);
-
                     })
                     .catch(error => {
                         console.error(error);
@@ -145,94 +153,86 @@ export default function UserDashboard() {
                 // setLoading(false);
             });
     }
+
     function handleClose() {
         setShow(false);
     }
 
+    function calculateDuration(departure, arrival) {
+        let departureDate = new Date(`1970-01-01T${departure}Z`);
+        let arrivalDate = new Date(`1970-01-01T${arrival}Z`);
+        let differenceInMilliseconds = arrivalDate - departureDate;
+
+        let differenceInMinutes = differenceInMilliseconds / (1000 * 60);
+        let differenceInHours = Math.floor(differenceInMinutes / 60);
+        differenceInMinutes = differenceInMinutes % 60;
+
+        let formattedHours = differenceInHours.toString().padStart(2, '0');
+        let formattedMinutes = differenceInMinutes.toString().padStart(2, '0');
+
+        return `${formattedHours}:${formattedMinutes}`;
+    }
+
+    console.log(currentData)
+
     return (
-        <div className="user--dashboard--container">
-            {loading &&
-                <div className="user_dashboard--overlay">
-                    <div className="user_dashboard--spinner"></div>
+        <>
+            <Navbar />
+            <div className="user--dashboard--container">
+                <div className="user--dashboard--greeting">
+                    <h1>Welcome aboard {user.login}!</h1>
+                    <h2>Here are all your tickets:</h2>
                 </div>
-            }
-            <div className="home--link"><Link to="/"><span className="black">TRAIN</span><span className="blue">SERVICE</span></Link></div>
-            <div className="user--greeting">
-                <p className="greeting--text">
-                    Welcome aboard <span className="blue">{user.login}!</span>
-                </p>
-                <p className="greeting--text--bottom">Life, much like a <span className="blue">train journey,</span> <br /> is best enjoyed
-                    with good company by our side.</p>
-            </div>
-
-            <div className="tickets--box">
-                <div className="tabs">
-                    <div
-                        className={`tab tab--left ${activeTab === 'future' ? 'active' : ''}`}
-                        onClick={() => handleTabClick('future')}
-                    >
-                        FUTURE TRIPS
+                <div className="tickets--container">
+                    <div className="tabs">
+                        <div
+                            className={`tab ${activeTab === 'future' ? 'active' : ''}`}
+                            onClick={() => handleTabClick('future')}>
+                            FUTURE TRIPS
+                        </div>
+                        <div
+                            className={`tab ${activeTab === 'past' ? 'active' : ''}`}
+                            onClick={() => handleTabClick('past')}>
+                            PREVIOUS JOURNEYS
+                        </div>
                     </div>
-                    <div
-                        className={`tab tab--right ${activeTab === 'past' ? 'active' : ''}`}
-                        onClick={() => handleTabClick('past')}
-                    >
-                        PREVIOUS JOURNEYS
-                    </div>
-                </div>
-                <div className="cards">
-                    <label>
-                        <input type="checkbox" checked={showCancelled} onChange={()=>setShowCancelled(!showCancelled) }/>
-                        Show cancelled
-                    </label>
-                </div>
-
-                <div className="cards">
-                    {currentData
-                    .filter((route)=>{if(showCancelled) return true; return route.status!="C";} )
-                    .map((route) => (
-                        <Card key={route.reservationId} className="routeCard routeCard--user_dashboard">
-                            <Card.Body className="routeCardBody">
-                                <div className="routeCardBodyContent">
-                                    <div className="routeDetails">
-                                        <p className="routeCardHeaders">Start Station</p>
-                                        <p className="routeCardDetails">{route.startStation}</p>
-                                    </div>
-                                    <div className="routeDetails">
-                                        <p className="routeCardHeaders">End Station</p>
-                                        <p className="routeCardDetails">{route.endStation}</p>
-                                    </div>
-                                    <div className="routeDetails">
-                                        <p className="routeCardHeaders">Time</p>
-                                        <p className="routeCardDetails">{route.departure}<span className="material-symbols-outlined arrow--small">arrow_forward</span> {route.arrival}</p>
-                                    </div>
-                                    <div className="routeDetails">
-                                        <p className="routeCardHeaders">Departure Date</p>
-                                        <p className="routeCardDetails">{route.departureDate}</p>
-                                    </div>
-                                    <div className="routeDetails">
-                                        <p className="routeCardHeaders">Seat</p>
-                                        <p className="routeCardDetails">{route.seatId}</p>
-                                    </div>
-                                    {/* <div className="routeDetails">
-                                        <p className="routeCardHeaders">Price</p>
-                                        <p className="routeCardDetails">{route.price}PLN</p>
-                                    </div> */}
-                                    <div className="routeDetails">
-                                        <p className="routeCardHeaders">Status</p>
-                                        <p className="routeCardDetails">{route.status === "N" ? "Not payed" : route.status === "C" ? "Cancelled" : "Payed"}</p>
-                                    </div>
-                                    {activeTab === 'future' && route.status === "P" ? <button className="blue--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("C"); setShow(true) }}>Cancel</button>
-                                        : activeTab === 'future' && route.status === "N" ?
-                                        <> 
-                                            <button className="blue--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("P"); setShow(true) }}>Pay</button> 
-                                            {/* <p className='routeCardHeaders'>Pay within {route.reservationDate}</p> */}
-                                        </>
-                                    : null}
+                    {paginatedData.map((route) => (
+                        <div className="ticket--wrapper" key={route.reservationId}>
+                            <div className="ticket--places">
+                                <div>{route.startStation}</div>
+                                <div>{route.endStation}</div>
+                            </div>
+                            <div className="ticket--time--box">
+                                <div className="ticket--time">{route.departure.slice(0, -3)}</div>
+                                <div className="ticket--route">
+                                    <TrainIcon className='ticket--route--icon'/>
+                                    <div className="ticket--dashed"></div>
+                                    <div className="ticket--duration">{calculateDuration(route.departure, route.arrival)}h</div>
+                                    <div className="ticket--dashed"></div>
+                                    <LocationOnIcon className='ticket--route--icon'/>
                                 </div>
-                            </Card.Body>
-                        </Card>
+                                <div className="ticket--time">{route.arrival.slice(0, -3)}</div>
+                            </div>
+                            <div className="ticket--details">
+                                <div className="ticket--seat">Seat: {route.seatId}</div>
+                                <div className="ticket--departure--date">{route.departureDate}</div>
+                                {activeTab === 'future' && route.status === 'P' ? 
+                                <button className="ticket--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("C"); setShow(true) }}>Cancel</button> :
+                                activeTab === 'future' && route.status === "N" ? 
+                                <button className="ticket--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("P"); setShow(true) }}>Pay</button> : 
+                                route.status === "P" ? 
+                                <button className="ticket--btn ticket--not--active">Previous</button> :
+                                <button className="ticket--btn ticket--not--active">Canceled</button> 
+                                }
+                            </div>
+                        </div>
                     ))}
+                    <Pagination className='user--dashboard--pagination'
+                        count={Math.ceil(currentData.length / ITEMS_PER_PAGE)}
+                        page={page}
+                        onChange={(event, value) => setPage(value)}
+                        
+                    />
                 </div>
             </div>
             <Modal
@@ -261,13 +261,12 @@ export default function UserDashboard() {
                             Pay
                         </Button>
                     ) : (
-                        <Button variant="danger" onClick={() => change_status(log_type,reservationId)}>
+                        <Button variant="danger" onClick={() => change_status(log_type, reservationId)}>
                             Cancel Payment
                         </Button>
                     )}
                 </Modal.Footer>
             </Modal>
-
-        </div>
-    )
+        </>
+    );
 }
