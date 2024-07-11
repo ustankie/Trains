@@ -38,7 +38,7 @@ export default function Form() {
             setStationNames(response.data);
             setLoading(false);
         }).catch(error => {
-            console.error('There was an error!', error);
+            console.error('There was an error here!', error);
             
         });
     }, []);
