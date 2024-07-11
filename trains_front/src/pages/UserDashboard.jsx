@@ -111,7 +111,7 @@ export default function UserDashboard() {
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
-        setPage(1); // Resetuje stronę do 1 przy zmianie zakładki
+        setPage(1); 
         if (tab === 'future') {
             setCurrentData(future);
         } else if (tab === 'past') {

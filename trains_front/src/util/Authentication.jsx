@@ -7,7 +7,6 @@ export const getAuthToken = () => {
 
 export const setAuthToken = (token) => {
     window.localStorage.setItem("auth_token", token);
-
 };
 
 export const request = async (method, url, data, params) => {

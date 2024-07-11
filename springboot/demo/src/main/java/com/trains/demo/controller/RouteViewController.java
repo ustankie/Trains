@@ -1,6 +1,7 @@
 package com.trains.demo.controller;
 
 import com.trains.demo.model.Route;
+import com.trains.demo.model.nonpersistent.ScheduleView;
 import com.trains.demo.model.nonpersistent.SpecifiedRouteView;
 import com.trains.demo.repository.RouteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173/", "https://trains-demo.vercel.app"})
 public class RouteViewController {
     private final RouteRepository routeViewRepository;
 
@@ -37,6 +38,14 @@ public class RouteViewController {
 
 
         return routeViewRepository.getSpecifiedRoute(departure_date, start_station_id, end_station_id);
+    }
 
+    @GetMapping("/api/find_schedule")
+    public List<ScheduleView> getSchedule(@RequestParam LocalDate departure_date,
+                                          @RequestParam String start_station) {
+
+        Long start_station_id = routeViewRepository.getStationId(start_station.trim());
+
+        return routeViewRepository.getSchedule(departure_date, start_station_id);
     }
 }

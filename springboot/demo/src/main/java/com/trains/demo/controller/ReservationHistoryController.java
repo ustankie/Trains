@@ -13,7 +13,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173/", "https://trains-demo.vercel.app"})
 public class ReservationHistoryController {
     private final ReservationRepository reservationRepository;
 
