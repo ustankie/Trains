@@ -27,20 +27,6 @@
     align-items: center;
 }
 
-.ticket--wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 600px;
-    height: 230px;
-    margin: auto;
-    padding: 20px;
-    margin: 30px auto;
-    -webkit-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.2);
-    -moz-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.2);
-    box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.2);
-}
-
 .tabs {
     display: flex;
     width: 100%;
@@ -65,104 +51,6 @@
     border-bottom: 1px solid black;
 }
 
-.ticket--places {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    font-size: 26px;
-    padding: 5px;
-}
-
-.ticket--time--box {
-    display: flex;
-    align-items: center;
-    
-}
-
-.ticket--time {
-    font-weight: 700;
-    font-size: 26px;
-    padding: 5px;
-}
-
-.ticket--route {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.ticket--route--icon {
-    margin: auto 10px;
-    transform: scale(1.5);
-}
-
-.ticket--duration {
-    font-weight: 300;
-    font-size: 22px;
-}
-
-.ticket--details {
-    display: grid;
-    grid-template-columns: 1fr 100px 1fr;
-    height: 40px;
-    padding: 0 5px;
-}
-
-.ticket--departure--date {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 300;
-}
-
-
-.ticket--seat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    justify-self: left;
-}
-
-.ticket--btn {
-    width: 100px;
-    height: 40px;
-    font-size: 18px;
-    border: 1px solid #000;
-    background-color: white;
-    transition: all 0.3s ease;
-    justify-self: right;
-    align-self: center;
-}
-
-.ticket--btn:hover {
-    cursor: pointer;
-    background-color: black;
-    color: #fff;
-}
-
-.ticket--not--active {
-    color: grey;
-    border: 0px solid grey;
-    transition: all 0s;
-}
-
-.ticket--not--active:hover {
-    cursor: default;
-    background-color: #fff;
-    color: grey;
-}
-
-.ticket--dashed {
-    width: 100%;
-    border-bottom: 1px dashed rgb(78, 78, 78);
-}
-
 .user--dashboard--pagination {
     margin: 30px auto;
 }
@@ -179,24 +67,6 @@
 
     .tab {
         font-size: 20px;
-    }
-
-    .ticket--wrapper {
-        width: 90%;
-    }
-}
-
-@media only screen and (max-width: 580px) {
-    .ticket--places {
-        font-size: 20px;
-    }
-
-    .ticket--time {
-        font-size: 22px;
-    }
-
-    .ticket--duration {
-        font-size: 18px;
     }
 }
 
@@ -219,27 +89,6 @@
 
     .tab {
         font-size: 14px;
-    }
-    
-    .ticket--places {
-        font-size: 16px;
-    }
-
-    .ticket--route {
-        gap: 5px;
-    }
-
-    .ticket--btn {
-        width: 70px;
-        height: 30px;
-        font-size: 14px;
-    }
-
-    .ticket--wrapper {
-        -webkit-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.10);
-        -moz-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.10);
-        box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.10);
-        margin: 20px auto;
     }
 
     .user--dashboard--pagination {
