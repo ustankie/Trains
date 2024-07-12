@@ -19,7 +19,7 @@ function calculateDuration(departure, arrival) {
 
 export default function Card({ route, cardDetails }) {
     return (
-        <div className="card--wrapper" key={route.reservationId}>
+        <div className="card--wrapper" key={route.routeId}>
             <div className="card--places">
                 <div>{route.startStation}</div>
                 <div>{route.endStation}</div>

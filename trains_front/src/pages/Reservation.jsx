@@ -139,6 +139,7 @@ export default function Reservation() {
         request("GET", "/api/get_user",{},{})
         .then(response1=>{
             setUser(response1.data);
+            console.log(user, discountId, routeId, startStation, endStation, departureDate, currentSeat[0]);
             request("POST", 'api/reservations/add', {
                 userId: response1.data.userId,
                 discountId: discountId,

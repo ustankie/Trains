@@ -1,0 +1,48 @@
+.modal--schedule--wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+#date-select, #station-select {
+    text-align: center;
+    width: 200px;
+}
+
+.schedule--container {
+    min-height: 100vh;
+}
+
+.schedule--header {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 20px;
+    margin: 40px auto;
+}
+
+.schedule--reset {
+    position: absolute;
+    right: 50px;
+    top: 28px;
+    z-index: 5;
+}
+
+.select--box {
+    margin: auto;
+}
+
+@media only screen and (max-width: 460px) {
+    .schedule--reset {
+        right: 20px;
+        top: 33px;
+    }
+}
+
+@media only screen and (max-width: 400px) {
+    .schedule--reset {
+        right: 5px;
+        top: 33px;
+    }
+}
+

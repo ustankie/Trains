@@ -9,6 +9,7 @@ import UserDashboard from './pages/UserDashboard';
 import Payment from './pages/Payment';
 import { Toaster } from 'react-hot-toast'
 import { TextColorProvider } from '../src/util/TextColorContext'
+import Schedule from "./pages/Schedule"
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import Reservation from './pages/Reservation';
@@ -29,6 +30,7 @@ function App() {
                     <Route path="/add-reservation" element={<Reservation />} />
                     <Route path="/user-dashboard" element={<UserDashboard /> } />
                     <Route path="/payment" element={<Payment /> } />
+                    <Route path="/schedule" element={<Schedule /> } />
                 </Routes>
             </BrowserRouter>
         </TextColorProvider>

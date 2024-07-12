@@ -68,12 +68,14 @@ export default function CustomDrawer() {
                     </ListItem>
                 )
                 ))}
-                <ListItem disablePadding>
-                <ListItemButton sx={{ whiteSpace: 'nowrap' }}>
-                    <ListItemIcon><DepartureBoardIcon /></ListItemIcon>
-                    <ListItemText primary="Schedule" />
-                </ListItemButton>
-                </ListItem>
+                <Link to="/schedule" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <ListItem disablePadding>
+                    <ListItemButton sx={{ whiteSpace: 'nowrap' }}>
+                        <ListItemIcon><DepartureBoardIcon /></ListItemIcon>
+                        <ListItemText primary="Schedule" />
+                    </ListItemButton>
+                    </ListItem>
+                </Link>
             </List>
         </div>
     )

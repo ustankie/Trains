@@ -57,7 +57,7 @@
     padding: 0 5px;
 }
 
-.card--departure--date {
+.card--bottom--center {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -67,7 +67,7 @@
 }
 
 
-.card--seat {
+.card--bottom--left {
     display: flex;
     flex-direction: column;
     align-items: center;

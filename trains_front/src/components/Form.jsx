@@ -5,8 +5,6 @@ import "../styles/Main.css";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { request } from '../util/Authentication';
-import CircularProgress from '@mui/material/CircularProgress';
-import Backdrop from '@mui/material/Backdrop';
 
 
 export default function Form() {
