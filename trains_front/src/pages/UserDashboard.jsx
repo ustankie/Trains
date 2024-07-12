@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import "../styles/UserDashboard.css"
-import { Card } from 'react-bootstrap';
 import { request } from '../util/Authentication.jsx';
 import toast from 'react-hot-toast';
 import { Modal, Button } from 'react-bootstrap';
 import Navbar from '../components/Navbar.jsx';
-import TrainIcon from '@mui/icons-material/Train';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useTextColor } from "../util/TextColorContext";
 import { Pagination } from '@mui/material';
+import Card from '../components/Card.jsx';
 
 
 export default function UserDashboard() {
@@ -160,19 +158,21 @@ export default function UserDashboard() {
         setShow(false);
     }
 
-    function calculateDuration(departure, arrival) {
-        let departureDate = new Date(`1970-01-01T${departure}Z`);
-        let arrivalDate = new Date(`1970-01-01T${arrival}Z`);
-        let differenceInMilliseconds = arrivalDate - departureDate;
-
-        let differenceInMinutes = differenceInMilliseconds / (1000 * 60);
-        let differenceInHours = Math.floor(differenceInMinutes / 60);
-        differenceInMinutes = differenceInMinutes % 60;
-
-        let formattedHours = differenceInHours.toString().padStart(2, '0');
-        let formattedMinutes = differenceInMinutes.toString().padStart(2, '0');
-
-        return `${formattedHours}:${formattedMinutes}`;
+    const ticketDetails = (route) => {
+        return (
+            <div className="card--details">
+                <div className="card--seat">Seat: {route.seatId}</div>
+                <div className="card--departure--date">{route.departureDate}</div>
+                {activeTab === 'future' && route.status === 'P' ? 
+                <button className="card--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("C"); setShow(true) }}>Cancel</button> :
+                activeTab === 'future' && route.status === "N" ? 
+                <button className="card--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("P"); setShow(true) }}>Pay</button> : 
+                route.status === "P" ? 
+                <button className="card--btn card--not--active">Previous</button> :
+                <button className="card--btn card--not--active">Canceled</button> 
+                }
+            </div>
+        )
     }
 
 
@@ -198,36 +198,9 @@ export default function UserDashboard() {
                         </div>
                     </div>
                     {paginatedData.map((route) => (
-                        <div className="ticket--wrapper" key={route.reservationId}>
-                            <div className="ticket--places">
-                                <div>{route.startStation}</div>
-                                <div>{route.endStation}</div>
-                            </div>
-                            <div className="ticket--time--box">
-                                <div className="ticket--time">{route.departure.slice(0, -3)}</div>
-                                <div className="ticket--route">
-                                    <TrainIcon className='ticket--route--icon'/>
-                                    <div className="ticket--dashed"></div>
-                                    <div className="ticket--duration">{calculateDuration(route.departure, route.arrival)}h</div>
-                                    <div className="ticket--dashed"></div>
-                                    <LocationOnIcon className='ticket--route--icon'/>
-                                </div>
-                                <div className="ticket--time">{route.arrival.slice(0, -3)}</div>
-                            </div>
-                            <div className="ticket--details">
-                                <div className="ticket--seat">Seat: {route.seatId}</div>
-                                <div className="ticket--departure--date">{route.departureDate}</div>
-                                {activeTab === 'future' && route.status === 'P' ? 
-                                <button className="ticket--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("C"); setShow(true) }}>Cancel</button> :
-                                activeTab === 'future' && route.status === "N" ? 
-                                <button className="ticket--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("P"); setShow(true) }}>Pay</button> : 
-                                route.status === "P" ? 
-                                <button className="ticket--btn ticket--not--active">Previous</button> :
-                                <button className="ticket--btn ticket--not--active">Canceled</button> 
-                                }
-                            </div>
-                        </div>
+                        <Card route={route} cardDetails={ticketDetails(route)}/>
                     ))}
+
                     <Pagination className='user--dashboard--pagination'
                         count={Math.ceil(currentData.length / ITEMS_PER_PAGE)}
                         page={page}

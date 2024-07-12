@@ -1,0 +1,154 @@
+.card--wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 600px;
+    height: 230px;
+    margin: auto;
+    padding: 20px;
+    margin: 30px auto;
+    -webkit-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.2);
+    -moz-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.2);
+    box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.2);
+}
+
+.card--places {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 26px;
+    padding: 5px;
+}
+
+.card--time--box {
+    display: flex;
+    align-items: center;
+    
+}
+
+.card--time {
+    font-weight: 700;
+    font-size: 26px;
+    padding: 5px;
+}
+
+.card--route {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.card--route--icon {
+    margin: auto 10px;
+    transform: scale(1.5);
+}
+
+.card--duration {
+    font-weight: 300;
+    font-size: 22px;
+}
+
+.card--details {
+    display: grid;
+    grid-template-columns: 1fr 100px 1fr;
+    height: 40px;
+    padding: 0 5px;
+}
+
+.card--departure--date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 300;
+}
+
+
+.card--seat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    justify-self: left;
+}
+
+.card--btn {
+    width: 100px;
+    height: 40px;
+    font-size: 18px;
+    border: 1px solid #000;
+    background-color: white;
+    transition: all 0.3s ease;
+    justify-self: right;
+    align-self: center;
+}
+
+.card--btn:hover {
+    cursor: pointer;
+    background-color: black;
+    color: #fff;
+}
+
+.card--not--active {
+    color: grey;
+    border: 0px solid grey;
+    transition: all 0s;
+}
+
+.card--not--active:hover {
+    cursor: default;
+    background-color: #fff;
+    color: grey;
+}
+
+.card--dashed {
+    width: 100%;
+    border-bottom: 1px dashed rgb(78, 78, 78);
+}
+
+@media only screen and (max-width: 770px) {
+    .card--wrapper {
+        width: 90%;
+    }
+}
+
+@media only screen and (max-width: 580px) {
+    .card--places {
+        font-size: 20px;
+    }
+
+    .card--time {
+        font-size: 22px;
+    }
+
+    .card--duration {
+        font-size: 18px;
+    }
+}
+
+@media only screen and (max-width: 460px) {
+    .card--places {
+        font-size: 16px;
+    }
+
+    .card--route {
+        gap: 5px;
+    }
+
+    .card--btn {
+        width: 70px;
+        height: 30px;
+        font-size: 14px;
+    }
+
+    .card--wrapper {
+        -webkit-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.10);
+        -moz-box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.10);
+        box-shadow: 0px 0px 30px 0px rgba(66, 68, 90, 0.10);
+        margin: 20px auto;
+    }
+}
