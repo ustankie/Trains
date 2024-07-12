@@ -19,6 +19,7 @@ export default function RoutesDisplay() {
     function addReservation(routeId, departureTime, arrivalTime, price) {
         navigate("/add-reservation", { state: { routeId, startStation, endStation, departureDate, departureTime, arrivalTime, price } });
     }
+    
     function cannotBook() {
         toast.error("This is a past root!");
     }

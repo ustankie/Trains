@@ -161,8 +161,8 @@ export default function UserDashboard() {
     const ticketDetails = (route) => {
         return (
             <div className="card--details">
-                <div className="card--seat">Seat: {route.seatId}</div>
-                <div className="card--departure--date">{route.departureDate}</div>
+                <div className="card--bottom--left">Seat: {route.seatId}</div>
+                <div className="card--bottom--center">{route.departureDate}</div>
                 {activeTab === 'future' && route.status === 'P' ? 
                 <button className="card--btn" onClick={() => { reservationPrice(); setReservationId(route.reservationId); setLogType("C"); setShow(true) }}>Cancel</button> :
                 activeTab === 'future' && route.status === "N" ? 
@@ -218,7 +218,7 @@ export default function UserDashboard() {
             >
                 <Modal.Header closeButton>
                     <Modal.Title>
-                        {log_type === "P" ? "Payment" : "Cancel Payment"}
+                        {log_type === "P" ? "Payment" : "Cancel payment"}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
