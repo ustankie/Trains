@@ -19,4 +19,10 @@ public class StationService {
     public Long getStationId(String stationName) {
         return stationRepository.getStationId(stationName);
     }
+
+    public List<String> getAllRestStationsNames(Long routeId, String startStationName) {
+        Long startStationId = stationRepository.getStationId(startStationName.trim());
+
+        return stationRepository.getAllRestStationsNames(routeId, startStationId);
+    }
 }

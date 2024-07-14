@@ -53,6 +53,13 @@ public class ReservationService {
         return reservationRepository.getSumPrice(reservationId);
     }
 
+    public Double getRoutePrice(Long routeId, String startStation, String endStation) {
+        Long startStationId = reservationRepository.getStationId(startStation.trim());
+        Long endStationId = reservationRepository.getStationId(endStation.trim());
+
+        return reservationRepository.getRoutePrice(routeId, startStationId, endStationId);
+    }
+
     public List<Reservation> cancelReservations() {
         List<Reservation> reservations = reservationRepository.findAllByPaymentStatus("N", LocalDateTime.now());
         for (Reservation reservation : reservations) {

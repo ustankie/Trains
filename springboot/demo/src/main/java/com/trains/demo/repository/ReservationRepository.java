@@ -28,8 +28,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query(nativeQuery = true, value = "SELECT *" + "from reservation_sum_price(:_reservation_id)")
     Double getSumPrice(@Param("_reservation_id") Long reservation_id);
+
     @Query(nativeQuery = true, value = "SELECT *" + "from reservations where payment_status=?1 and EXTRACT(EPOCH FROM (CAST(?2 AS timestamp) - res_date))/60  > 5")
     List<Reservation> findAllByPaymentStatus(String paymentStatus, LocalDateTime time);
+
+    @Query(nativeQuery = true, value = "SELECT * from count_sum_price(1, :_route_id, :_start_station_id, :_end_station_id)")
+    Double getRoutePrice(@Param("_route_id") Long routeId, @Param("_start_station_id") Long startStationId, @Param("_end_station_id") Long endStationId);
 
 }
 

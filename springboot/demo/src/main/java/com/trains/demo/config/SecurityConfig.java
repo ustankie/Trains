@@ -30,7 +30,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())  // Updated to use withDefaults for CORS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/getOccupiedSeats", "/api/find_route", "/api/stations", "/api/find_schedule", "/").permitAll()
+                        .requestMatchers("/api/stations/get_rest_stations","/api/reservations/route_price", "/api/auth/**", "/api/getOccupiedSeats",
+                                "/api/find_route", "/api/stations", "/api/find_schedule", "/").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
