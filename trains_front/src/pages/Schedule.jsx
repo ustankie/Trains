@@ -6,11 +6,13 @@ import axios from 'axios';
 import Card from "../components/Card";
 import { useTextColor } from "../util/TextColorContext";
 import { Link, useNavigate } from 'react-router-dom';
+import tom from '../images/sad_tom.png';
 
 export default function Schedule() {
     const [show, setShow] = useState(true);
     const [showRedirect, setShowRedirect] = useState(false);
     const [stationNames, setStationNames] = useState([]);
+    const [restStationNames, setRestStationNames] = useState([]);
     const [selectedStation, setSelectedStation] = useState('');
     const [selectedEndStation, setSelectedEndStation] = useState('');
     const [selectedDate, setSelectedDate] = useState('');
@@ -29,11 +31,30 @@ export default function Schedule() {
     const handleEndStationChange = (e) => setSelectedEndStation(e.target.value);
     const handleDateChange = (e) => setSelectedDate(e.target.value);
 
+    useEffect(() => {
+        const fetchStations = async () => {
+            if (selectedRoute && selectedStation) {
+                try {
+                    const response = await axios.get('api/stations/get_rest_stations', {
+                        params: {
+                            routeId: selectedRoute.routeId,
+                            startStationName: selectedStation
+                        }
+                    });
+                    setRestStationNames(response.data);
+                } catch (error) {
+                    console.error("Error fetching station names:", error);
+                }
+            }
+        };
+
+        fetchStations();
+    }, [selectedRoute, selectedStation]);
+
     const handleBuyTicket = (route) => {
         setSelectedRoute(route);
         setShowRedirect(true);
     };
-
     useEffect(() => {
         const redirectToReservation = async () => {
             if (selectedEndStation && selectedRoute) {
@@ -45,10 +66,9 @@ export default function Schedule() {
                           endStation: selectedEndStation 
                         } 
                     });
+                    
 
                     const price = response.data;
-                    console.log(selectedRoute);
-                    console.log(price);
                     navigate("/add-reservation", { 
                         state: { 
                             routeId: selectedRoute.routeId, 
@@ -92,7 +112,7 @@ export default function Schedule() {
     useEffect(() => {
         const handleSelection = async () => {
             if (selectedStation && selectedDate) { 
-                await sleep(500); 
+                await sleep(300); 
                 handleClose();
                 searchSchedule();
             }
@@ -109,6 +129,7 @@ export default function Schedule() {
         axios.get('api/find_schedule', { params: { departure_date: selectedDate, start_station: selectedStation }})
         .then(response => {
             setSchedule(response.data);
+            
         });
     };
 
@@ -134,7 +155,8 @@ export default function Schedule() {
                     <div className="schedule--header">
                         Routes from {selectedStation} departing {selectedDate}
                     </div>
-                    
+
+                    {schedule.length !== 0 ? 
                     <div className="schedule--wrapper">
                         {schedule.map((route) => (
                             <Card 
@@ -149,7 +171,17 @@ export default function Schedule() {
                                 cardDetails={routeDetails(route)}
                             />
                         ))}
-                    </div>
+                        </div>
+                        :
+                        <div className="backgroundBottom">
+                            <div className="noRouteFound">
+                                <p id="noRoutesText">No routes found...</p>
+                                <img src={tom} alt="Sad Tom" id="tom" />
+                            </div>
+                        </div>
+                    }
+                    
+                    
                 </>}
             </div>
 
@@ -213,8 +245,8 @@ export default function Schedule() {
                                 value={selectedEndStation} 
                                 onChange={handleEndStationChange}
                             >
-                                <option value="">Choose a station</option>
-                                {stationNames.map((station, index) => (
+                                <option value="">Choose end station</option>
+                                {restStationNames.map((station, index) => (
                                     <option key={index} value={station}>
                                         {station}
                                     </option>
