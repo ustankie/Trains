@@ -24,4 +24,10 @@ public class StationController {
     public Long getStationId(@RequestParam String stationName) {
         return stationService.getStationId(stationName);
     }
+
+    @GetMapping("/api/stations/get_rest_stations")
+    public ResponseEntity<List<String>> getAllRestStationNames(@RequestParam Long routeId, @RequestParam String startStationName) {
+        List<String> stationNames = stationService.getAllRestStationsNames(routeId, startStationName);
+        return ResponseEntity.ok(stationNames);
+    }
 }

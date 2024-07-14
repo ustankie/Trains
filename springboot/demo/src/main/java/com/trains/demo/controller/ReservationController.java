@@ -48,4 +48,11 @@ public class ReservationController {
     public Double getReservationPrice(@RequestParam Long reservationId){
         return reservationService.getReservationPrice(reservationId);
     }
+
+    @GetMapping("/route_price")
+    public Double getRoutePrice(@RequestParam Long routeId, @RequestParam String startStation, @RequestParam String endStation){
+        return reservationService.getRoutePrice(routeId, startStation, endStation);
+    }
+
+
 }

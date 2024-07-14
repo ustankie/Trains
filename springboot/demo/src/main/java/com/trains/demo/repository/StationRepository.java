@@ -15,4 +15,7 @@ public interface StationRepository extends JpaRepository<Station, Long> {
 
     @Query(value = "SELECT get_station_id(:stationName)", nativeQuery = true)
     Long getStationId(@Param("stationName") String stationName);
+
+    @Query(value = "SELECT * FROM get_rest_stations(:routeId, :startStationId)", nativeQuery = true)
+    List<String> getAllRestStationsNames(@Param("routeId") Long routeId, @Param("startStationId") Long startStationId);
 }
