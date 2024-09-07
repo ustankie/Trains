@@ -7,6 +7,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
+@Table(name = "stations")
 public class Station {
     @Id
     private Long stationId;
