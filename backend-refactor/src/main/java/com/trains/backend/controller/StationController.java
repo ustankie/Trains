@@ -8,23 +8,23 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/stations")
 @AllArgsConstructor
 public class StationController {
 
     private final StationService stationService;
 
-    @GetMapping("/stations")
+    @GetMapping()
     public List<String> getAllStationNames() {
         return stationService.getAllStationNames();
     }
 
-    @GetMapping("/stations/id")
+    @GetMapping("/id")
     public String getStationById(@RequestParam Long id) {
         return stationService.getStationNameById(id);
     }
 
-    @GetMapping("/stations/name")
+    @GetMapping("/name")
     public String getStationById(@RequestParam String stationName) {
         return stationService.getStationIdByName(stationName);
     }
