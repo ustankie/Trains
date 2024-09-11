@@ -1,9 +1,11 @@
 package com.trains.backend.service;
 
+import com.trains.backend.projection.ReservationHistoryProjection;
 import com.trains.backend.repository.ReservationRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -23,5 +25,9 @@ public class ReservationService {
 
     public void changeReservationStatus(Long reservationId, String paymentStatus) {
         reservationRepository.changeStatus(reservationId, paymentStatus);
+    }
+
+    public List<ReservationHistoryProjection> getAllTrips(Long userId) {
+        return reservationRepository.getAllTrips(userId);
     }
 }

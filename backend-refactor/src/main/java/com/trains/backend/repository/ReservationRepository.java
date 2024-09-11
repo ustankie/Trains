@@ -1,6 +1,7 @@
 package com.trains.backend.repository;
 
 import com.trains.backend.model.Reservation;
+import com.trains.backend.projection.ReservationHistoryProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
@@ -28,4 +30,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Procedure("change_reservation_status")
     void changeStatus(Long reservationId, String paymentStatus);
+
+    @Query(value = "SELECT reservation_id AS reservationId, reservation_date AS reservationDate, route_id AS routeId, " +
+            "departure, arrival, start_station_id AS startStationId, end_station_id AS endStationId, seat_id AS seatId, " +
+            "departure_date AS departureDate, status" + " FROM user_reservations(:_user_id) " +
+            "ORDER BY departure_date DESC", nativeQuery = true)
+    List<ReservationHistoryProjection> getAllTrips(@Param("_user_id") Long user_id);
 }
